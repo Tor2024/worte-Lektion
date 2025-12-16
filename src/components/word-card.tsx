@@ -24,28 +24,28 @@ export function WordCard({ word }: { word: VocabularyWord }) {
     }
     return word.german;
   };
-  
+
   const getRussianType = (type: VocabularyWord['type']) => {
     switch (type) {
-        case 'noun': return 'существительное';
-        case 'verb': return 'глагол';
-        case 'adjective': return 'прилагательное';
-        case 'conjunction': return 'союз';
-        case 'preposition': return 'предлог';
-        case 'other': return 'другое';
-        default: return type;
+      case 'noun': return 'существительное';
+      case 'verb': return 'глагол';
+      case 'adjective': return 'прилагательное';
+      case 'conjunction': return 'союз';
+      case 'preposition': return 'предлог';
+      case 'other': return 'другое';
+      default: return type;
     }
   };
 
   const getGermanType = (type: VocabularyWord['type']) => {
     switch (type) {
-        case 'noun': return 'Nomen';
-        case 'verb': return 'Verb';
-        case 'adjective': return 'Adjektiv';
-        case 'conjunction': return 'Konjunktion';
-        case 'preposition': return 'Präposition';
-        case 'other': return 'Andere';
-        default: return type;
+      case 'noun': return 'Nomen';
+      case 'verb': return 'Verb';
+      case 'adjective': return 'Adjektiv';
+      case 'conjunction': return 'Konjunktion';
+      case 'preposition': return 'Präposition';
+      case 'other': return 'Andere';
+      default: return type;
     }
   };
 
@@ -65,6 +65,16 @@ export function WordCard({ word }: { word: VocabularyWord }) {
         return (
           <>
             <p className="italic text-muted-foreground">{word.conjugation}</p>
+            {word.conjugations && (
+              <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-xs bg-muted/30 p-2 rounded-md">
+                <div>ich {word.conjugations.ich}</div>
+                <div>wir {word.conjugations.wir}</div>
+                <div>du {word.conjugations.du}</div>
+                <div>ihr {word.conjugations.ihr}</div>
+                <div>er/sie/es {word.conjugations.er_sie_es}</div>
+                <div>sie/Sie {word.conjugations.sie_Sie}</div>
+              </div>
+            )}
             <p className="mt-2 italic text-muted-foreground">Пример: {word.example}</p>
           </>
         );
@@ -84,10 +94,10 @@ export function WordCard({ word }: { word: VocabularyWord }) {
         );
       case 'preposition':
         return (
-            <>
-                <p className="font-semibold">Требует падеж: <span className="text-primary">{word.case}</span></p>
-                <p className="mt-2 italic text-muted-foreground">Пример: {word.example}</p>
-            </>
+          <>
+            <p className="font-semibold">Требует падеж: <span className="text-primary">{word.case}</span></p>
+            <p className="mt-2 italic text-muted-foreground">Пример: {word.example}</p>
+          </>
         );
       default:
         if ('example' in word) {
@@ -106,18 +116,18 @@ export function WordCard({ word }: { word: VocabularyWord }) {
       {/* Front of the card (German) */}
       <div className={cn("flex min-h-[215px] flex-col p-4 [backface-visibility:hidden]")}>
         <div className="flex-1">
-            <div className="flex justify-between items-start">
-                <p className="text-2xl font-bold">{getGermanDisplay()}</p>
-                <Badge variant="secondary">{getGermanType(word.type)}</Badge>
-            </div>
-            <Separator className="my-3" />
-            <div className="text-sm space-y-1">
-                {renderDetails()}
-            </div>
+          <div className="flex justify-between items-start">
+            <p className="text-2xl font-bold">{getGermanDisplay()}</p>
+            <Badge variant="secondary">{getGermanType(word.type)}</Badge>
+          </div>
+          <Separator className="my-3" />
+          <div className="text-sm space-y-1">
+            {renderDetails()}
+          </div>
         </div>
         <div className="mt-2 flex items-center justify-end gap-1 text-xs text-muted-foreground">
-            <RefreshCw className="h-3 w-3"/>
-            <span>Нажмите, чтобы перевернуть</span>
+          <RefreshCw className="h-3 w-3" />
+          <span>Нажмите, чтобы перевернуть</span>
         </div>
       </div>
 
@@ -126,27 +136,26 @@ export function WordCard({ word }: { word: VocabularyWord }) {
         className={cn("absolute inset-0 flex min-h-[215px] flex-col rounded-lg border bg-card p-4 text-card-foreground [backface-visibility:hidden] [transform:rotateY(180deg)]")}
       >
         <div className="flex-1">
-            <div className="flex justify-between items-start">
-                <div>
-                    <p className="text-2xl font-bold flex items-center gap-2">
-                        {word.russian}
-                    </p>
-                    <p className="text-lg text-muted-foreground">{getGermanDisplay()}</p>
-                </div>
-                <Badge variant="outline">{getRussianType(word.type)}</Badge>
+          <div className="flex justify-between items-start">
+            <div>
+              <p className="text-2xl font-bold flex items-center gap-2">
+                {word.russian}
+              </p>
+              <p className="text-lg text-muted-foreground">{getGermanDisplay()}</p>
             </div>
-            <Separator className="my-3" />
-            <div className="text-sm space-y-1">
-                {renderDetails()}
-            </div>
+            <Badge variant="outline">{getRussianType(word.type)}</Badge>
+          </div>
+          <Separator className="my-3" />
+          <div className="text-sm space-y-1">
+            {renderDetails()}
+          </div>
         </div>
-         <div className="mt-2 flex items-center justify-end gap-1 text-xs text-muted-foreground">
-            <RefreshCw className="h-3 w-3"/>
-            <span>Нажмите, чтобы перевернуть</span>
+        <div className="mt-2 flex items-center justify-end gap-1 text-xs text-muted-foreground">
+          <RefreshCw className="h-3 w-3" />
+          <span>Нажмите, чтобы перевернуть</span>
         </div>
       </div>
     </div>
   );
 };
 
-    

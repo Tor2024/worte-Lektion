@@ -25,7 +25,15 @@ interface Noun extends BaseVocabularyWord {
 
 interface Verb extends BaseVocabularyWord {
   type: 'verb';
-  conjugation: string;
+  conjugation: string; // 3rd person singular Present
+  conjugations?: {
+    ich: string;
+    du: string;
+    er_sie_es: string;
+    wir: string;
+    ihr: string;
+    sie_Sie: string;
+  };
   example: string;
   // New fields for extended learning
   perfektForm?: string; // "hat gemacht", "ist gegangen"
