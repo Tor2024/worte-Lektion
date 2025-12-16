@@ -55,7 +55,7 @@ const renderPrompt = (input: WordEnrichmentInput) => {
   2. Provide the Russian translation.
   3. If it is a **Verb**:
      - Provide the 3rd person singular Present (e.g. "er läuft").
-     - **CRITICAL**: Provide the FULL conjugation table for Present tense (ich, du, er/sie/es, wir, ihr, sie/Sie).
+     - **CRITICAL**: Provide the FULL conjugation table for Present tense in the `conjugations` object with keys: ich, du, er_sie_es, wir, ihr, sie_Sie.
      - **CRITICAL**: Provide the Perfekt form (3rd person sing.) including "hat" or "ist" (e.g. "hat gemacht", "ist gegangen").
      - **CRITICAL**: If the verb is separable (trennbar), indicate this clearly in the usage or example.
      - **CRITICAL**: If the verb requires a specific preposition or case (e.g. "warten auf + Akk", "helfen + Dat"), YOU MUST PROVIDE IT in the 'preposition' and 'case' fields. If it's a direct transitive verb, you can leave case as 'Akkusativ' (or appropriate) if relevant, but prioritize prepositional objects.
