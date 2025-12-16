@@ -1,0 +1,81 @@
+'use server';
+
+import { ai, executeWithRetry } from '@/ai/genkit';
+import { z } from 'genkit';
+
+const WordEnrichmentInputSchema = z.object({
+    word: z.string().describe('The German word to enrich.'),
+    context: z.string().optional().describe('Optional context or folder name to help disambiguate meaning.'),
+});
+
+export type WordEnrichmentInput = z.infer<typeof WordEnrichmentInputSchema>;
+
+const WordTypeSchema = z.enum(['noun', 'verb', 'adjective', 'conjunction', 'preposition', 'other']);
+
+const EnrichedWordSchema = z.object({
+    german: z.string().describe('The canonical German form (e.g. infinite for verbs, singular for nouns).'),
+    russian: z.string().describe('Russian translation.'),
+    type: WordTypeSchema,
+    // Verb specifics
+    conjugation: z.string().optional().describe('For verbs: 3rd person singular Present (e.g. "er läuft").'),
+    perfektForm: z.string().optional().describe('For verbs: 3rd person singular Perfekt (e.g. "ist gelaufen" or "hat gemacht"). MUST include auxiliary verb.'),
+    preposition: z.string().optional().describe('For verbs: associated preposition if any (e.g. "auf" for "warten auf").'),
+    case: z.enum(['Akkusativ', 'Dativ', 'Genitiv', 'Nominativ']).optional().describe('For verbs/prepositions: required case (e.g. "Akkusativ" for "warten auf").'),
+    // Noun specifics
+    article: z.enum(['der', 'die', 'das']).optional().describe('For nouns: definite article.'),
+    plural: z.string().optional().describe('For nouns: plural form.'),
+    pluralArticle: z.string().optional().describe('For nouns: "die" or "-".'),
+    // Adjective specifics
+    comparative: z.string().optional(),
+    // Conjunction specifics
+    structure: z.string().optional().describe('For conjunctions: Position of the verb (e.g. "Verb am Ende", "Verb an Position 2", "Inversion").'),
+    // Common
+    example: z.string().describe('A simple example sentence using the word in context.'),
+});
+
+export type EnrichedWordOutput = z.infer<typeof EnrichedWordSchema>;
+
+const renderPrompt = (input: WordEnrichmentInput) => {
+    return `You are a German language expert.
+  Analyze the following German word and provide full grammatical details.
+  
+  Word: "${input.word}"
+  ${input.context ? `Context: "${input.context}"` : ''}
+
+  Instructions:
+  1. Identify the word type.
+  2. Provide the Russian translation.
+  3. If it is a **Verb**:
+     - Provide the 3rd person singular Present (e.g. "er läuft").
+     - **CRITICAL**: Provide the Perfekt form (3rd person sing.) including "hat" or "ist" (e.g. "hat gemacht", "ist gegangen").
+     - **CRITICAL**: If the verb is separable (trennbar), indicate this clearly in the usage or example.
+     - **CRITICAL**: If the verb requires a specific preposition or case (e.g. "warten auf + Akk", "helfen + Dat"), YOU MUST PROVIDE IT in the 'preposition' and 'case' fields. If it's a direct transitive verb, you can leave case as 'Akkusativ' (or appropriate) if relevant, but prioritize prepositional objects.
+  4. If it is a **Noun**:
+     - Provide article, plural form.
+  5. If it is a **Conjunction**:
+     - **CRITICAL**: Indicate the verb position/structure: "Verb am Ende" (Nebensatz), "Verb an Position 2" (Hauptsatz ADUSO), or "Verg an Position 1" (Inversion etc).
+  6. Generate a simple, clear example sentence.
+
+  Return ONLY valid JSON matching the schema.`;
+};
+
+const wordEnrichmentFlow = ai.defineFlow(
+    {
+        name: 'wordEnrichmentFlow',
+        inputSchema: WordEnrichmentInputSchema,
+        outputSchema: EnrichedWordSchema,
+    },
+    async (input) => {
+        return executeWithRetry(async (aiInstance) => {
+            const { output } = await aiInstance.generate({
+                prompt: renderPrompt(input),
+                output: { schema: EnrichedWordSchema },
+            });
+            return output!;
+        });
+    }
+);
+
+export async function enrichWord(input: WordEnrichmentInput): Promise<EnrichedWordOutput> {
+    return wordEnrichmentFlow(input);
+}

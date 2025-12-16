@@ -36,7 +36,7 @@ export const executeWithRetry = async <T>(
     throw new Error("No Genkit instances available. Check API keys.");
   }
 
-  const MAX_GLOBAL_RETRIES = 1; // How many times to retry the entire key pool
+  const MAX_GLOBAL_RETRIES = 2; // Total 3 attempts (initial + 2 retries)
   let globalAttempts = 0;
 
   while (globalAttempts <= MAX_GLOBAL_RETRIES) {
@@ -52,31 +52,40 @@ export const executeWithRetry = async <T>(
       try {
         return await operation(instance);
       } catch (error: any) {
-        console.warn(`AI request failed with key index ${index}:`, error.message);
+        // console.warn(`AI request failed with key index ${index}:`, error.message);
         lastError = error;
 
-        // If it's not a quota error (429), maybe we shouldn't retry? 
-        // But for robustness, let's retry on most errors except maybe invalid argument.
-        // 429 is the main target.
-        if (!error.message?.includes('429') && !error.message?.includes('quota')) {
-          // For other errors, we might want to continue to next key just in case, 
-          // but usually 429 is the only one where rotation helps.
-        }
+        // If it's NOT a quota error/429, and it's a fatal error (like invalid prompt), 
+        // we might NOT want to retry with other keys. 
+        // However, "internal error" or "service unavailable" should be retried.
+        // For now, we continue to rotate keys as a safe default for robustness.
       }
     }
 
-    // If we are here, all keys failed.
-    // Check if we should wait and retry the whole pool.
-    if (lastError?.message?.includes('429') || lastError?.message?.includes('quota')) {
-      const match = lastError.message.match(/retry in ([0-9.]+)s/);
-      const waitTime = match ? parseFloat(match[1]) * 1000 : 2000; // Default 2s if not parsed
+    // If we are here, all keys failed for this attempt.
+    console.warn(`All ${aiInstances.length} keys failed (Attempt ${globalAttempts + 1}/${MAX_GLOBAL_RETRIES + 1}). Last error: ${lastError?.message}`);
 
-      if (waitTime < 10000 && globalAttempts < MAX_GLOBAL_RETRIES) { // Only wait if < 10s
-        console.log(`All keys exhausted. Waiting ${waitTime}ms before retrying pool...`);
-        await new Promise(resolve => setTimeout(resolve, waitTime + 500)); // Add 500ms buffer
-        globalAttempts++;
-        continue;
-      }
+    // Check if we should wait and retry the whole pool.
+    // We retry on 429 (quota), 503 (service unavailable), or 500 (internal).
+    const isRetryable =
+      lastError?.message?.includes('429') ||
+      lastError?.message?.includes('quota') ||
+      lastError?.status === 429 ||
+      lastError?.status === 503 ||
+      lastError?.status === 500;
+
+    if (isRetryable && globalAttempts < MAX_GLOBAL_RETRIES) {
+      // Exponential backoff: 2s, 4s, 8s...
+      const baseDelay = 2000 * Math.pow(2, globalAttempts);
+      // Add jitter (0-1000ms) to avoid thundering herd locally
+      const jitter = Math.random() * 1000;
+      const waitTime = baseDelay + jitter;
+
+      console.log(`Waiting ${Math.round(waitTime)}ms before global retry...`);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+
+      globalAttempts++;
+      continue;
     }
 
     throw lastError || new Error("All AI instances failed.");

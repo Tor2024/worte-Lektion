@@ -13,6 +13,14 @@ const Header = () => {
               Lernen Deutsch mit Oleh
             </span>
           </Link>
+          <nav className="flex items-center space-x-6 text-sm font-medium">
+            <Link href="/" className="transition-colors hover:text-foreground/80 text-foreground/60">
+              Курс
+            </Link>
+            <Link href="/my-lectures" className="transition-colors hover:text-foreground/80 text-foreground/60">
+              Мой словарь
+            </Link>
+          </nav>
         </div>
         {/* Add nav items here if needed */}
       </div>

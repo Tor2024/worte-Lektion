@@ -64,6 +64,14 @@ const renderPrompt = (input: VerifyAnswerInput) => {
           d. Explain *why* it's correct. Example: "Мы используем винительный падеж (Akkusativ) после глагола 'sehen', поэтому 'der' меняется на 'den'." or "Слово 'Tisch' мужского рода, поэтому с ним используется артикль 'der'."
           e. Provide one or two additional, different examples of the correct grammar rule or word usage to reinforce the concept.
 
+  5.  **Special Case: Open-ended Sentence Construction**
+      - If the question asks to 'write a sentence' or 'make a sentence' using a specific word, user's answer does NOT need to match 'Correct Answer'.
+      - Instead, check if the user's answer is:
+         a) A grammatically correct German sentence.
+         b) Contains the required word (from the question or correct answer).
+         c) Makes semantic sense.
+      - If these conditions are met, mark it as CORRECT, even if it's completely different from any example.
+
   Your entire response must be a single, valid JSON object.`;
 };
 
