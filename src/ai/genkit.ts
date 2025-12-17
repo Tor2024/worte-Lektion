@@ -3,7 +3,18 @@ import { genkit } from 'genkit';
 import { googleAI } from '@genkit-ai/google-genai';
 
 const rawKeys = process.env.GEMINI_API_KEYS || process.env.GEMINI_API_KEY || '';
-const keys = rawKeys.split(',').map(k => k.trim()).filter(k => k.length > 0);
+let keys = rawKeys.split(',').map(k => k.trim()).filter(k => k.length > 0);
+
+// Also look for indexed keys GEMINI_API_KEY_1 to GEMINI_API_KEY_50
+for (let i = 1; i <= 50; i++) {
+  const keyMap = process.env[`GEMINI_API_KEY_${i}`];
+  if (keyMap && keyMap.trim().length > 0) {
+    keys.push(keyMap.trim());
+  }
+}
+
+// Remove duplicates
+keys = Array.from(new Set(keys));
 
 if (keys.length > 0) {
   console.log(`Loaded ${keys.length} Gemini API keys.`);
