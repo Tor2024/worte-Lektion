@@ -1,7 +1,7 @@
 
 "use client";
 
-import type { Topic, UserVocabularyWord, SM2State, Exercise } from "@/lib/types";
+import type { Topic, UserVocabularyWord, SM2State, Exercise, VocabularyWord } from "@/lib/types";
 import { generateAdaptiveExercise, AdaptiveExerciseOutput } from "@/ai/flows/adaptive-exercise-generation";
 import { verifyAnswer } from "@/ai/flows/verify-answer";
 import { generateFeedback } from "@/ai/flows/generate-feedback";
@@ -14,6 +14,7 @@ import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { CheckCircle, Loader2, ThumbsUp, XCircle, BookOpen, BrainCircuit, Pencil, Move, SkipForward, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "./ui/card";
+import { WordCard } from "./word-card";
 import { useUserProgress } from "@/hooks/use-user-progress";
 import { useKnownWords } from "@/hooks/use-known-words";
 import { curriculum } from "@/lib/data";
@@ -32,7 +33,7 @@ type SentenceConstructionExercise = {
   correctSentence: string;
 }
 
-type Step = 'vocabulary' | 'reading' | 'comprehension' | 'grammar' | 'sentence-construction' | 'explanation' | 'mastered' | 'loading' | 'error';
+type Step = 'learning' | 'vocabulary' | 'reading' | 'comprehension' | 'grammar' | 'sentence-construction' | 'explanation' | 'mastered' | 'loading' | 'error';
 
 
 type ExerciseHistoryItem = {
@@ -76,6 +77,8 @@ export function ExerciseEngine({ topic, customWords, onMastered, onWordUpdate }:
   const [comprehensionExercises, setComprehensionExercises] = useState<Exercise[]>([]);
   const [grammarExercises, setGrammarExercises] = useState<Exercise[]>([]);
   const [sentenceConstructionExercises, setSentenceConstructionExercises] = useState<SentenceConstructionExercise[]>([]);
+  const [learningQueue, setLearningQueue] = useState<VocabularyWord[]>([]);
+  const [learningFeedback, setLearningFeedback] = useState<Feedback>(null);
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
 
   const exerciseHistoryRef = useRef(exerciseHistory);
@@ -85,6 +88,46 @@ export function ExerciseEngine({ topic, customWords, onMastered, onWordUpdate }:
   }, [exerciseHistory]);
 
   const startExerciseCycle = useCallback(async () => {
+    setIsGenerating(true);
+    setApiError(null);
+    setCurrentStep('loading');
+    setFeedback(null);
+    setUserAnswer('');
+    setExerciseData(null);
+    setIsSubmitting(false);
+    setCurrentExerciseIndex(0);
+
+    // Initial Learning Phase for Topics
+    // If we have a topic, and the learning queue is empty (meaning we haven't started yet),
+    // populate the queue with ALL topic words.
+    // NOTE: We check 'loading' to differentiation between initial load and subsequent cycles?
+    // Actually, we should check if we just finished learning.
+    // We need a way to know if we already did the learning phase for this mount.
+    // Let's rely on state: if learningQueue is empty and we are starting, we should check if we should populate it.
+    // BUT 'startExerciseCycle' is called on retry too.
+    // Simplification: We populate learningQueue ONLY if it's currently empty AND we are in the 'loading' phase of the very first run.
+    // Better: Effect hook manages the entry.
+    // Let's modify logic:
+    // If we have a topic, we ALWAYS start with 'learning' step unless we already passed it.
+    // But 'startExerciseCycle' resets everything.
+    // We need a ref to track if learning is done for this session.
+  }, []);
+
+  const learningDoneRef = useRef(false);
+
+  // Effect to initialize the cycle
+  useEffect(() => {
+    if (topic && !learningDoneRef.current && allWords.length > 0 && !customWords) {
+      setLearningQueue(allWords.map(w => w as VocabularyWord)); // Cast assuming UserVocabularyWord.word is VocabularyWord
+      setCurrentStep('learning');
+      setIsGenerating(false);
+    } else {
+      // Standard start
+      standardCycleStart();
+    }
+  }, [topic, allWords, customWords]);
+
+  const standardCycleStart = useCallback(async () => {
     setIsGenerating(true);
     setApiError(null);
     setCurrentStep('loading');
@@ -221,7 +264,7 @@ export function ExerciseEngine({ topic, customWords, onMastered, onWordUpdate }:
     } finally {
       setIsGenerating(false);
     }
-  }, [topic, customWords, allWords]);
+  }, [topic, customWords, allWords, isKnown]);
 
   useEffect(() => {
     startExerciseCycle();
@@ -544,6 +587,122 @@ export function ExerciseEngine({ topic, customWords, onMastered, onWordUpdate }:
             </CardContent>
           </Card>
         );
+
+      case 'learning':
+        if (!learningQueue || learningQueue.length === 0) return null; // Should not happen if step is learning
+        const learningWord = learningQueue[0];
+
+        // Helper to check answer
+        const handleLearningSubmit = (e?: React.FormEvent) => {
+          if (e) e.preventDefault();
+          if (!userAnswer) return;
+
+          const normalize = (s: string) => s.trim().toLowerCase().replace(/[.,!?]/g, '');
+          const correct = learningWord.german;
+
+          // Special check for Nouns: must include article?
+          // The data `learningWord.german` usually includes article for nouns?? 
+          // Let's check `types.ts` again or `word-card`.
+          // `VocabularyWord` for Noun has `german` (just word) and `article`.
+          // Wait, `word.german` in `VocabularyWord` interface...
+          // Looking at `types.ts`:
+          // interface Noun { german: string; article: 'der'|'die'|'das' ... }
+          // So `german` is just "Mann", not "der Mann".
+          // But `getGermanDisplay` in `WordCard` combines them.
+          // User Requirement: "nouns MUST be with article".
+
+          let correctStats = correct;
+          if (learningWord.type === 'noun') {
+            correctStats = `${learningWord.article} ${learningWord.german}`;
+          }
+
+          const isCorrect = normalize(userAnswer) === normalize(correctStats);
+
+          if (isCorrect) {
+            setLearningFeedback({ type: 'correct', message: `<p><strong>Верно!</strong> ${correctStats}</p>` });
+          } else {
+            setLearningFeedback({ type: 'incorrect', message: `<p>Ошибка. Правильно: <strong class="text-primary">${correctStats}</strong></p>` });
+          }
+        };
+
+        const handleLearningMakeNext = () => {
+          if (!learningFeedback) return;
+
+          if (learningFeedback.type === 'correct') {
+            // Remove from queue
+            const newQueue = learningQueue.slice(1);
+            setLearningQueue(newQueue);
+            if (newQueue.length === 0) {
+              // Done with learning!
+              learningDoneRef.current = true;
+              startExerciseCycle(); // Proceed to standard exercises
+            }
+          } else {
+            // Move to end
+            const newQueue = [...learningQueue.slice(1), learningWord];
+            setLearningQueue(newQueue);
+          }
+
+          // Reset for next card
+          setLearningFeedback(null);
+          setUserAnswer('');
+        };
+
+        return (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-bold">Изучение новых слов</h2>
+              <span className="text-sm text-muted-foreground">Осталось: {learningQueue.length}</span>
+            </div>
+
+            {/* Show the card - Back Side (Russian) as Question? 
+                 User requirement: "Interactive training... nouns with article... if error move to end".
+                 Usually this means: Show Russian -> User types German.
+                 So we flip the card to show Russian?
+                 Or we just show a question card?
+                 Let's reuse WordCard but maybe force a "question mode"?
+                 Actually WordCard manages its own flip state.
+                 Maybe we just show the Russian text in a simple Card, and reveal the full WordCard on answer?
+              */}
+
+            <Card>
+              <CardHeader><CardTitle>Как это по-немецки?</CardTitle></CardHeader>
+              <CardContent className="space-y-4">
+                <div className="text-2xl font-bold text-center py-6">{learningWord.russian}</div>
+
+                {learningFeedback ? (
+                  <div className="animate-in fade-in zoom-in duration-300">
+                    {/* Show the full detailed card to study after answering */}
+                    <WordCard word={learningWord} />
+
+                    <Alert variant={learningFeedback.type === 'correct' ? 'default' : 'destructive'} className="mt-4">
+                      <div className="flex items-center gap-2">
+                        {learningFeedback.type === 'correct' ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
+                        <div dangerouslySetInnerHTML={{ __html: learningFeedback.message }} />
+                      </div>
+                    </Alert>
+
+                    <Button onClick={handleLearningMakeNext} className="w-full mt-4" size="lg">
+                      {learningFeedback.type === 'correct' ? 'Далее' : 'Повторить позже'}
+                    </Button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleLearningSubmit} className="space-y-4">
+                    <Input
+                      autoFocus
+                      placeholder={learningWord.type === 'noun' ? "Существительное с артиклем (der/die/das)..." : "Перевод..."}
+                      value={userAnswer}
+                      onChange={e => setUserAnswer(e.target.value)}
+                      className="text-lg text-center"
+                    />
+                    <Button type="submit" className="w-full" disabled={!userAnswer}>Проверить</Button>
+                  </form>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        );
+
       case 'vocabulary':
       case 'comprehension':
       case 'grammar':

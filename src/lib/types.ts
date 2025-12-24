@@ -6,7 +6,7 @@ export interface Exercise {
   answer: string;
 }
 
-export type WordType = 'noun' | 'verb' | 'adjective' | 'conjunction' | 'preposition' | 'other';
+export type WordType = 'noun' | 'verb' | 'adjective' | 'conjunction' | 'preposition' | 'adverb' | 'other';
 
 interface BaseVocabularyWord {
   german: string;
@@ -61,12 +61,18 @@ interface Preposition extends BaseVocabularyWord {
   example: string;
 }
 
+interface Adverb extends BaseVocabularyWord {
+  type: 'adverb';
+  structure?: string;
+  example: string;
+}
+
 interface OtherWord extends BaseVocabularyWord {
   type: 'other';
   example: string;
 }
 
-export type VocabularyWord = Noun | Verb | Adjective | Conjunction | Preposition | OtherWord;
+export type VocabularyWord = Noun | Verb | Adjective | Conjunction | Preposition | Adverb | OtherWord;
 
 export interface SM2State {
   interval: number;
