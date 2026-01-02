@@ -14,6 +14,7 @@ import { UserVocabularyWord, SM2State, INITIAL_SM2_STATE } from '@/lib/types';
 import { v4 as uuidv4 } from 'uuid';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { SpeakButton } from '@/components/speak-button';
+import { formatGermanWord } from '@/lib/german-utils';
 
 
 export default function FolderDetailsPage({ params }: { params: Promise<{ folderId: string }> }) {
@@ -177,7 +178,7 @@ export default function FolderDetailsPage({ params }: { params: Promise<{ folder
                                     <div>
                                         <div className="flex items-center gap-2">
                                             <h3 className="font-bold text-lg">{word.german}</h3>
-                                            <SpeakButton text={word.type === 'noun' ? `${(word as any).article} ${word.german}` : word.german} size="icon" className="h-6 w-6" />
+                                            <SpeakButton text={formatGermanWord(word)} size="icon" className="h-6 w-6" />
                                             {isDue && (
                                                 <span className="relative flex h-2 w-2">
                                                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>

@@ -13,7 +13,7 @@ export type WordEnrichmentInput = z.infer<typeof WordEnrichmentInputSchema>;
 const WordTypeSchema = z.enum(['noun', 'verb', 'adjective', 'conjunction', 'preposition', 'other']);
 
 const EnrichedWordSchema = z.object({
-    german: z.string().describe('The canonical German form (e.g. infinite for verbs, singular for nouns).'),
+    german: z.string().describe('The canonical German form. For nouns, ONLY the noun itself without the article (e.g. "Haus", not "das Haus"). For verbs, the infinitive.'),
     russian: z.string().describe('Russian translation.'),
     type: WordTypeSchema,
     // Verb specifics
@@ -59,8 +59,9 @@ const renderPrompt = (input: WordEnrichmentInput) => {
      - **CRITICAL**: Provide the Perfekt form (3rd person sing.) including "hat" or "ist" (e.g. "hat gemacht", "ist gegangen").
      - **CRITICAL**: If the verb is separable (trennbar), indicate this clearly in the usage or example.
      - **CRITICAL**: If the verb requires a specific preposition or case (e.g. "warten auf + Akk", "helfen + Dat"), YOU MUST PROVIDE IT in the 'preposition' and 'case' fields. If it's a direct transitive verb, you can leave case as 'Akkusativ' (or appropriate) if relevant, but prioritize prepositional objects.
-  4. If it is a **Noun**:
-     - Provide article, plural form.
+    4. If it is a **Noun**:
+       - Provide article, plural form.
+       - **CRITICAL**: The 'german' field MUST NOT include the article (e.g., return "Reinigung", not "die Reinigung").
   5. If it is a **Conjunction**:
      - **CRITICAL**: Indicate the verb position/structure: "Verb am Ende" (Nebensatz), "Verb an Position 2" (Hauptsatz ADUSO), or "Verg an Position 1" (Inversion etc).
   6. Generate a simple, clear example sentence.

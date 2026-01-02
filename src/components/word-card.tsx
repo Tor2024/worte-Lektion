@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import { RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SpeakButton } from '@/components/speak-button';
+import { formatGermanWord } from '@/lib/german-utils';
 
 export function WordCard({ word }: { word: VocabularyWord }) {
   const [isFlipped, setIsFlipped] = useState(false);
@@ -19,12 +20,7 @@ export function WordCard({ word }: { word: VocabularyWord }) {
 
   const handleFlip = () => setIsFlipped(!isFlipped);
 
-  const getGermanDisplay = () => {
-    if (word.type === 'noun') {
-      return `${word.article} ${word.german}`;
-    }
-    return word.german;
-  };
+  const getGermanDisplay = () => formatGermanWord(word);
 
   const getRussianType = (type: VocabularyWord['type']) => {
     switch (type) {
@@ -56,7 +52,7 @@ export function WordCard({ word }: { word: VocabularyWord }) {
       case 'noun':
         return (
           <>
-            <p><span className="font-semibold">Ед. число:</span> {word.article} {word.german}</p>
+            <p><span className="font-semibold">Ед. число:</span> {formatGermanWord(word)}</p>
             <p><span className="font-semibold">Мн. число:</span> {word.pluralArticle} {word.plural}</p>
             <p className="mt-2 italic text-muted-foreground">Пример (ед.ч.): {word.exampleSingular}</p>
             <p className="italic text-muted-foreground">Пример (мн.ч.): {word.examplePlural}</p>

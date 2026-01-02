@@ -23,6 +23,7 @@ import { Progress } from './ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { useKnownWords } from '@/hooks/use-known-words';
 import { SpeakButton } from '@/components/speak-button';
+import { formatGermanWord } from '@/lib/german-utils';
 
 
 type VocabStep = 'learning' | 'practicing' | 'finished';
@@ -134,10 +135,7 @@ export function GlobalVocabularyTrainer({ words }: { words: VocabularyWord[] }) 
     setVocabFeedback(null);
     setApiError(null);
 
-    let correctAnswer = currentVocabWord.german;
-    if (currentVocabWord.type === 'noun') {
-      correctAnswer = `${currentVocabWord.article} ${currentVocabWord.german}`;
-    }
+    let correctAnswer = formatGermanWord(currentVocabWord);
 
     try {
       const verification = await verifyAnswer({
@@ -279,7 +277,7 @@ export function GlobalVocabularyTrainer({ words }: { words: VocabularyWord[] }) 
                       <AlertTitle>{vocabFeedback.type === 'correct' ? 'Верно!' : 'Обратите внимание'}</AlertTitle>
                       <AlertDescription className="prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: vocabFeedback.message }} />
                     </div>
-                    <SpeakButton text={currentVocabWord.type === 'noun' ? `${currentVocabWord.article} ${currentVocabWord.german}` : currentVocabWord.german} size="sm" variant="ghost" />
+                    <SpeakButton text={formatGermanWord(currentVocabWord)} size="sm" variant="ghost" />
                   </div>
                 </Alert>
                 <Button onClick={proceedToNextPracticeWord} className="mt-4 w-full">Продолжить</Button>

@@ -26,6 +26,7 @@ import { SpeakButton } from "./speak-button";
 import { startRoleplay, StartRoleplayOutput } from "@/ai/flows/start-roleplay";
 import { evaluateRoleplay } from "@/ai/flows/evaluate-roleplay";
 import { RoleplayInterface } from "./roleplay-interface";
+import { formatGermanWord } from "@/lib/german-utils";
 
 type Feedback = {
   type: "correct" | "incorrect";
@@ -97,9 +98,6 @@ export function ExerciseEngine({ topic, customWords, onMastered, onWordUpdate }:
   }, [exerciseHistory]);
 
   /* Combined startExerciseCycle to handle actual generation */
-  const formatGermanWord = (word: VocabularyWord) => {
-    return word.type === 'noun' ? `${word.article} ${word.german}` : word.german;
-  };
 
   const startExerciseCycle = useCallback(async () => {
     setIsGenerating(true);
@@ -642,11 +640,7 @@ export function ExerciseEngine({ topic, customWords, onMastered, onWordUpdate }:
           if (e) e.preventDefault();
           if (!userAnswer) return;
           const normalize = (s: string) => s.trim().toLowerCase().replace(/[.,!?]/g, '');
-          const correct = learningWord.german;
-          let correctStats = correct;
-          if (learningWord.type === 'noun') {
-            correctStats = `${learningWord.article} ${learningWord.german}`;
-          }
+          const correctStats = formatGermanWord(learningWord);
           const isCorrect = normalize(userAnswer) === normalize(correctStats);
           if (isCorrect) {
             setLearningFeedback({ type: 'correct', message: `<p><strong>Верно!</strong> ${correctStats}</p>` });
@@ -691,7 +685,7 @@ export function ExerciseEngine({ topic, customWords, onMastered, onWordUpdate }:
                       <div className="flex items-center gap-2">
                         {learningFeedback.type === 'correct' ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
                         <div dangerouslySetInnerHTML={{ __html: learningFeedback.message }} />
-                        <SpeakButton text={learningWord.type === 'noun' ? `${learningWord.article} ${learningWord.german}` : learningWord.german} size="sm" variant="ghost" />
+                        <SpeakButton text={formatGermanWord(learningWord)} size="sm" variant="ghost" />
                       </div>
                     </Alert>
                     <Button onClick={handleLearningMakeNext} className="w-full mt-4 h-12 text-lg" size="lg">
@@ -709,7 +703,7 @@ export function ExerciseEngine({ topic, customWords, onMastered, onWordUpdate }:
                         className="text-lg text-center h-12"
                       />
                       <SpeakButton
-                        text={learningWord.type === 'noun' ? `${learningWord.article} ${learningWord.german}` : learningWord.german}
+                        text={formatGermanWord(learningWord)}
                         size="lg"
                         variant="secondary"
                       />
