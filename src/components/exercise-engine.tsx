@@ -244,17 +244,25 @@ export function ExerciseEngine({ topic, customWords, onMastered, onWordUpdate }:
       const unknownWords = allWords.filter(word => !isKnown(word.german));
       const vocabularyToUse = unknownWords.length > 0 ? unknownWords : [];
 
-      const response = await generateAdaptiveExercise({
-        grammarConcept: topic.title,
-        userLevel: (currentLevel?.id.toUpperCase() as 'A0' | 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2') || 'A1',
-        pastErrors: exerciseHistoryRef.current.filter(e => !e.isCorrect).map(e => e.exercise).join(', '),
-        exerciseHistory: exerciseHistoryRef.current, // Pass current session history from ref
-        vocabulary: vocabularyToUse.map(word => ({
-          german: word.german,
-          russian: word.russian,
-          example: 'example' in word ? word.example : (word as any).exampleSingular,
-        })),
-      });
+      // Client-side timeout to prevent infinite loading (20 seconds)
+      const timeoutPromise = new Promise<AdaptiveExerciseOutput>((_, reject) =>
+        setTimeout(() => reject(new Error("AI_TIMEOUT")), 20000)
+      );
+
+      const response = await Promise.race([
+        generateAdaptiveExercise({
+          grammarConcept: topic.title,
+          userLevel: (currentLevel?.id.toUpperCase() as 'A0' | 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2') || 'A1',
+          pastErrors: exerciseHistoryRef.current.filter(e => !e.isCorrect).map(e => e.exercise).join(', '),
+          exerciseHistory: exerciseHistoryRef.current, // Pass current session history from ref
+          vocabulary: vocabularyToUse.map(word => ({
+            german: word.german,
+            russian: word.russian,
+            example: 'example' in word ? word.example : (word as any).exampleSingular,
+          })),
+        }),
+        timeoutPromise
+      ]);
       setExerciseData(response);
       setVocabularyExercises((response.vocabularyExercises || []).map((e, idx) => ({ ...e, id: `ai-vocab-${idx}`, type: 'translation', correctAnswer: (e as any).answer || (e as any).correctAnswer } as Exercise)));
       setComprehensionExercises((response.comprehensionExercises || []).map((e, idx) => ({ ...e, id: `ai-comp-${idx}`, type: 'free-text-sentence', correctAnswer: (e as any).answer || (e as any).correctAnswer } as Exercise)));
@@ -266,9 +274,12 @@ export function ExerciseEngine({ topic, customWords, onMastered, onWordUpdate }:
       console.error("Error starting exercise cycle:", error);
 
       const isQuotaError = error.message?.includes('429') || error.message?.includes('quota') || error.message?.includes('Resource has been exhausted');
+      const isTimeout = error.message === 'AI_TIMEOUT';
 
       if (isQuotaError) {
         setApiError("Превышен лимит запросов к AI (429). Система автоматически попробует переподключиться, но если ошибка сохраняется — сделайте паузу.");
+      } else if (isTimeout) {
+        setApiError("AI-тренер долго не отвечает. Возможно, сервер перегружен. Попробуйте нажать 'Повторить запрос'.");
       } else {
         setApiError("Не удалось сгенерировать упражнение. Попробуйте обновить страницу или зайти позже.");
       }
