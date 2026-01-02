@@ -97,6 +97,10 @@ export function ExerciseEngine({ topic, customWords, onMastered, onWordUpdate }:
   }, [exerciseHistory]);
 
   /* Combined startExerciseCycle to handle actual generation */
+  const formatGermanWord = (word: VocabularyWord) => {
+    return word.type === 'noun' ? `${word.article} ${word.german}` : word.german;
+  };
+
   const startExerciseCycle = useCallback(async () => {
     setIsGenerating(true);
     setApiError(null);
@@ -113,6 +117,7 @@ export function ExerciseEngine({ topic, customWords, onMastered, onWordUpdate }:
           const rand = Math.random();
           const targetTranslationTokens = cw.word.russian.toLowerCase().split(/[,;]/).map(s => s.trim());
 
+          const formattedTarget = formatGermanWord(cw.word);
           const validDistractors = customWords.filter(w => {
             if (w.word.german === cw.word.german) return false;
             const distractorTokens = w.word.russian.toLowerCase().split(/[,;]/).map(s => s.trim());
@@ -124,7 +129,7 @@ export function ExerciseEngine({ topic, customWords, onMastered, onWordUpdate }:
               )
             );
             return !hasOverlap;
-          }).map(w => w.word.german);
+          }).map(w => formatGermanWord(w.word));
 
           const distractors = validDistractors
             .sort(() => 0.5 - Math.random())
@@ -133,14 +138,14 @@ export function ExerciseEngine({ topic, customWords, onMastered, onWordUpdate }:
           while (distractors.length < 3) {
             distractors.push("...");
           }
-          const options = [...distractors, cw.word.german].sort(() => 0.5 - Math.random());
+          const options = [...distractors, formattedTarget].sort(() => 0.5 - Math.random());
 
           if (rand < 0.4) {
             return {
               id: `custom-trans-${cw.id}`,
               type: 'translation',
               question: cw.word.russian,
-              correctAnswer: cw.word.german
+              correctAnswer: formattedTarget
             } as Exercise;
           } else if (rand < 0.7) {
             return {
@@ -148,14 +153,14 @@ export function ExerciseEngine({ topic, customWords, onMastered, onWordUpdate }:
               type: 'multiple-choice',
               question: `Выберите перевод: ${cw.word.russian}`,
               options: options,
-              correctAnswer: cw.word.german
+              correctAnswer: formattedTarget
             } as Exercise;
           } else {
             return {
               id: `custom-free-${cw.id}`,
               type: 'free-text-sentence',
-              question: `Напишите предложение на немецком со словом: ${cw.word.german}`,
-              correctAnswer: cw.context || cw.word.german
+              question: `Напишите предложение на немецком со словом: ${formattedTarget}`,
+              correctAnswer: cw.context || formattedTarget
             } as Exercise;
           }
         });
