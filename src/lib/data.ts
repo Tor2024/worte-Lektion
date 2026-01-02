@@ -2888,36 +2888,36 @@ export const curriculum: Curriculum = {
           id: 'b1-3-umwelt-natur',
           title: 'B1.3 Экология: Сожаления о прошлом',
           explanation: `
-        < div class= "space-y-6" >
-        <div class="bg-card p-6 rounded-xl border shadow-sm" >
-        <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2" >
-        <span class="text-primary" >🌍</span> Konjunktiv II der Vergangenheit
-        </h2>
-        < p class= "text-lg mb-4 text-muted-foreground" >
-        Используется для выражения нереальных ситуаций в прошлом(сожаления: "если бы только...").
+            <div class="space-y-6">
+              <div class="bg-card p-6 rounded-xl border shadow-sm">
+                <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2">
+                  <span class="text-primary">🌍</span> Konjunktiv II der Vergangenheit
+                </h2>
+                <p class="text-lg mb-4 text-muted-foreground">
+                  Используется для выражения нереальных ситуаций в прошлом (сожаления: "если бы только...").
                 </p>
 
-        < h3 class= "font-semibold mb-3 text-primary" > Формула: </h3>
-        < div class= "bg-muted p-4 rounded-lg text-center font-mono text-xl mb-6 flex justify-center items-center gap-2" >
-        <span class="text-primary font-bold text-sm" > hätte / wäre < /span> + <span class="text-accent font-bold text-sm">...</span > + <span class="text-primary font-bold text-sm" > Partizip II </span>
-        </div>
+                <h3 class="font-semibold mb-3 text-primary">Формула:</h3>
+                <div class="bg-muted p-4 rounded-lg text-center font-mono text-xl mb-6 flex justify-center items-center gap-2">
+                  <span class="text-primary font-bold text-sm">hätte / wäre</span> + <span class="text-accent font-bold text-sm">...</span> + <span class="text-primary font-bold text-sm">Partizip II</span>
+                </div>
 
-        < div class= "space-y-4" >
-        <div class="p-4 border-l-4 border-primary bg-primary/5 rounded-r-lg" >
-        <p class="font-bold text-sm italic" > "Wenn wir die Umwelt раньше <strong>geschützt hätten</strong>..." </p>
-        < p class= "text-xs text-muted-foreground mt-1" > (Если бы мы защищали экологию раньше... — но мы этого не делали)</p>
-        </div>
-        < div class= "p-4 border-l-4 border-accent bg-accent/5 rounded-r-lg" >
-        <p class="font-bold text-sm italic" > "Ich <strong>wäre</strong> gern dabei <strong>gewesen</strong>." </p>
-        < p class= "text-xs text-muted-foreground mt-1" > (Я бы с удовольствием там поприсутствовал — но меня не было)</p>
-        </div>
-        </div>
+                <div class="space-y-4">
+                  <div class="p-4 border-l-4 border-primary bg-primary/5 rounded-r-lg">
+                    <p class="font-bold text-sm italic">"Wenn wir die Umwelt раньше <strong>geschützt hätten</strong>..."</p>
+                    <p class="text-xs text-muted-foreground mt-1">(Если бы мы защищали экологию раньше... — но мы этого не делали)</p>
+                  </div>
+                  <div class="p-4 border-l-4 border-accent bg-accent/5 rounded-r-lg">
+                    <p class="font-bold text-sm italic">"Ich <strong>wäre</strong> gern dabei <strong>gewesen</strong>."</p>
+                    <p class="text-xs text-muted-foreground mt-1">(Я бы с удовольствием там поприсутствовал — но меня не было)</p>
+                  </div>
+                </div>
 
-        < div class= "mt-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200" >
-        <p class="text-sm" >💡 <strong>Hätte < /strong> используется для большинства глаголов. <br> <strong>Wäre</strong > — для глаголов движения и состояния(sein, bleiben, gehen...).</p>
-        </div>
-        </div>
-        </div>
+                <div class="mt-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                  <p class="text-sm">💡 <strong>Hätte</strong> используется для большинства глаголов. <br> <strong>Wäre</strong> — для глаголов движения и состояния (sein, bleiben, gehen...).</p>
+                </div>
+              </div>
+            </div>
           `,
           vocabulary: [
             {
@@ -2959,41 +2959,41 @@ export const curriculum: Curriculum = {
           id: 'b1-4-kommunikation-indirekt',
           title: 'B1.4 Коммуникация: Косвенные вопросы',
           explanation: `
-        < div class= "space-y-6" >
-        <div class="bg-card p-6 rounded-xl border shadow-sm" >
-        <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2" >
-        <span class="text-primary" >❓</span> Indirekte Fragesätze (Косвенные вопросы)
-        </h2>
-        < p class= "text-lg mb-4 text-muted-foreground" >
-        Косвенные вопросы звучат более вежливо.Они являются придаточными предложениями, поэтому < strong > глагол уходит в самый конец </strong>.
-        </p>
+            <div class="space-y-6">
+              <div class="bg-card p-6 rounded-xl border shadow-sm">
+                <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2">
+                  <span class="text-primary">❓</span> Indirekte Fragesätze (Косвенные вопросы)
+                </h2>
+                <p class="text-lg mb-4 text-muted-foreground">
+                  Косвенные вопросы звучат более вежливо. Они являются придаточными предложениями, поэтому <strong>глагол уходит в самый конец</strong>.
+                </p>
 
-        < div class= "space-y-4 mb-6" >
-        <div class="p-4 border-l-4 border-primary bg-primary/5 rounded-r-lg" >
-        <h3 class="font-bold text-sm mb-1" > W - Fragen(с вопросительным словом) </h3>
-        < p class= "text-sm italic" > "Wann kommt der Bus?"(Прямой) </p>
-        < p class= "text-sm italic font-bold text-primary" > "Ich möchte wissen, wann der Bus <strong>kommt</strong>."(Косвенный) </p>
-        </div>
-        < div class= "p-4 border-l-4 border-accent bg-accent/5 rounded-r-lg" >
-        <h3 class="font-bold text-sm mb-1" > Ja / Nein - Fragen(с союзом < strong > ob < /strong>)</h3 >
-          <p class="text-sm italic" > "Ist der Platz frei?"(Прямой) </p>
-        < p class= "text-sm italic font-bold text-accent" > "Können Sie mir sagen, <strong>ob</strong> der Platz frei <strong>ist</strong>?"(Косвенный) </p>
-        </div>
-        </div>
+                <div class="space-y-4 mb-6">
+                  <div class="p-4 border-l-4 border-primary bg-primary/5 rounded-r-lg">
+                    <h3 class="font-bold text-sm mb-1">W-Fragen (с вопросительным словом)</h3>
+                    <p class="text-sm italic">"Wann kommt der Bus?" (Прямой)</p>
+                    <p class="text-sm italic font-bold text-primary">"Ich möchte wissen, wann der Bus <strong>kommt</strong>." (Косвенный)</p>
+                  </div>
+                  <div class="p-4 border-l-4 border-accent bg-accent/5 rounded-r-lg">
+                    <h3 class="font-bold text-sm mb-1">Ja/Nein-Fragen (с союзом <strong>ob</strong>)</h3>
+                    <p class="text-sm italic">"Ist der Platz frei?" (Прямой)</p>
+                    <p class="text-sm italic font-bold text-accent">"Können Sie mir sagen, <strong>ob</strong> der Platz frei <strong>ist</strong>?" (Косвенный)</p>
+                  </div>
+                </div>
 
-        < h3 class= "font-semibold mb-3 text-primary" > Вежливые вводные фразы: </h3>
-        < ul class= "grid grid-cols-1 md:grid-cols-2 gap-2 text-sm italic" >
-        <li class="bg-muted p-2 rounded" >• Wissen Sie, ...</li>
-        < li class= "bg-muted p-2 rounded" >• Könnten Sie mir sagen, ...</li>
-        < li class= "bg-muted p-2 rounded" >• Ich würde gern wissen, ...</li>
-        < li class= "bg-muted p-2 rounded" >• Ich bin mir nicht sicher, ...</li>
-        </ul>
+                <h3 class="font-semibold mb-3 text-primary">Вежливые вводные фразы:</h3>
+                <ul class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm italic">
+                  <li class="bg-muted p-2 rounded">• Wissen Sie, ...</li>
+                  <li class="bg-muted p-2 rounded">• Könnten Sie mir sagen, ...</li>
+                  <li class="bg-muted p-2 rounded">• Ich würde gern wissen, ...</li>
+                  <li class="bg-muted p-2 rounded">• Ich bin mir не совсем уверен, ...</li>
+                </ul>
 
-        < div class= "mt-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200" >
-        <p class="text-xs" >💡 <strong>Совет: </strong> Если в вопросе есть модальный глагол или перфект, вспомогательный глагол всё равно уходит в самый конец: <em>"...ob du mir <strong>helfen kannst</strong >."</em></p>
-        </div>
-        </div>
-        </div>
+                <div class="mt-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                  <p class="text-xs">💡 <strong>Совет:</strong> Если в вопросе есть модальный глагол или перфект, вспомогательный глагол всё равно уходит в самый конец: <em>"...ob du mir <strong>helfen kannst</strong>."</em></p>
+                </div>
+              </div>
+            </div>
           `,
           vocabulary: [
             {
@@ -3035,31 +3035,31 @@ export const curriculum: Curriculum = {
           id: 'b1-5-arbeit-passiv',
           title: 'B1.5 Мир труда: Процессы и Passiv',
           explanation: `
-        < div class= "space-y-6" >
-        <div class="bg-card p-6 rounded-xl border shadow-sm" >
-        <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2" >
-        <span class="text-primary" >🏭</span> Описание процессов (Passiv)
-        </h2>
-        < p class= "text-lg mb-4 text-muted-foreground" >
-        На работе пассивный залог крайне важен для описания того, <strong>что < /strong> делается, а не <strong>кем</strong >.
+            <div class="space-y-6">
+              <div class="bg-card p-6 rounded-xl border shadow-sm">
+                <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2">
+                  <span class="text-primary">🏭</span> Описание процессов (Passiv)
+                </h2>
+                <p class="text-lg mb-4 text-muted-foreground">
+                  На работе пассивный залог крайне важен для описания того, <strong>что</strong> делается, а не <strong>кем</strong>.
                 </p>
 
-        < div class= "space-y-4 mb-6" >
-        <div class="p-4 border-l-4 border-primary bg-primary/5 rounded-r-lg" >
-        <h3 class="font-bold text-sm mb-1" > Пример процесса: </h3>
-        < p class= "text-sm italic" > "Zuerst <strong>wird</strong> die Ware <strong>bestellt</strong>."(Сначала товар заказывается) </p>
-        < p class= "text-sm italic" > "Dann <strong>wird</strong> sie <strong>geliefert</strong>."(Затем он доставляется) </p>
-        < p class= "text-sm italic" > "Schließlich <strong>wird</strong> die Rechnung <strong>bezahlt</strong>."(В конце оплачивается счет) </p>
-        </div>
-        </div>
+                <div class="space-y-4 mb-6">
+                  <div class="p-4 border-l-4 border-primary bg-primary/5 rounded-r-lg">
+                    <h3 class="font-bold text-sm mb-1">Пример процесса:</h3>
+                    <p class="text-sm italic">"Zuerst <strong>wird</strong> die Ware <strong>bestellt</strong>." (Сначала товар заказывается)</p>
+                    <p class="text-sm italic">"Dann <strong>wird</strong> sie <strong>geliefert</strong>." (Затем он доставляется)</p>
+                    <p class="text-sm italic">"Schließlich <strong>wird</strong> die Rechnung <strong>bezahlt</strong>." (В конце оплачивается счет)</p>
+                  </div>
+                </div>
 
-        < div class= "bg-muted p-4 rounded-lg" >
-        <h3 class="font-bold text-sm mb-2" > Грамматический нюанс: von + Dativ </h3>
-        < p class= "text-xs text-muted-foreground mb-2" > Если всё же нужно указать, кто делает действие, используем предлог < strong > von < /strong>:</p >
-        <p class="text-sm font-medium" > "Der Brief wird <strong>vom</strong> Chef (von dem Chef) unterschrieben." </p>
-        </div>
-        </div>
-        </div>
+                <div class="bg-muted p-4 rounded-lg">
+                  <h3 class="font-bold text-sm mb-2">Грамматический нюанс: von + Dativ</h3>
+                  <p class="text-xs text-muted-foreground mb-2">Если всё же нужно указать, кто делает действие, используем предлог <strong>von</strong>:</p>
+                  <p class="text-sm font-medium">"Der Brief wird <strong>vom</strong> Chef (von dem Chef) unterschrieben." </p>
+                </div>
+              </div>
+            </div>
           `,
           vocabulary: [
             {
@@ -3100,33 +3100,33 @@ export const curriculum: Curriculum = {
           id: 'b1-6-beziehung-konflikt',
           title: 'B1.6 Отношения: Конфликт',
           explanation: `
-        < div class= "space-y-6" >
-        <div class="bg-card p-6 rounded-xl border shadow-sm" >
-        <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2" >
-        <span class="text-primary" >🤝</span> Взаимные глаголы (Reziproke Verben)
-        </h2>
-        < p class= "text-lg mb-4 text-muted-foreground" >
-        Когда действие направлено друг на друга.Чаще всего используется местоимение < strong > sich < /strong> (во мн.ч.) или слово <strong>einander</strong > (друг друга).
+            <div class="space-y-6">
+              <div class="bg-card p-6 rounded-xl border shadow-sm">
+                <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2">
+                  <span class="text-primary">🤝</span> Взаимные глаголы (Reziproke Verben)
+                </h2>
+                <p class="text-lg mb-4 text-muted-foreground">
+                  Когда действие направлено друг на друга. Чаще всего используется местоимение <strong>sich</strong> (во мн.ч.) или слово <strong>einander</strong> (друг друга).
                 </p>
 
-        < div class= "grid grid-cols-1 md:grid-cols-2 gap-4 mb-6" >
-        <div class="p-4 bg-muted/50 rounded-lg border" >
-        <h3 class="font-bold mb-2" > Использование "sich": </h3>
-        < p class= "italic text-sm" > "Wir <strong>streiten uns</strong>."(Мы ссоримся друг с другом) </p>
-        < p class= "italic text-sm" > "Sie <strong>verstehen sich</strong> gut."(Они хорошо понимают друг друга) </p>
-        </div>
-        < div class= "p-4 bg-primary/5 border border-primary/20 rounded-lg" >
-        <h3 class="font-bold mb-2 text-primary" > Использование "einander": </h3>
-        < p class= "italic text-sm" > "Wir helfen <strong>einander</strong>."(Мы помогаем друг другу) </p>
-        < p class= "italic text-sm" > "Sie vertrauen <strong>einander</strong>."(Они доверяют друг другу) </p>
-        </div>
-        </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div class="p-4 bg-muted/50 rounded-lg border">
+                    <h3 class="font-bold mb-2">Использование "sich":</h3>
+                    <p class="italic text-sm">"Wir <strong>streiten uns</strong>." (Мы ссоримся друг с другом)</p>
+                    <p class="italic text-sm">"Sie <strong>verstehen sich</strong> gut." (Они хорошо понимают друг друга)</p>
+                  </div>
+                  <div class="p-4 bg-primary/5 border border-primary/20 rounded-lg">
+                    <h3 class="font-bold mb-2 text-primary">Использование "einander":</h3>
+                    <p class="italic text-sm">"Wir helfen <strong>einander</strong>." (Мы помогаем друг другу)</p>
+                    <p class="italic text-sm">"Sie vertrauen <strong>einander</strong>." (Они доверяют друг другу)</p>
+                  </div>
+                </div>
 
-        < div class= "p-4 bg-yellow-50 rounded-lg border border-yellow-200" >
-        <p class="text-sm" >💡 <strong>Различие: </strong> <em>sich</em > — более привычно для повседневных глаголов, <em>einander < /em> — подчеркивает взаимность и часто используется с предлогами: <strong>"voneinander lernen"</strong > (учиться друг у друга).</p>
-        </div>
-        </div>
-        </div>
+                <div class="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                  <p class="text-sm">💡 <strong>Различие:</strong> <em>sich</em> — более привычно для повседневных глаголов, <em>einander</em> — подчеркивает взаимность и часто используется с предлогами: <strong>"voneinander lernen"</strong> (учиться друг у друга).</p>
+                </div>
+              </div>
+            </div>
           `,
           vocabulary: [
             {
@@ -3169,42 +3169,42 @@ export const curriculum: Curriculum = {
           id: 'b1-7-zukunft-karriere',
           title: 'B1.7 Будущее: Карьера',
           explanation: `
-        < div class= "space-y-6" >
-        <div class="bg-card p-6 rounded-xl border shadow-sm" >
-        <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2" >
-        <span class="text-primary" >🎓</span> Родительный падеж (Genitiv)
-        </h2>
-        < p class= "text-lg mb-4 text-muted-foreground" >
-        Используется для обозначения принадлежности("кого?/чего?") и с определенными предлогами.На уровне B1 важны предлоги: <strong>wegen < /strong>, <strong>während</strong >, <strong>trotz </strong>.
-        </p>
+            <div class="space-y-6">
+              <div class="bg-card p-6 rounded-xl border shadow-sm">
+                <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2">
+                  <span class="text-primary">🎓</span> Родительный падеж (Genitiv)
+                </h2>
+                <p class="text-lg mb-4 text-muted-foreground">
+                  Используется для обозначения принадлежности ("кого?/чего?") и с определенными предлогами. На уровне B1 важны предлоги: <strong>wegen</strong>, <strong>während</strong>, <strong>trotz</strong>.
+                </p>
 
-        < div class= "grid grid-cols-1 md:grid-cols-3 gap-3 mb-6" >
-        <div class="bg-muted p-3 rounded-lg flex flex-col items-center" >
-        <span class="font-bold text-primary" > wegen </span>
-        < span class= "text-xs text-muted-foreground italic" > Wegen des Jobs </span>
-        < span class= "text-[10px] mt-1" > (Из - за работы)</span>
-        </div>
-        < div class= "bg-muted p-3 rounded-lg flex flex-col items-center" >
-        <span class="font-bold text-primary" > während </span>
-        < span class= "text-xs text-muted-foreground italic" > Während der Prüfung </span>
-        < span class= "text-[10px] mt-1" > (Во время экзамена)</span>
-        </div>
-        < div class= "bg-muted p-3 rounded-lg flex flex-col items-center" >
-        <span class="font-bold text-primary" > trotz </span>
-        < span class= "text-xs text-muted-foreground italic" > Trotz des Regens </span>
-        < span class= "text-[10px] mt-1" > (Несмотря на дождь)</span>
-        </div>
-        </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+                  <div class="bg-muted p-3 rounded-lg flex flex-col items-center">
+                    <span class="font-bold text-primary">wegen</span>
+                    <span class="text-xs text-muted-foreground italic">Wegen des Jobs</span>
+                    <span class="text-[10px] mt-1">(Из-за работы)</span>
+                  </div>
+                  <div class="bg-muted p-3 rounded-lg flex flex-col items-center">
+                    <span class="font-bold text-primary">während</span>
+                    <span class="text-xs text-muted-foreground italic">Während der Prüfung</span>
+                    <span class="text-[10px] mt-1">(Во время экзамена)</span>
+                  </div>
+                  <div class="bg-muted p-3 rounded-lg flex flex-col items-center">
+                    <span class="font-bold text-primary">trotz</span>
+                    <span class="text-xs text-muted-foreground italic">Trotz des Regens</span>
+                    <span class="text-[10px] mt-1">(Несмотря на дождь)</span>
+                  </div>
+                </div>
 
-        < div class= "bg-primary/5 p-4 rounded-lg border-l-4 border-primary" >
-        <h3 class="font-bold text-sm mb-2" > Правила артикля(Genitiv): </h3>
-        < div class= "space-y-1 text-sm" >
-        <p>• <strong>der / das < /strong> -> <strong>des</strong > (к сущ.добавляется < strong > -s < /strong> или <strong>-es</strong >)</p>
-        <p>• <strong>die / мн.ч.< /strong> -> <strong>der</strong > </p>
-        </div>
-        </div>
-        </div>
-        </div>
+                <div class="bg-primary/5 p-4 rounded-lg border-l-4 border-primary">
+                  <h3 class="font-bold text-sm mb-2">Правила артикля (Genitiv):</h3>
+                  <div class="space-y-1 text-sm">
+                    <p>• <strong>der / das</strong> -> <strong>des</strong> (к сущ. добавляется <strong>-s</strong> или <strong>-es</strong>)</p>
+                    <p>• <strong>die / мн.ч.</strong> -> <strong>der</strong> </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           `,
           vocabulary: [
             {
@@ -3246,37 +3246,37 @@ export const curriculum: Curriculum = {
           id: 'b1-8-zukunft-plaene',
           title: 'B1.8 Будущее: Планы',
           explanation: `
-        < div class= "space-y-6" >
-        <div class="bg-card p-6 rounded-xl border shadow-sm" >
-        <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2" >
-        <span class="text-primary" >🚀</span> Планы на будущее (Futur I)
-        </h2>
-        < p class= "text-lg mb-4 text-muted-foreground" >
-        Мы используем < strong > Futur I </strong> не только для событий в будущем, но и для планов, намерений и обещаний.
-        </p>
+            <div class="space-y-6">
+              <div class="bg-card p-6 rounded-xl border shadow-sm">
+                <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2">
+                  <span class="text-primary">🚀</span> Планы на будущее (Futur I)
+                </h2>
+                <p class="text-lg mb-4 text-muted-foreground">
+                  Мы используем <strong>Futur I</strong> не только для событий в будущем, но и для планов, намерений и обещаний.
+                </p>
 
-        < div class= "bg-muted p-4 rounded-lg mb-6 text-center" >
-        <span class="font-mono text-xl" > <strong>werden < /strong> + ... + <strong>Infinitiv</strong > </span>
-        </div>
+                <div class="bg-muted p-4 rounded-lg mb-6 text-center">
+                  <span class="font-mono text-xl"> <strong>werden</strong> + ... + <strong>Infinitiv</strong> </span>
+                </div>
 
-        < div class= "grid grid-cols-1 md:grid-cols-2 gap-4" >
-        <div class="p-4 border border-border rounded-lg bg-green-50/50" >
-        <h4 class="font-bold mb-2" > Намерение(Absicht): </h4>
-        < p class= "text-sm italic" > "Ich <strong>werde</strong> mehr Sport machen." </p>
-        < p class= "text-[10px] text-muted-foreground mt-1" > (Я буду больше заниматься спортом)</p>
-        </div>
-        < div class= "p-4 border border-border rounded-lg bg-blue-50/50" >
-        <h4 class="font-bold mb-2" > Прогноз(Prognose): </h4>
-        < p class= "text-sm italic" > "Nächstes Jahr <strong>wirst</strong> du fließend sprechen." </p>
-        < p class= "text-[10px] text-muted-foreground mt-1" > (В следующем году ты будешь говорить бегло)</p>
-        </div>
-        </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div class="p-4 border border-border rounded-lg bg-green-50/50">
+                    <h4 class="font-bold mb-2">Намерение (Absicht):</h4>
+                    <p class="text-sm italic">"Ich <strong>werde</strong> mehr Sport machen."</p>
+                    <p class="text-[10px] text-muted-foreground mt-1">(Я буду больше заниматься спортом)</p>
+                  </div>
+                  <div class="p-4 border border-border rounded-lg bg-blue-50/50">
+                    <h4 class="font-bold mb-2">Прогноз (Prognose):</h4>
+                    <p class="text-sm italic">"Nächstes Jahr <strong>wirst</strong> du fließend sprechen."</p>
+                    <p class="text-[10px] text-muted-foreground mt-1">(В следующем году ты будешь говорить бегло)</p>
+                  </div>
+                </div>
 
-        < div class= "mt-6 p-4 bg-primary/10 rounded-lg border border-primary/20" >
-        <p class="text-sm" >💡 <strong>Важно: </strong> Если действие точно произойдет по расписанию, можно использовать и <em>Präsens</em > с наречием времени: <strong>"Morgen fliege ich." < /strong></p >
-        </div>
-        </div>
-        </div>
+                <div class="mt-6 p-4 bg-primary/10 rounded-lg border border-primary/20">
+                  <p class="text-sm">💡 <strong>Важно:</strong> Если действие точно произойдет по расписанию, можно использовать и <em>Präsens</em> с наречием времени: <strong>"Morgen fliege ich."</strong></p>
+                </div>
+              </div>
+            </div>
           `,
           vocabulary: [
             {
@@ -3317,33 +3317,33 @@ export const curriculum: Curriculum = {
           id: 'b1-9-plaene-ziele',
           title: 'B1.9 Планы и Намерения',
           explanation: `
-        < div class= "space-y-6" >
-        <div class="bg-card p-6 rounded-xl border shadow-sm" >
-        <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2" >
-        <span class="text-primary" >🎯</span> Инфинитив с "zu" (Infinitiv mit zu)
-        </h2>
-        < p class= "text-lg mb-4 text-muted-foreground" >
-        Конструкция используется после определенных глаголов, прилагательных и существительных.Она позволяет избежать повторения подлежащего.
+            <div class="space-y-6">
+              <div class="bg-card p-6 rounded-xl border shadow-sm">
+                <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2">
+                  <span class="text-primary">🎯</span> Инфинитив с "zu" (Infinitiv mit zu)
+                </h2>
+                <p class="text-lg mb-4 text-muted-foreground">
+                  Конструкция используется после определенных глаголов, прилагательных и существительных. Она позволяет избежать повторения подлежащего.
                 </p>
 
-        < div class= "grid grid-cols-1 md:grid-cols-2 gap-4 mb-6" >
-        <div class="p-4 border border-border rounded-lg bg-primary/5" >
-        <h3 class="font-bold mb-2" > После глаголов: </h3>
-        < p class= "text-sm italic" > "Ich <strong>plane</strong>, nächstes Jahr <strong>zu</strong> reisen." </p>
-        < p class= "text-xs text-muted-foreground mt-1" > (Я планирую путешествовать в следующем году)</p>
-        </div>
-        < div class= "p-4 border border-border rounded-lg bg-accent/5" >
-        <h3 class="font-bold mb-2 text-accent" > После прилагательных: </h3>
-        < p class= "text-sm italic" > "Es ist <strong>wichtig</strong>, Deutsch <strong>zu</strong> lernen." </p>
-        < p class= "text-xs text-muted-foreground mt-1" > (Важно учить немецкий)</p>
-        </div>
-        </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div class="p-4 border border-border rounded-lg bg-primary/5">
+                    <h3 class="font-bold mb-2">После глаголов:</h3>
+                    <p class="text-sm italic">"Ich <strong>plane</strong>, nächstes Jahr <strong>zu</strong> reisen."</p>
+                    <p class="text-xs text-muted-foreground mt-1">(Я планирую путешествовать в следующем году)</p>
+                  </div>
+                  <div class="p-4 border border-border rounded-lg bg-accent/5">
+                    <h3 class="font-bold mb-2 text-accent">После прилагательных:</h3>
+                    <p class="text-sm italic">"Es ist <strong>wichtig</strong>, Deutsch <strong>zu</strong> lernen."</p>
+                    <p class="text-xs text-muted-foreground mt-1">(Важно учить немецкий)</p>
+                  </div>
+                </div>
 
-        < div class= "bg-yellow-50 p-4 rounded-lg border border-yellow-200" >
-        <p class="text-sm" >⚠️ <strong>Внимание: </strong> Глаголы с отделяемыми приставками ставят <strong>zu</strong > между приставкой и основой: <em>"подниматься" -> auf < strong > zu < /strong>stehen</em >.</p>
-        </div>
-        </div>
-        </div>
+                <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                  <p class="text-sm">⚠️ <strong>Внимание:</strong> Глаголы с отделяемыми приставками ставят <strong>zu</strong> между приставкой и основой: <em>"подниматься" -> auf<strong>zu</strong>stehen</em>.</p>
+                </div>
+              </div>
+            </div>
           `,
           vocabulary: [
             {
@@ -3381,35 +3381,35 @@ export const curriculum: Curriculum = {
           id: 'b1-10-geschichte-passiv',
           title: 'B1.10 История и Пассив',
           explanation: `
-        < div class= "space-y-6" >
-        <div class="bg-card p-6 rounded-xl border shadow-sm" >
-        <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2" >
-        <span class="text-primary" >🏛️</span> Пассив в прошедшем времени (Präteritum Passiv)
-        </h2>
-        < p class= "text-lg mb-4 text-muted-foreground" >
-        Используется для описания исторических событий или процессов в прошлом, где само действие важнее исполнителя.
+            <div class="space-y-6">
+              <div class="bg-card p-6 rounded-xl border shadow-sm">
+                <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2">
+                  <span class="text-primary">🏛️</span> Пассив в прошедшем времени (Präteritum Passiv)
+                </h2>
+                <p class="text-lg mb-4 text-muted-foreground">
+                  Используется для описания исторических событий или процессов в прошлом, где само действие важнее исполнителя.
                 </p>
 
-        < div class= "bg-muted p-4 rounded-lg mb-6 text-center" >
-        <span class="font-mono text-xl" > <strong>wurde < /strong> + ... + <strong>Partizip II</strong > </span>
-        </div>
+                <div class="bg-muted p-4 rounded-lg mb-6 text-center">
+                  <span class="font-mono text-xl"> <strong>wurde</strong> + ... + <strong>Partizip II</strong> </span>
+                </div>
 
-        < div class= "space-y-4" >
-        <div class="p-3 border-l-4 border-primary bg-primary/5" >
-        <p class="text-sm font-bold italic" > "Die Mauer <strong>wurde</strong> 1989 <strong>geöffnet</strong>." </p>
-        < p class= "text-xs text-muted-foreground mt-1" > (Стена была открыта в 1989 году)</p>
-        </div>
-        < div class= "p-3 border-l-4 border-accent bg-accent/5 text-sm" >
-        <p><strong>ich / er / sie wurde < /strong></p >
-        <p><strong>wir / sie wurden < /strong></p >
-        </div>
-        </div>
+                <div class="space-y-4">
+                  <div class="p-3 border-l-4 border-primary bg-primary/5">
+                    <p class="text-sm font-bold italic">"Die Mauer <strong>wurde</strong> 1989 <strong>geöffnet</strong>."</p>
+                    <p class="text-xs text-muted-foreground mt-1">(Стена была открыта в 1989 году)</p>
+                  </div>
+                  <div class="p-3 border-l-4 border-accent bg-accent/5 text-sm">
+                    <p><strong>ich / er / sie wurde</strong></p>
+                    <p><strong>wir / sie wurden</strong></p>
+                  </div>
+                </div>
 
-        < div class= "mt-6 p-4 bg-muted rounded-lg border border-border" >
-        <p class="text-sm" >💡 <strong>Совет: </strong> Это основное время для написания рефератов и исторических очерков.</p >
-        </div>
-        </div>
-        </div>
+                <div class="mt-6 p-4 bg-muted rounded-lg border border-border">
+                  <p class="text-sm">💡 <strong>Совет:</strong> Это основное время для написания рефератов и исторических очерков.</p>
+                </div>
+              </div>
+            </div>
           `,
           vocabulary: [
             {
@@ -3447,33 +3447,33 @@ export const curriculum: Curriculum = {
           id: 'b1-11-gesundheit',
           title: 'B1.11 Здоровье и Советы',
           explanation: `
-        < div class= "space-y-6" >
-        <div class="bg-card p-6 rounded-xl border shadow-sm" >
-        <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2" >
-        <span class="text-primary" >🏥</span> Советы и рекомендации (Konjunktiv II)
-        </h2>
-        < p class= "text-lg mb-4 text-muted-foreground" >
-        Когда мы даем вежливые советы или рекомендации по здоровью, мы используем модальный глагол < strong > sollen < /strong> в форме <strong>Konjunktiv II</strong >.
+            <div class="space-y-6">
+              <div class="bg-card p-6 rounded-xl border shadow-sm">
+                <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2">
+                  <span class="text-primary">🏥</span> Советы и рекомендации (Konjunktiv II)
+                </h2>
+                <p class="text-lg mb-4 text-muted-foreground">
+                  Когда мы даем вежливые советы или рекомендации по здоровью, мы используем модальный глагол <strong>sollen</strong> в форме <strong>Konjunktiv II</strong>.
                 </p>
 
-        < div class= "bg-muted p-4 rounded-lg mb-6 text-center" >
-        <span class="font-mono text-xl" > <strong>sollte < /strong> (+n / + st / +ten)</span>
-        </div>
+                <div class="bg-muted p-4 rounded-lg mb-6 text-center">
+                  <span class="font-mono text-xl"> <strong>sollte</strong> (+n / +st / +ten)</span>
+                </div>
 
-        < div class= "grid grid-cols-1 md:grid-cols-2 gap-4" >
-        <div class="p-4 border border-border rounded-lg bg-green-50/50" >
-        <h4 class="font-bold mb-2" > Совет(Rat): </h4>
-        < p class= "text-sm italic" > "Du <strong>solltest</strong> mehr Wasser trinken." </p>
-        < p class= "text-xs text-muted-foreground mt-1" > (Тебе следовало бы пить больше воды)</p>
-        </div>
-        < div class= "p-4 border border-border rounded-lg bg-red-50/50" >
-        <h4 class="font-bold mb-2" > При симптомах: </h4>
-        < p class= "text-sm italic" > "Sie <strong>sollten</strong> zum Arzt gehen." </p>
-        < p class= "text-xs text-muted-foreground mt-1" > (Вам следовало бы пойти к врачу)</p>
-        </div>
-        </div>
-        </div>
-        </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div class="p-4 border border-border rounded-lg bg-green-50/50">
+                    <h4 class="font-bold mb-2">Совет (Rat):</h4>
+                    <p class="text-sm italic">"Du <strong>solltest</strong> mehr Wasser trinken."</p>
+                    <p class="text-xs text-muted-foreground mt-1">(Тебе следовало бы пить больше воды)</p>
+                  </div>
+                  <div class="p-4 border border-border rounded-lg bg-red-50/50">
+                    <h4 class="font-bold mb-2">При симптомах:</h4>
+                    <p class="text-sm italic">"Sie <strong>sollten</strong> zum Arzt gehen."</p>
+                    <p class="text-xs text-muted-foreground mt-1">(Вам следовало бы пойти к врачу)</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           `,
           vocabulary: [
             {
@@ -3513,27 +3513,27 @@ export const curriculum: Curriculum = {
           id: 'b1-12-reisen-kultur',
           title: 'B1.12 Путешествия и Культура',
           explanation: `
-        < div class= "space-y-6" >
-        <div class="bg-card p-6 rounded-xl border shadow-sm" >
-        <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2" >
-        <span class="text-primary" >🌍</span> Культурные различия
-        </h2>
-        < p class= "text-lg mb-4 text-muted-foreground" >
-        На уровне B1 важно уметь описывать не только саму поездку, но и свои впечатления, сравнивая культуры и выражая мнения.
+            <div class="space-y-6">
+              <div class="bg-card p-6 rounded-xl border shadow-sm">
+                <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2">
+                  <span class="text-primary">🌍</span> Культурные различия
+                </h2>
+                <p class="text-lg mb-4 text-muted-foreground">
+                  На уровне B1 важно уметь описывать не только саму поездку, но и свои впечатления, сравнивая культуры и выражая мнения.
                 </p>
 
-        < div class= "p-4 bg-muted rounded-lg border" >
-        <h3 class="font-bold mb-2" > Фразы для выражения мнения: </h3>
-        < p class= "text-sm mb-1" >• <strong>Meiner Meinung nach < /strong> (+ Verb)... (По моему мнению...)</p >
-        <p class="text-sm mb-1" >• <strong>Ich bin der Ansicht < /strong>, dass... (Я придерживаюсь мнения, что...)</p >
-        <p class="text-sm" >• <strong>Im Vergleich zu < /strong> (+ Dativ)... (По сравнению с...)</p >
-        </div>
+                <div class="p-4 bg-muted rounded-lg border">
+                  <h3 class="font-bold mb-2">Фразы для выражения мнения:</h3>
+                  <p class="text-sm mb-1">• <strong>Meiner Meinung nach</strong> (+ Verb)... (По моему мнению...)</p>
+                  <p class="text-sm mb-1">• <strong>Ich bin der Ansicht</strong>, dass... (Я придерживаюсь мнения, что...)</p>
+                  <p class="text-sm">• <strong>Im Vergleich zu</strong> (+ Dativ)... (По сравнению с...)</p>
+                </div>
 
-        < div class= "mt-4 bg-primary/5 p-4 rounded-lg border-l-4 border-primary" >
-        <p class="text-sm italic" > "<strong>Im Vergleich zu</strong> Deutschland ist das Wetter hier wärmer." </p>
-        </div>
-        </div>
-        </div>
+                <div class="mt-4 bg-primary/5 p-4 rounded-lg border-l-4 border-primary">
+                  <p class="text-sm italic">"<strong>Im Vergleich zu</strong> Deutschland ist das Wetter hier wärmer."</p>
+                </div>
+              </div>
+            </div>
           `,
           vocabulary: [
             {
@@ -3580,52 +3580,52 @@ export const curriculum: Curriculum = {
           id: 'b2-1-job-bewerbung',
           title: 'B2.1 Работа: Заявка',
           explanation: `
-        < div class= "space-y-6" >
-        <div class="bg-card p-6 rounded-xl border shadow-sm" >
-        <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2" >
-        <span class="text-primary" >💼</span> Konjunktiv II: Вежливость и возможности
-        </h2>
-        < p class= "text-lg mb-4 text-muted-foreground" >
-        На уровне B2 вы должны звучать профессионально. < strong > Konjunktiv II </strong> используется для вежливых просьб (höfliche Bitte) и гипотетических ситуаций.
-        </p>
+            <div class="space-y-6">
+              <div class="bg-card p-6 rounded-xl border shadow-sm">
+                <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2">
+                  <span class="text-primary">💼</span> Konjunktiv II: Вежливость и возможности
+                </h2>
+                <p class="text-lg mb-4 text-muted-foreground">
+                  На уровне B2 вы должны звучать профессионально. <strong>Konjunktiv II</strong> используется для вежливых просьб (höfliche Bitte) и гипотетических ситуаций.
+                </p>
 
-        < h3 class= "font-semibold mb-3 text-primary" > Вежливые формы(würde / hätte / wäre): </h3>
-        < div class= "grid grid-cols-1 md:grid-cols-3 gap-3 mb-6" >
-        <div class="bg-muted p-3 rounded-lg flex flex-col items-center" >
-        <span class="font-bold text-primary" > würde + Infinitiv </span>
-        < span class= "text-xs text-muted-foreground italic" > Ich würde mich freuen.</span>
-        < span class= "text-[10px] mt-1" > (Я был бы рад)</span>
-        </div>
-        < div class= "bg-muted p-3 rounded-lg flex flex-col items-center" >
-        <span class="font-bold text-primary" > hätte </span>
-        < span class= "text-xs text-muted-foreground italic" > Ich hätte eine Frage.</span>
-        < span class= "text-[10px] mt-1" > (У меня был бы вопрос)</span>
-        </div>
-        < div class= "bg-muted p-3 rounded-lg flex flex-col items-center" >
-        <span class="font-bold text-primary" > wäre </span>
-        < span class= "text-xs text-muted-foreground italic" > Das wäre toll.</span>
-        < span class= "text-[10px] mt-1" > (Это было бы здорово)</span>
-        </div>
-        </div>
+                <h3 class="font-semibold mb-3 text-primary">Вежливые формы (würde / hätte / wäre):</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+                  <div class="bg-muted p-3 rounded-lg flex flex-col items-center">
+                    <span class="font-bold text-primary">würde + Infinitiv</span>
+                    <span class="text-xs text-muted-foreground italic">Ich würde mich freuen.</span>
+                    <span class="text-[10px] mt-1">(Я был бы рад)</span>
+                  </div>
+                  <div class="bg-muted p-3 rounded-lg flex flex-col items-center">
+                    <span class="font-bold text-primary">hätte</span>
+                    <span class="text-xs text-muted-foreground italic">Ich hätte eine Frage.</span>
+                    <span class="text-[10px] mt-1">(У меня был бы вопрос)</span>
+                  </div>
+                  <div class="bg-muted p-3 rounded-lg flex flex-col items-center">
+                    <span class="font-bold text-primary">wäre</span>
+                    <span class="text-xs text-muted-foreground italic">Das wäre toll.</span>
+                    <span class="text-[10px] mt-1">(Это было бы здорово)</span>
+                  </div>
+                </div>
 
-        < h3 class= "font-semibold mb-3 text-primary" > Фразы для собеседования: </h3>
-        < div class= "space-y-3" >
-        <div class="p-3 border-l-4 border-primary bg-primary/5 rounded-r-lg" >
-        <p class="font-bold text-sm italic" > "Über eine Einladung zu einem persönlichen Gespräch <strong>würde</strong> ich <strong>mich</strong> sehr <strong>freuen</strong>." </p>
-        < p class= "text-xs text-muted-foreground mt-1" > Я был бы очень рад приглашению на личную беседу.</p>
-        </div>
-        < div class= "p-3 border-l-4 border-accent bg-accent/5 rounded-r-lg" >
-        <p class="font-bold text-sm italic" > "<strong>Könnten</strong> Sie mir bitte sagen, wann die Stelle frei <strong>wäre</strong>?" </p>
-        < p class= "text-xs text-muted-foreground mt-1" > Не могли бы вы сказать, когда вакансия будет свободна ? </p>
-          </div>
-          </div>
+                <h3 class="font-semibold mb-3 text-primary">Фразы для собеседования:</h3>
+                <div class="space-y-3">
+                  <div class="p-3 border-l-4 border-primary bg-primary/5 rounded-r-lg">
+                    <p class="font-bold text-sm italic">"Über eine Einladung zu einem persönlichen Gespräch <strong>würde</strong> ich <strong>mich</strong> sehr <strong>freuen</strong>."</p>
+                    <p class="text-xs text-muted-foreground mt-1">Я был бы очень рад приглашению на личную беседу.</p>
+                  </div>
+                  <div class="p-3 border-l-4 border-accent bg-accent/5 rounded-r-lg">
+                    <p class="font-bold text-sm italic">"<strong>Könnten</strong> Sie mir bitte sagen, wann die Stelle frei <strong>wäre</strong>?"</p>
+                    <p class="text-xs text-muted-foreground mt-1">Не могли бы вы сказать, когда вакансия будет свободна?</p>
+                  </div>
+                </div>
 
-          < div class= "mt-6 p-4 bg-muted rounded-lg border border-border" >
-          <p class="text-sm" >📝 <strong>Nomen - Verb - Verbindungen: </strong> На этом уровне вместо глагола 1 "bewerben" мы используем устойчивое выражение "eine Bewerbung einreichen" (подать заявку).</p >
-          </div>
-          </div>
-          </div>
-            `,
+                <div class="mt-6 p-4 bg-muted rounded-lg border border-border">
+                  <p class="text-sm">📝 <strong>Nomen-Verb-Verbindungen:</strong> На этом уровне вместо глагола "bewerben" мы используем устойчивое выражение "eine Bewerbung einreichen" (подать заявку).</p>
+                </div>
+              </div>
+            </div>
+          `,
           vocabulary: [
             {
               theme: 'Трудоустройство и Резюме',
@@ -3673,40 +3673,40 @@ export const curriculum: Curriculum = {
           id: 'b2-2-office-communication',
           title: 'B2.2 Работа: Офис',
           explanation: `
-        < div class= "space-y-6" >
-        <div class="bg-card p-6 rounded-xl border shadow-sm" >
-        <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2" >
-        <span class="text-primary" >📎</span> Partizipialattribute (Причастные обороты)
-        </h2>
-        < p class= "text-lg mb-4 text-muted-foreground" >
-        На уровне B2 причастия часто используются как сложные прилагательные перед существительным.Это позволяет сжать информацию.
+            <div class="space-y-6">
+              <div class="bg-card p-6 rounded-xl border shadow-sm">
+                <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2">
+                  <span class="text-primary">📎</span> Partizipialattribute (Причастные обороты)
+                </h2>
+                <p class="text-lg mb-4 text-muted-foreground">
+                  На уровне B2 причастия часто используются как сложные прилагательные перед существительным. Это позволяет сжать информацию.
                 </p>
 
-        < h3 class= "font-semibold mb-3 text-primary" > Partizip I vs Partizip II как определения: </h3>
-        < div class= "grid grid-cols-1 md:grid-cols-2 gap-4 mb-6" >
-        <div class="border p-4 rounded-lg bg-orange-50/50" >
-        <h4 class="font-bold mb-2" > Partizip I(Активное) </h4>
-        < p class= "text-xs text-muted-foreground mb-2" > Глагол + -d + окончание </p>
-        < p class= "text-sm font-bold italic" > "Die <strong>telefonierende</strong> Kollegin." </p>
-        < p class= "text-[10px] mt-1" > (Звонящая коллега — она сама звонит сейчас)</p>
-        </div>
-        < div class= "border p-4 rounded-lg bg-blue-50/50" >
-        <h4 class="font-bold mb-2 text-blue-700" > Partizip II(Пассивное) </h4>
-        < p class= "text-xs text-muted-foreground mb-2" > ge -...-t + окончание </p>
-        < p class= "text-sm font-bold italic" > "Die <strong>geschriebene</strong> E-Mail." </p>
-        < p class= "text-[10px] mt-1" > (Написанное письмо — его кто - то написал)</p>
-        </div>
-        </div>
+                <h3 class="font-semibold mb-3 text-primary">Partizip I vs Partizip II как определения:</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div class="border p-4 rounded-lg bg-orange-50/50">
+                    <h4 class="font-bold mb-2">Partizip I (Активное)</h4>
+                    <p class="text-xs text-muted-foreground mb-2">Глагол + -d + окончание</p>
+                    <p class="text-sm font-bold italic">"Die <strong>telefonierende</strong> Kollegin."</p>
+                    <p class="text-[10px] mt-1">(Звонящая коллега — она сама звонит сейчас)</p>
+                  </div>
+                  <div class="border p-4 rounded-lg bg-blue-50/50">
+                    <h4 class="font-bold mb-2 text-blue-700">Partizip II (Пассивное)</h4>
+                    <p class="text-xs text-muted-foreground mb-2">ge-...-t + окончание</p>
+                    <p class="text-sm font-bold italic">"Die <strong>geschriebene</strong> E-Mail."</p>
+                    <p class="text-[10px] mt-1">(Написанное письмо — его кто-то написал)</p>
+                  </div>
+                </div>
 
-        < h3 class= "font-semibold mb-3 text-primary" > Деловая переписка: </h3>
-        < div class= "space-y-2 bg-muted p-4 rounded-lg text-sm italic" >
-        <p>• "Sehr geehrte Damen und Herren,"(Формально, если имя неизвестно) </p>
-        <p>• "Bezugnehmend auf unser Telefonat..."(Ссылаясь на наш телефонный разговор...) </p>
-        <p>• "Für Rückfragen stehe ich Ihnen gerne zur Verfügung."(Для уточняющих вопросов я в вашем распоряжении) </p>
-        <p>• "Mit freundlichen Grüßen"(С уважением) </p>
-        </div>
-        </div>
-        </div>
+                <h3 class="font-semibold mb-3 text-primary">Деловая переписка:</h3>
+                <div class="space-y-2 bg-muted p-4 rounded-lg text-sm italic">
+                  <p>• "Sehr geehrte Damen und Herren," (Формально, если имя неизвестно)</p>
+                  <p>• "Bezugnehmend auf unser Telefonat..." (Ссылаясь на наш телефонный разговор...)</p>
+                  <p>• "Für Rückfragen stehe ich Ihnen gerne zur Verfügung." (Для уточняющих вопросов я в вашем распоряжении)</p>
+                  <p>• "Mit freundlichen Grüßen" (С уважением)</p>
+                </div>
+              </div>
+            </div>
           `,
           vocabulary: [
             {
@@ -3746,39 +3746,39 @@ export const curriculum: Curriculum = {
           id: 'b2-3-projekt-management',
           title: 'B2.3 Работа: Проект-менеджмент',
           explanation: `
-        < div class= "space-y-6" >
-        <div class="bg-card p-6 rounded-xl border shadow-sm" >
-        <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2" >
-        <span class="text-primary" >📊</span> Nominalisierung (Номинализация)
-        </h2>
-        < p class= "text-lg mb-4 text-muted-foreground" >
-        В деловом языке часто используют существительные вместо глаголов.Это делает речь более официальной и сжатой.
+            <div class="space-y-6">
+              <div class="bg-card p-6 rounded-xl border shadow-sm">
+                <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2">
+                  <span class="text-primary">📊</span> Nominalisierung (Номинализация)
+                </h2>
+                <p class="text-lg mb-4 text-muted-foreground">
+                  В деловом языке часто используют существительные вместо глаголов. Это делает речь более официальной и сжатой.
                 </p>
 
-        < h3 class= "font-semibold mb-3 text-primary" > Как превратить действие в существительное: </h3>
-        < div class= "grid grid-cols-1 md:grid-cols-2 gap-4 mb-6" >
-        <div class="p-4 bg-muted rounded-lg font-mono text-xs" >
-        <p class="text-primary font-bold mb-1" > Глагол -> Существительное(das + Infinitiv) </p>
-        < p > planen -> <strong>das Planen < /strong></p >
-        <p>entscheiden -> <strong>das Entscheiden < /strong></p >
-        </div>
-        < div class= "p-4 bg-muted rounded-lg font-mono text-xs" >
-        <p class="text-accent font-bold mb-1" > Глагол -> Существительное(-ung) </p>
-        < p > planen -> <strong>die Planung < /strong></p >
-        <p>lösen -> <strong>die Lösung < /strong></p >
-        </div>
-        </div>
+                <h3 class="font-semibold mb-3 text-primary">Как превратить действие в существительное:</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div class="p-4 bg-muted rounded-lg font-mono text-xs">
+                    <p class="text-primary font-bold mb-1">Глагол -> Существительное (das + Infinitiv)</p>
+                    <p>planen -> <strong>das Planen</strong></p>
+                    <p>entscheiden -> <strong>das Entscheiden</strong></p>
+                  </div>
+                  <div class="p-4 bg-muted rounded-lg font-mono text-xs">
+                    <p class="text-accent font-bold mb-1">Глагол -> Существительное (-ung)</p>
+                    <p>planen -> <strong>die Planung</strong></p>
+                    <p>lösen -> <strong>die Lösung</strong></p>
+                  </div>
+                </div>
 
-        < div class= "p-4 bg-primary/5 border-l-4 border-primary rounded-r-lg" >
-        <p class="font-bold text-sm italic" > "Die <strong>Planung</strong> dieses Projekts занимает много времени." </p>
-        < p class= "text-xs text-muted-foreground mt-1" > (Планирование этого проекта занимает много времени)</p>
-        </div>
+                <div class="p-4 bg-primary/5 border-l-4 border-primary rounded-r-lg">
+                  <p class="font-bold text-sm italic">"Die <strong>Planung</strong> dieses Projekts beansprucht viel Zeit."</p>
+                  <p class="text-xs text-muted-foreground mt-1">(Планирование этого проекта занимает много времени)</p>
+                </div>
 
-        < div class= "mt-6 p-4 bg-muted rounded-lg" >
-        <p class="text-sm" >📝 <strong>Типичные суффиксы: </strong> -ung (die), -heit/ - keit(die), -ismus(der), -schaft(die).</p>
-        </div>
-        </div>
-        </div>
+                <div class="mt-6 p-4 bg-muted rounded-lg">
+                  <p class="text-sm">📝 <strong>Типичные суффиксы:</strong> -ung (die), -heit/-keit (die), -ismus (der), -schaft (die).</p>
+                </div>
+              </div>
+            </div>
           `,
           vocabulary: [
             {
@@ -3820,49 +3820,49 @@ export const curriculum: Curriculum = {
           id: 'b2-4-conflict',
           title: 'B2.4 Работа: Конфликт-менеджмент',
           explanation: `
-        < div class= "space-y-6" >
-        <div class="bg-card p-6 rounded-xl border shadow-sm" >
-        <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2" >
-        <span class="text-primary" >🤝</span> Субъективное значение модальных глаголов
-        </h2>
-        < p class= "text-lg mb-4 text-muted-foreground" >
-        В конфликтных ситуациях мы часто выражаем предположения или сомнения.Для этого используются модальные глаголы в < strong > субъективном </strong> значении.
-        </p>
+            <div class="space-y-6">
+              <div class="bg-card p-6 rounded-xl border shadow-sm">
+                <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2">
+                  <span class="text-primary">🤝</span> Субъективное значение модальных глаголов
+                </h2>
+                <p class="text-lg mb-4 text-muted-foreground">
+                  В конфликтных ситуациях мы часто выражаем предположения или сомнения. Для этого используются модальные глаголы в <strong>субъективном</strong> значении.
+                </p>
 
-        < h3 class= "font-semibold mb-3 text-primary" > Степень уверенности: </h3>
-        < div class= "space-y-3 mb-6" >
-        <div class="p-3 bg-muted rounded-lg flex justify-between items-center" >
-        <span class="font-bold" > müssen / müsste </span>
-        < span class= "text-sm" > 90 - 100 % уверенности("должно быть") </span>
-        </div>
-        < div class= "p-3 bg-muted rounded-lg flex justify-between items-center" >
-        <span class="font-bold" > dürfte </span>
-        < span class= "text-sm" > 75 % уверенности("вероятно") </span>
-        </div>
-        < div class= "p-3 bg-muted rounded-lg flex justify-between items-center" >
-        <span class="font-bold" > könnte / mag </span>
-        < span class= "text-sm" > 50 % уверенности("может быть") </span>
-        </div>
-        </div>
+                <h3 class="font-semibold mb-3 text-primary">Степень уверенности:</h3>
+                <div class="space-y-3 mb-6">
+                  <div class="p-3 bg-muted rounded-lg flex justify-between items-center">
+                    <span class="font-bold">müssen / müsste</span>
+                    <span class="text-sm">90-100% уверенности ("должно быть")</span>
+                  </div>
+                  <div class="p-3 bg-muted rounded-lg flex justify-between items-center">
+                    <span class="font-bold">dürfte</span>
+                    <span class="text-sm">75% уверенности ("вероятно")</span>
+                  </div>
+                  <div class="p-3 bg-muted rounded-lg flex justify-between items-center">
+                    <span class="font-bold">könnte / mag</span>
+                    <span class="text-sm">50% уверенности ("может быть")</span>
+                  </div>
+                </div>
 
-        < div class= "grid grid-cols-1 md:grid-cols-2 gap-4 mb-6" >
-        <div class="border p-4 rounded-lg bg-red-50/50" >
-        <h4 class="font-bold mb-2" > Пример претензии: </h4>
-        < p class= "text-sm italic" > "Das <strong>müsste</strong> ein Fehler в планировании sein." </p>
-        < p class= "text-[10px] text-muted-foreground mt-1" > (Это, должно быть, ошибка в планировании)</p>
-        </div>
-        < div class= "border p-4 rounded-lg bg-green-50/50" >
-        <h4 class="font-bold mb-2 text-green-700" > Поиск решения: </h4>
-        < p class= "text-sm italic" > "Wir <strong>dürften</strong> до конца недели найти решение." </p>
-        < p class= "text-[10px] text-muted-foreground mt-1" > (Вероятно, мы найдем решение до конца недели)</p>
-        </div>
-        </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div class="border p-4 rounded-lg bg-red-50/50">
+                    <h4 class="font-bold mb-2">Пример претензии:</h4>
+                    <p class="text-sm italic">"Das <strong>müsste</strong> ein Fehler in der Planung sein."</p>
+                    <p class="text-[10px] text-muted-foreground mt-1">(Это, должно быть, ошибка в планировании)</p>
+                  </div>
+                  <div class="border p-4 rounded-lg bg-green-50/50">
+                    <h4 class="font-bold mb-2 text-green-700">Поиск решения:</h4>
+                    <p class="text-sm italic">"Wir <strong>dürften</strong> bis Ende der Woche eine Lösung finden."</p>
+                    <p class="text-[10px] text-muted-foreground mt-1">(Вероятно, мы найдем решение до конца недели)</p>
+                  </div>
+                </div>
 
-        < div class= "p-4 bg-primary/10 rounded-lg border border-primary/20" >
-        <p class="text-sm" >⚖️ <strong>Стратегии деэскалации: </strong> Вместо "Du hast unrecht", используйте "Ich habe den Eindruck, что..." или "Es <strong>könnte</strong > sein, что..."</p>
-        </div>
-        </div>
-        </div>
+                <div class="p-4 bg-primary/10 rounded-lg border border-primary/20">
+                  <p class="text-sm">⚖️ <strong>Стратегии деэскалации:</strong> Вместо "Du hast unrecht", используйте "Ich habe den Eindruck, dass..." или "Es <strong>könnte</strong> sein, dass..."</p>
+                </div>
+              </div>
+            </div>
           `,
           vocabulary: [
             {
@@ -3904,22 +3904,22 @@ export const curriculum: Curriculum = {
           id: 'b2-5-skills',
           title: 'B2.5 Профессиональные навыки',
           explanation: `
-        < div class= "space-y-6" >
-        <div class="bg-card p-6 rounded-xl border shadow-sm" >
-        <h2 class="font-headline text-2xl font-bold mb-4" >📎 Nomen - Verb - Verbindungen </h2>
-        < p class= "mb-4" > На уровне B2 важно использовать устойчивые словосочетания "существительное + глагол" вместо простых глаголов.</p>
-        < div class= "grid grid-cols-1 md:grid-cols-2 gap-4" >
-        <div class="p-3 bg-muted rounded" >
-        <p class="font-bold" > entscheiden -> </p>
-        < p class= "italic" > eine Entscheidung treffen </p>
-        </div>
-        < div class= "p-3 bg-muted rounded" >
-        <p class="font-bold" > helfen -> </p>
-        < p class= "italic" > Hilfe leisten </p>
-        </div>
-        </div>
-        </div>
-        </div>
+            <div class="space-y-6">
+              <div class="bg-card p-6 rounded-xl border shadow-sm">
+                <h2 class="font-headline text-2xl font-bold mb-4">📎 Nomen-Verb-Verbindungen</h2>
+                <p class="mb-4">На уровне B2 важно использовать устойчивые словосочетания "существительное + глагол" вместо простых глаголов.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div class="p-3 bg-muted rounded">
+                    <p class="font-bold">entscheiden -></p>
+                    <p class="italic">eine Entscheidung treffen</p>
+                  </div>
+                  <div class="p-3 bg-muted rounded">
+                    <p class="font-bold">helfen -></p>
+                    <p class="italic">Hilfe leisten</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           `,
           vocabulary: [
             {
@@ -3962,16 +3962,16 @@ export const curriculum: Curriculum = {
           id: 'b2-6-presentation',
           title: 'B2.6 Презентация',
           explanation: `
-        < div class= "space-y-6" >
-        <div class="bg-card p-6 rounded-xl border shadow-sm" >
-        <h2 class="font-headline text-2xl font-bold mb-4" >🎤 Redemittel für Vorträge </h2>
-        < p class= "mb-4" > Фразы для успешного выступления и структурирования доклада.</p>
-        < div class= "space-y-2 text-sm italic" >
-        <p>• "Ich möchte heute über... sprechen."(Я хотел бы сегодня поговорить о...) </p>
-        <p>• "Zusammenfassend kann man sagen..."(В заключение можно сказать...) </p>
-        </div>
-        </div>
-        </div>
+            <div class="space-y-6">
+              <div class="bg-card p-6 rounded-xl border shadow-sm">
+                <h2 class="font-headline text-2xl font-bold mb-4">🎤 Redemittel für Vorträge</h2>
+                <p class="mb-4">Фразы для успешного выступления и структурирования доклада.</p>
+                <div class="space-y-2 text-sm italic">
+                  <p>• "Ich möchte heute über... sprechen." (Я хотел бы сегодня поговорить о...)</p>
+                  <p>• "Zusammenfassend kann man sagen..." (В заключение можно сказать...)</p>
+                </div>
+              </div>
+            </div>
           `,
           vocabulary: [
             {
@@ -4014,12 +4014,12 @@ export const curriculum: Curriculum = {
           id: 'b2-7-lunch',
           title: 'B2.7 Деловой обед',
           explanation: `
-        < div class= "space-y-6" >
-        <div class="bg-card p-6 rounded-xl border shadow-sm" >
-        <h2 class="font-headline text-2xl font-bold mb-4" >🍷 Small Talk </h2>
-        < p class= "mb-4" > Wetter, Anreise, Hobbys.Табу: Деньги, политика, религия.</p>
-        </div>
-        </div>
+            <div class="space-y-6">
+              <div class="bg-card p-6 rounded-xl border shadow-sm">
+                <h2 class="font-headline text-2xl font-bold mb-4">🍷 Small Talk</h2>
+                <p class="mb-4">Wetter, Anreise, Hobbys. Табу: Деньги, политика, религия.</p>
+              </div>
+            </div>
           `,
           vocabulary: [
             {
@@ -4061,13 +4061,13 @@ export const curriculum: Curriculum = {
           id: 'b2-8-company-culture',
           title: 'B2.8 Культура компании',
           explanation: `
-        < div class= "space-y-6" >
-        <div class="bg-card p-6 rounded-xl border shadow-sm" >
-        <h2 class="font-headline text-2xl font-bold mb-4" >🏢 Du oder Sie ? </h2>
-          < p class= "mb-4" > Различия в корпоративной культуре и правила обращения.</p>
-          </div>
-          </div>
-            `,
+            <div class="space-y-6">
+              <div class="bg-card p-6 rounded-xl border shadow-sm">
+                <h2 class="font-headline text-2xl font-bold mb-4">🏢 Du oder Sie?</h2>
+                <p class="mb-4">Различия в корпоративной культуре и правила обращения.</p>
+              </div>
+            </div>
+          `,
           vocabulary: [
             {
               theme: 'Культура',
@@ -4109,36 +4109,36 @@ export const curriculum: Curriculum = {
           id: 'b2-9-zukunft-arbeit',
           title: 'B2.9 Будущее работы: Futur I и II',
           explanation: `
-        < div class= "space-y-6" >
-        <div class="bg-card p-6 rounded-xl border shadow-sm" >
-        <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2" >
-        <span class="text-primary" >🚀</span> Прогнозы и предположения
-        </h2>
-        < p class= "text-lg mb-4 text-muted-foreground" >
-        Когда мы говорим о будущем на уровне B2, мы используем < strong > Futur I < /strong> для прогнозов и <strong>Futur II</strong > для предположений о том, что уже свершится к моменту в будущем.
+            <div class="space-y-6">
+              <div class="bg-card p-6 rounded-xl border shadow-sm">
+                <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2">
+                  <span class="text-primary">🚀</span> Прогнозы и предположения
+                </h2>
+                <p class="text-lg mb-4 text-muted-foreground">
+                  Когда мы говорим о будущем на уровне B2, мы используем <strong>Futur I</strong> для прогнозов и <strong>Futur II</strong> для предположений о том, что уже свершится к моменту в будущем.
                 </p>
 
-        < div class= "grid grid-cols-1 md:grid-cols-2 gap-4 mb-6" >
-        <div class="p-4 border border-border rounded-lg bg-primary/5" >
-        <h3 class="font-bold mb-2" > Futur I(Будущее) </h3>
-        < p class= "text-xs mb-1" > werden + Infinitiv </p>
-        < p class= "text-sm italic" > "Künstliche Intelligenz <strong>wird</strong> viele Jobs <strong>ersetzen</strong>." </p>
-        < p class= "text-[10px] text-muted-foreground" > (ИИ заменит многие рабочие места)</p>
-        </div>
-        < div class= "p-4 border border-border rounded-lg bg-accent/5" >
-        <h3 class="font-bold mb-2" > Futur II(Завершенное в будущем) </h3>
-        < p class= "text-xs mb-1" > werden + Partizip II + haben / sein </p>
-        < p class= "text-sm italic" > "Bis 2040 <strong>wird</strong> sich die Arbeitswelt <strong>verändert haben</strong>." </p>
-        < p class= "text-[10px] text-muted-foreground" > (К 2040 году мир труда[уже] изменится)</p>
-        </div>
-        </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div class="p-4 border border-border rounded-lg bg-primary/5">
+                    <h3 class="font-bold mb-2">Futur I (Будущее)</h3>
+                    <p class="text-xs mb-1">werden + Infinitiv</p>
+                    <p class="text-sm italic">"Künstliche Intelligenz <strong>wird</strong> viele Jobs <strong>ersetzen</strong>."</p>
+                    <p class="text-[10px] text-muted-foreground">(ИИ заменит многие рабочие места)</p>
+                  </div>
+                  <div class="p-4 border border-border rounded-lg bg-accent/5">
+                    <h3 class="font-bold mb-2">Futur II (Завершенное в будущем)</h3>
+                    <p class="text-xs mb-1">werden + Partizip II + haben / sein</p>
+                    <p class="text-sm italic">"Bis 2040 <strong>wird</strong> sich die Arbeitswelt <strong>verändert haben</strong>."</p>
+                    <p class="text-[10px] text-muted-foreground">(К 2040 году мир труда [уже] изменится)</p>
+                  </div>
+                </div>
 
-        < div class= "p-4 bg-muted rounded-lg" >
-        <h3 class="font-bold text-sm mb-2" > Предположение(Vermutung): </h3>
-        < p class= "text-sm italic" > "Er ist не im Büro. Er <strong>wird</strong> wohl <strong>krank sein</strong>."(Он, вероятно, болен — Futur I для настоящего) </p>
-        </div>
-        </div>
-        </div>
+                <div class="p-4 bg-muted rounded-lg">
+                  <h3 class="font-bold text-sm mb-2">Предложение (Vermutung):</h3>
+                  <p class="text-sm italic">"Er ist nicht im Büro. Er <strong>wird</strong> wohl <strong>krank sein</strong>." (Он, вероятно, болен — Futur I для настоящего)</p>
+                </div>
+              </div>
+            </div>
           `,
           vocabulary: [
             {
@@ -4185,43 +4185,43 @@ export const curriculum: Curriculum = {
           id: 'b2-10-verhandlungen',
           title: 'B2.10 Переговоры и Нетворкинг',
           explanation: `
-        < div class= "space-y-6" >
-        <div class="bg-card p-6 rounded-xl border shadow-sm" >
-        <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2" >
-        <span class="text-primary" >🤝</span> Двойные союзы (Zweiteilige Konnektoren)
-        </h2>
-        < p class= "text-lg mb-4 text-muted-foreground" >
-        На уровне B2 важно уметь связывать мысли более сложными структурами.Двойные союзы помогают подчеркнуть альтернативы или перечисление.
+            <div class="space-y-6">
+              <div class="bg-card p-6 rounded-xl border shadow-sm">
+                <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2">
+                  <span class="text-primary">🤝</span> Двойные союзы (Zweiteilige Konnektoren)
+                </h2>
+                <p class="text-lg mb-4 text-muted-foreground">
+                  На уровне B2 важно уметь связывать мысли более сложными структурами. Двойные союзы помогают подчеркнуть альтернативы или перечисление.
                 </p>
 
-        < div class= "grid grid-cols-1 md:grid-cols-2 gap-4 mb-6" >
-        <div class="p-4 border border-border rounded-lg bg-primary/5" >
-        <h3 class="font-bold mb-2" > nicht nur ..., sondern auch </h3>
-        < p class= "text-xs mb-1" > (не только ..., но и)</p>
-        < p class= "text-sm italic" > "Wir bieten <strong>nicht nur</strong> Service, <strong>sondern auch</strong> Qualität." </p>
-        </div>
-        < div class= "p-4 border border-border rounded-lg bg-accent/5" >
-        <h3 class="font-bold mb-2" > sowohl ...als auch </h3>
-        < p class= "text-xs mb-1" > (как ..., так и)</p>
-        < p class= "text-sm italic" > "Ich spreche <strong>sowohl</strong> Deutsch <strong>als auch</strong> Englisch." </p>
-        </div>
-        < div class= "p-4 border border-border rounded-lg bg-muted/50" >
-        <h3 class="font-bold mb-2" > entweder ...oder </h3>
-        < p class= "text-xs mb-1" > (или ..., или)</p>
-        < p class= "text-sm italic" > "Wir verhandeln <strong>entweder</strong> heute <strong>oder</strong> morgen." </p>
-        </div>
-        < div class= "p-4 border border-border rounded-lg bg-muted/50" >
-        <h3 class="font-bold mb-2" > weder ...noch </h3>
-        < p class= "text-xs mb-1" > (ни ..., ни)</p>
-        < p class= "text-sm italic" > "Das ist <strong>weder</strong> effizient <strong>noch</strong> innovativ." </p>
-        </div>
-        </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div class="p-4 border border-border rounded-lg bg-primary/5">
+                    <h3 class="font-bold mb-2">nicht nur ..., sondern auch</h3>
+                    <p class="text-xs mb-1">(не только ..., но и)</p>
+                    <p class="text-sm italic">"Wir bieten <strong>nicht nur</strong> Service, <strong>sondern auch</strong> Qualität."</p>
+                  </div>
+                  <div class="p-4 border border-border rounded-lg bg-accent/5">
+                    <h3 class="font-bold mb-2">sowohl ... als auch</h3>
+                    <p class="text-xs mb-1">(как ..., так и)</p>
+                    <p class="text-sm italic">"Ich spreche <strong>sowohl</strong> Deutsch <strong>als auch</strong> Englisch."</p>
+                  </div>
+                  <div class="p-4 border border-border rounded-lg bg-muted/50">
+                    <h3 class="font-bold mb-2">entweder ... oder</h3>
+                    <p class="text-xs mb-1">(или ..., или)</p>
+                    <p class="text-sm italic">"Wir verhandeln <strong>entweder</strong> heute <strong>oder</strong> morgen."</p>
+                  </div>
+                  <div class="p-4 border border-border rounded-lg bg-muted/50">
+                    <h3 class="font-bold mb-2">weder ... noch</h3>
+                    <p class="text-xs mb-1">(ни ..., ни)</p>
+                    <p class="text-sm italic">"Das ist <strong>weder</strong> effizient <strong>noch</strong> innovativ."</p>
+                  </div>
+                </div>
 
-        < div class= "bg-primary/10 p-4 rounded-lg border border-primary/20" >
-        <p class="text-sm" >💡 <strong>Совет для нетворкинга: </strong> Используйте фразу <em>"Darf ich mich vorstellen?"</em > (Разрешите представиться ?) для начала беседы на конференции.</p>
-        </div>
-        </div>
-        </div>
+                <div class="bg-primary/10 p-4 rounded-lg border border-primary/20">
+                  <p class="text-sm">💡 <strong>Совет для нетворкинга:</strong> Используйте фразу <em>"Darf ich mich vorstellen?"</em> (Разрешите представиться?) для начала беседы на конференции.</p>
+                </div>
+              </div>
+            </div>
           `,
           vocabulary: [
             {
@@ -4270,37 +4270,37 @@ export const curriculum: Curriculum = {
           id: 'c1-1-academic-style',
           title: 'C1.1 Академический стиль: Nominalstil',
           explanation: `
-        < div class= "space-y-6" >
-        <div class="bg-card p-6 rounded-xl border shadow-sm" >
-        <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2" >
-        <span class="text-primary" >🎓</span> Nominalstil (Номинальный стиль)
-        </h2>
-        < p class= "text-lg mb-4 text-muted-foreground" >
-        В научной и официальной среде глагольные конструкции часто заменяются существительными с предлогами.Это делает текст более плотным и формальным.
+            <div class="space-y-6">
+              <div class="bg-card p-6 rounded-xl border shadow-sm">
+                <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2">
+                  <span class="text-primary">🎓</span> Nominalstil (Номинальный стиль)
+                </h2>
+                <p class="text-lg mb-4 text-muted-foreground">
+                  В научной и официальной среде глагольные конструкции часто заменяются существительными с предлогами. Это делает текст более плотным и формальным.
                 </p>
 
-        < div class= "grid grid-cols-1 md:grid-cols-2 gap-4 mb-6" >
-        <div class="p-4 border border-border rounded-lg bg-blue-50/10" >
-        <h3 class="font-bold mb-2" > Verbalstil(Глагольный) </h3>
-        < p class= "text-sm italic" > "Wenn man die Daten сравнивает..." </p>
-        < p class= "text-[10px] text-muted-foreground" > (Когда сравниваешь данные...)</p>
-        </div>
-        < div class= "p-4 border border-border rounded-lg bg-primary/5" >
-        <h3 class="font-bold mb-2 text-primary" > Nominalstil(Номинальный) </h3>
-        < p class= "text-sm italic font-bold" > "Beim Vergleich der Daten..." </p>
-        < p class= "text-[10px] text-muted-foreground" > (При сравнении данных...)</p>
-        </div>
-        </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div class="p-4 border border-border rounded-lg bg-blue-50/10">
+                    <h3 class="font-bold mb-2">Verbalstil (Глагольный)</h3>
+                    <p class="text-sm italic">"Wenn man die Daten сравнивает..."</p>
+                    <p class="text-[10px] text-muted-foreground">(Когда сравниваешь данные...)</p>
+                  </div>
+                  <div class="p-4 border border-border rounded-lg bg-primary/5">
+                    <h3 class="font-bold mb-2 text-primary">Nominalstil (Номинальный)</h3>
+                    <p class="text-sm italic font-bold">"Beim Vergleich der Daten..."</p>
+                    <p class="text-[10px] text-muted-foreground">(При сравнении данных...)</p>
+                  </div>
+                </div>
 
-        < h3 class= "font-semibold mb-3 text-primary" > Основные преобразования: </h3>
-        < ul class= "list-disc list-inside text-sm space-y-2 text-muted-foreground" >
-        <li><strong>wenn / als < /strong> -> bei + Dativ (при...)</li >
-        <li><strong>weil / da < /strong> -> wegen / aufgrund + Genitiv(из - за... / на основании...)</li >
-          <li><strong>obwohl < /strong> -> trotz + Genitiv (несмотря на...)</li >
-          <li><strong>damit / um zu < /strong> -> zu / zwecks + Genitiv(в целях / для...) </li>
-          </ul>
-          </div>
-          </div>
+                <h3 class="font-semibold mb-3 text-primary">Основные преобразования:</h3>
+                <ul class="list-disc list-inside text-sm space-y-2 text-muted-foreground">
+                  <li><strong>wenn / als</strong> -> bei + Dativ (при...)</li>
+                  <li><strong>weil / da</strong> -> wegen / aufgrund + Genitiv (из-за... / на основании...)</li>
+                  <li><strong>obwohl</strong> -> trotz + Genitiv (несмотря на...)</li>
+                  <li><strong>damit / um zu</strong> -> zu / zwecks + Genitiv (в целях / для...)</li>
+                </ul>
+              </div>
+            </div>
             `,
           vocabulary: [
             {
@@ -4338,32 +4338,32 @@ export const curriculum: Curriculum = {
           id: 'c1-2-konjunktiv-1',
           title: 'C1.2 СМИ: Konjunktiv I',
           explanation: `
-        < div class= "space-y-6" >
-        <div class="bg-card p-6 rounded-xl border shadow-sm" >
-        <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2" >
-        <span class="text-primary" >📰</span> Konjunktiv I: Косвенная речь
-        </h2>
-        < p class= "text-lg mb-4 text-muted-foreground" >
-        Konjunktiv I используется в новостях и докладах, чтобы дистанцироваться от высказывания другого человека.Он показывает, что вы просто передаете чужие слова.
+            <div class="space-y-6">
+              <div class="bg-card p-6 rounded-xl border shadow-sm">
+                <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2">
+                  <span class="text-primary">📰</span> Konjunktiv I: Косвенная речь
+                </h2>
+                <p class="text-lg mb-4 text-muted-foreground">
+                  Konjunktiv I используется в новостях и докладах, чтобы дистанцироваться от высказывания другого человека. Он показывает, что вы просто передаете чужие слова.
                 </p>
 
-        < h3 class= "font-semibold mb-3 text-primary" > Образование(Präsens): </h3>
-        < p class= "text-sm mb-4" > Основа глагола + специальные окончания(-e, -est, -e, -en, -et, -en).</p>
+                <h3 class="font-semibold mb-3 text-primary">Образование (Präsens):</h3>
+                <p class="text-sm mb-4">Основа глагола + специальные окончания (-e, -est, -e, -en, -et, -en).</p>
 
-        < div class= "p-4 bg-muted rounded-lg mb-6" >
-        <p class="font-bold" > Пример(глагол sagen): </p>
-        < div class= "grid grid-cols-2 gap-2 text-xs" >
-        <p>ich sage < /p><p>wir sagen</p >
-        <p class="text-primary font-bold" > er / sie / es sage < /p><p>sie sagen</p >
-        </div>
-        < p class= "mt-2 text-xs italic" > "Der Experte sagte, die Krise <strong>sei</strong> vorbei."(Эксперт сказал, что кризис[якобы] прошел) </p>
-        </div>
+                <div class="p-4 bg-muted rounded-lg mb-6">
+                  <p class="font-bold">Пример (глагол sagen):</p>
+                  <div class="grid grid-cols-2 gap-2 text-xs">
+                    <p>ich sage</p><p>wir sagen</p>
+                    <p class="text-primary font-bold">er / sie / es sage</p><p>sie sagen</p>
+                  </div>
+                  <p class="mt-2 text-xs italic">"Der Experte sagte, die Krise <strong>sei</strong> vorbei." (Эксперт сказал, что кризис [якобы] прошел)</p>
+                </div>
 
-        < div class= "p-4 bg-amber-50/10 border-l-4 border-amber-500 rounded-r-lg" >
-        <p class="text-sm" >⚠️ <strong>Важно: </strong> Если форма Konjunktiv I совпадает с Indikativ (например, "wir sagen"), вместо нее используется <strong>Konjunktiv II</strong > ("мы бы сказали").</p>
-        </div>
-        </div>
-        </div>
+                <div class="p-4 bg-amber-50/10 border-l-4 border-amber-500 rounded-r-lg">
+                  <p class="text-sm">⚠️ <strong>Важно:</strong> Если форма Konjunktiv I совпадает с Indikativ (например, "wir sagen"), вместо нее используется <strong>Konjunktiv II</strong> ("мы бы сказали").</p>
+                </div>
+              </div>
+            </div>
           `,
           vocabulary: [
             {
@@ -4400,33 +4400,33 @@ export const curriculum: Curriculum = {
           id: 'c1-3-passiv-ersatz',
           title: 'C1.3 Право и Закон: Passiversatz',
           explanation: `
-        < div class= "space-y-6" >
-        <div class="bg-card p-6 rounded-xl border shadow-sm" >
-        <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2" >
-        <span class="text-primary" >⚖️</span> Альтернативы пассиву
-        </h2>
-        < p class= "text-lg mb-4 text-muted-foreground" >
-        На уровне C1 мы часто избегаем стандартного Passiv(werden + Partizip II), используя более элегантные конструкции.
+            <div class="space-y-6">
+              <div class="bg-card p-6 rounded-xl border shadow-sm">
+                <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2">
+                  <span class="text-primary">⚖️</span> Альтернативы пассиву
+                </h2>
+                <p class="text-lg mb-4 text-muted-foreground">
+                  На уровне C1 мы часто избегаем стандартного Passiv (werden + Partizip II), используя более элегантные конструкции.
                 </p>
 
-        < div class= "space-y-4" >
-        <div class="p-4 border-l-4 border-primary bg-primary/5" >
-        <h3 class="font-bold" > 1. sein + zu + Infinitiv </h3>
-        < p class= "text-sm" > Выражает долженствование или возможность.</p>
-        < p class= "text-sm italic" > "Dieses Gesetz <strong>ist</strong> sofort <strong>einzuhalten</strong>."(= muss eingehalten werden) </p>
-        </div>
-        < div class= "p-4 border-l-4 border-accent bg-accent/5" >
-        <h3 class="font-bold" > 2. sich lassen + Infinitiv </h3>
-        < p class= "text-sm" > Выражает возможность.</p>
-        < p class= "text-sm italic" > "Das Problem <strong>lässt sich</strong> легко <strong>lösen</strong>."(= kann gelöst werden) </p>
-        </div>
-        < div class= "p-4 border-l-4 border-muted bg-muted/50" >
-        <h3 class="font-bold" > 3. Прилагательные на - bar, -abel </h3>
-        < p class= "text-sm italic" > "Ein <strong>unlösbares</strong> Problem."(= ein Problem, das nicht gelöst werden kann) </p>
-        </div>
-        </div>
-        </div>
-        </div>
+                <div class="space-y-4">
+                  <div class="p-4 border-l-4 border-primary bg-primary/5">
+                    <h3 class="font-bold">1. sein + zu + Infinitiv</h3>
+                    <p class="text-sm">Выражает долженствование или возможность.</p>
+                    <p class="text-sm italic">"Dieses Gesetz <strong>ist</strong> sofort <strong>einzuhalten</strong>." (= muss eingehalten werden)</p>
+                  </div>
+                  <div class="p-4 border-l-4 border-accent bg-accent/5">
+                    <h3 class="font-bold">2. sich lassen + Infinitiv</h3>
+                    <p class="text-sm">Выражает возможность.</p>
+                    <p class="text-sm italic">"Das Problem <strong>lässt sich</strong> легко <strong>lösen</strong>." (= kann gelöst werden)</p>
+                  </div>
+                  <div class="p-4 border-l-4 border-muted bg-muted/50">
+                    <h3 class="font-bold">3. Прилагательные на -bar, -abel</h3>
+                    <p class="text-sm italic">"Ein <strong>unlösbares</strong> Problem." (= ein Problem, das nicht gelöst werden kann)</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           `,
           vocabulary: [
             {
@@ -4468,39 +4468,39 @@ export const curriculum: Curriculum = {
           id: 'c1-4-nomen-verb',
           title: 'C1.4 Карьера: Nomen-Verb-Verbindungen',
           explanation: `
-        < div class= "space-y-6" >
-        <div class="bg-card p-6 rounded-xl border shadow-sm" >
-        <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2" >
-        <span class="text-primary" >💼</span> Функциональные глаголы
-        </h2>
-        < p class= "text-lg mb-4 text-muted-foreground" >
-        Сочетание существительного и глагола, которое имеет одно значение.Часто используется вместо простого глагола для придания делового оттенка.
+            <div class="space-y-6">
+              <div class="bg-card p-6 rounded-xl border shadow-sm">
+                <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2">
+                  <span class="text-primary">💼</span> Функциональные глаголы
+                </h2>
+                <p class="text-lg mb-4 text-muted-foreground">
+                  Сочетание существительного и глагола, которое имеет одно значение. Часто используется вместо простого глагола для придания делового оттенка.
                 </p>
 
-        < div class= "grid grid-cols-1 md:grid-cols-2 gap-4 mb-6" >
-        <div class="p-4 border border-border rounded-lg bg-muted text-sm" >
-        <p><strong>простой глагол < /strong></p >
-        <p class="italic" > entscheiden(решать) </p>
-        < p class= "italic" > kritisieren(критиковать) </p>
-        < p class= "italic" > beenden(заканчивать) </p>
-        </div>
-        < div class= "p-4 border border-border rounded-lg bg-primary/10 text-sm" >
-        <p><strong>Nomen - Verb - Verbindung < /strong></p >
-        <p class="italic font-bold" > eine Entscheidung treffen </p>
-        < p class= "italic font-bold" > Kritik üben an(+ Dat) </p>
-        < p class= "italic font-bold" > zu Ende bringen </p>
-        </div>
-        </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div class="p-4 border border-border rounded-lg bg-muted text-sm">
+                    <p><strong>простой глагол</strong></p>
+                    <p class="italic">entscheiden (решать)</p>
+                    <p class="italic">kritisieren (критиковать)</p>
+                    <p class="italic">beenden (заканчивать)</p>
+                  </div>
+                  <div class="p-4 border border-border rounded-lg bg-primary/10 text-sm">
+                    <p><strong>Nomen-Verb-Verbindung</strong></p>
+                    <p class="italic font-bold">eine Entscheidung treffen</p>
+                    <p class="italic font-bold">Kritik üben an (+ Dat)</p>
+                    <p class="italic font-bold">zu Ende bringen</p>
+                  </div>
+                </div>
 
-        < h3 class= "font-semibold mb-3 text-primary" > Популярные выражения: </h3>
-        < ul class= "list-disc list-inside text-sm space-y-2 text-muted-foreground" >
-        <li><strong>In Anspruch nehmen < /strong> — пользоваться (услугами / временем) </li>
-        < li > <strong>Zur Verfügung stehen < /strong> — быть в распоряжении</li >
-        <li><strong>Ein Gespräch führen < /strong> — беседовать</li >
-        <li><strong>Einen Antrag stellen < /strong> — подать заявление</li >
-        </ul>
-        </div>
-        </div>
+                <h3 class="font-semibold mb-3 text-primary">Популярные выражения:</h3>
+                <ul class="list-disc list-inside text-sm space-y-2 text-muted-foreground">
+                  <li><strong>In Anspruch nehmen</strong> — пользоваться (услугами / временем)</li>
+                  <li><strong>Zur Verfügung stehen</strong> — быть в распоряжении</li>
+                  <li><strong>Ein Gespräch führen</strong> — беседовать</li>
+                  <li><strong>Einen Antrag stellen</strong> — подать заявление</li>
+                </ul>
+              </div>
+            </div>
           `,
           vocabulary: [
             {
@@ -4537,32 +4537,32 @@ export const curriculum: Curriculum = {
           id: 'c1-5-feelings-nuances',
           title: 'C1.5 Психология: Выражение нюансов',
           explanation: `
-        < div class= "space-y-6" >
-        <div class="bg-card p-6 rounded-xl border shadow-sm" >
-        <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2" >
-        <span class="text-primary" >🧠</span> Модальные частицы и оттенки
-        </h2>
-        < p class= "text-lg mb-4 text-muted-foreground" >
-        На уровне C1 важно не просто передать информацию, но и выразить свое отношение к ней с помощью модальных частиц(doch, ja, halt, eben) и точных глаголов.
+            <div class="space-y-6">
+              <div class="bg-card p-6 rounded-xl border shadow-sm">
+                <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2">
+                  <span class="text-primary">🧠</span> Модальные частицы и оттенки
+                </h2>
+                <p class="text-lg mb-4 text-muted-foreground">
+                  На уровне C1 важно не просто передать информацию, но и выразить свое отношение к ней с помощью модальных частиц (doch, ja, halt, eben) и точных глаголов.
                 </p>
 
-        < h3 class= "font-semibold mb-3 text-primary" > Модальные частицы: </h3>
-        < div class= "space-y-2 mb-6" >
-        <div class="p-3 bg-muted rounded-lg" >
-        <p class="text-sm" > <strong>doch < /strong> — выражает нетерпение или напоминание о чем-то известном.</p >
-        <p class="text-xs italic" > "Das weißt du <strong>doch</strong>!"(Ты же это знаешь!) </p>
-        </div>
-        < div class= "p-3 bg-muted rounded-lg" >
-        <p class="text-sm" > <strong>eben / halt < /strong> — выражает смирение с фактом (ничего не поделаешь).</p >
-        <p class="text-xs italic" > "Es ist <strong>eben</strong> so."(Ну, уж так оно есть.) </p>
-        </div>
-        </div>
+                <h3 class="font-semibold mb-3 text-primary">Модальные частицы:</h3>
+                <div class="space-y-2 mb-6">
+                  <div class="p-3 bg-muted rounded-lg">
+                    <p class="text-sm"><strong>doch</strong> — выражает нетерпение или напоминание о чем-то известном.</p>
+                    <p class="text-xs italic">"Das weißt du <strong>doch</strong>!" (Ты же это знаешь!)</p>
+                  </div>
+                  <div class="p-3 bg-muted rounded-lg">
+                    <p class="text-sm"><strong>eben / halt</strong> — выражает смирение с фактом (ничего не поделаешь).</p>
+                    <p class="text-xs italic">"Es ist <strong>eben</strong> so." (Ну, уж так оно есть.)</p>
+                  </div>
+                </div>
 
-        < div class= "p-4 bg-primary/5 border border-primary/20 rounded-lg" >
-        <p class="text-sm" >📝 <strong>Продвинутые синонимы: </strong> Вместо "traurig" используйте "niedergeschlagen" (подавленный), вместо "wütend" — "erzürnt".</p >
-        </div>
-        </div>
-        </div>
+                <div class="p-4 bg-primary/5 border border-primary/20 rounded-lg">
+                  <p class="text-sm">📝 <strong>Продвинутые синонимы:</strong> Вместо "traurig" используйте "niedergeschlagen" (подавленный), вместо "wütend" — "erzürnt".</p>
+                </div>
+              </div>
+            </div>
           `,
           vocabulary: [
             {
@@ -4599,28 +4599,28 @@ export const curriculum: Curriculum = {
           id: 'c1-6-globalization',
           title: 'C1.6 Глобализация: Аргументация',
           explanation: `
-        < div class= "space-y-6" >
-        <div class="bg-card p-6 rounded-xl border shadow-sm" >
-        <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2" >
-        <span class="text-primary" >🌍</span> Глобальные вызовы
-        </h2>
-        < p class= "text-lg mb-4 text-muted-foreground" >
-        На уровне C1 вы должны уметь обсуждать глобальные проблемы, взвешивать все "за" и "против", используя вводные конструкции для дискуссии.
+            <div class="space-y-6">
+              <div class="bg-card p-6 rounded-xl border shadow-sm">
+                <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2">
+                  <span class="text-primary">🌍</span> Глобальные вызовы
+                </h2>
+                <p class="text-lg mb-4 text-muted-foreground">
+                  На уровне C1 вы должны уметь обсуждать глобальные проблемы, взвешивать все "за" и "против", используя вводные конструкции для дискуссии.
                 </p>
 
-        < h3 class= "font-semibold mb-3 text-primary" > Фразы для дискуссии: </h3>
-        < ul class= "list-disc list-inside text-sm space-y-2 text-muted-foreground" >
-        <li><strong>Einerseits ..., andererseits ...</strong> — С одной стороны ..., с другой стороны ...</li >
-        <li><strong>Zwar ..., aber ...</strong> — Хотя ..., но ...</li >
-        <li><strong>Ein entscheidender Vorteil ist ...</strong> — Решающим преимуществом является ...</li >
-        <li><strong>Man muss jedoch bedenken, dass ...</strong> — Однако нужно учитывать, что ...</li >
-        </ul>
+                <h3 class="font-semibold mb-3 text-primary">Фразы для дискуссии:</h3>
+                <ul class="list-disc list-inside text-sm space-y-2 text-muted-foreground">
+                  <li><strong>Einerseits ..., andererseits ...</strong> — С одной стороны ..., с другой стороны ...</li>
+                  <li><strong>Zwar ..., aber ...</strong> — Хотя ..., но ...</li>
+                  <li><strong>Ein entscheidender Vorteil ist ...</strong> — Решающим преимуществом является ...</li>
+                  <li><strong>Man muss jedoch bedenken, dass ...</strong> — Однако нужно учитывать, что ...</li>
+                </ul>
 
-        < div class= "mt-6 p-4 bg-muted rounded-lg border border-border" >
-        <p class="text-xs italic" > "<strong>Zwar</strong> bietet die Globalisierung Chancen, <strong>aber</strong> sie birgt auch Risiken."(Хотя глобализация дает возможности, она также несет риски.) </p>
-        </div>
-        </div>
-        </div>
+                <div class="mt-6 p-4 bg-muted rounded-lg border border-border">
+                  <p class="text-xs italic">"<strong>Zwar</strong> bietet die Globalisierung Chancen, <strong>aber</strong> sie birgt auch Risiken." (Хотя глобализация дает возможности, она также несет риски.)</p>
+                </div>
+              </div>
+            </div>
           `,
           vocabulary: [
             {
@@ -4665,45 +4665,45 @@ export const curriculum: Curriculum = {
           id: 'b2-beruf-1-bewerbung',
           title: 'Поиск работы: Bewerbung',
           explanation: `
-        < div class= "space-y-6" >
-        <div class="bg-card p-6 rounded-xl border shadow-sm" >
-        <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2" >
-        <span class="text-primary" >📄</span> Die Bewerbung (Заявка на работу)
-        </h2>
-        < p class= "text-lg mb-4 text-muted-foreground" >
-        В Германии пакет документов(Bewerbungsunterlagen) обычно состоит из < strong > Anschreiben < /strong> (сопроводительное письмо), <strong>Lebenslauf</strong > (резюме) и < strong > Zeignissen < /strong> (сертификаты/дипломы).
+            <div class="space-y-6">
+              <div class="bg-card p-6 rounded-xl border shadow-sm">
+                <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2">
+                  <span class="text-primary">📄</span> Die Bewerbung (Заявка на работу)
+                </h2>
+                <p class="text-lg mb-4 text-muted-foreground">
+                  В Германии пакет документов (Bewerbungsunterlagen) обычно состоит из <strong>Anschreiben</strong> (сопроводительное письмо), <strong>Lebenslauf</strong> (резюме) и <strong>Zeignissen</strong> (сертификаты/дипломы).
                 </p>
 
-        < div class= "grid grid-cols-1 md:grid-cols-2 gap-6 mb-6" >
-        <div class="bg-muted/30 p-4 rounded-lg border border-border" >
-        <h3 class="font-bold text-primary mb-3" > Der Lebenslauf(Резюме) </h3>
-        < ul class= "space-y-2 text-sm" >
-        <li class="flex justify-between border-b pb-1" > <span>Persönliche Daten < /span> <span class="text-muted-foreground w-1/2 text - right">Контакты, фото</span></li>
-        < li class= "flex justify-between border-b pb-1" > <span>Berufserfahrung < /span> <span class="text-muted-foreground w-1/2 text - right">Опыт (хронологически)</span></li>
-        < li class= "flex justify-between border-b pb-1" > <span>Ausbildung < /span> <span class="text-muted-foreground w-1/2 text - right">Образование</span></li>
-        < li class= "flex justify-between" > <span>Kenntnisse < /span> <span class="text-muted-foreground w-1/2 text - right">Навыки (IT, языки)</span></li>
-        </ul>
-        </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div class="bg-muted/30 p-4 rounded-lg border border-border">
+                    <h3 class="font-bold text-primary mb-3">Der Lebenslauf (Резюме)</h3>
+                    <ul class="space-y-2 text-sm">
+                      <li class="flex justify-between border-b pb-1"> <span>Persönliche Daten</span> <span class="text-muted-foreground w-1/2 text-right">Контакты, фото</span></li>
+                      <li class="flex justify-between border-b pb-1"> <span>Berufserfahrung</span> <span class="text-muted-foreground w-1/2 text-right">Опыт (хронологически)</span></li>
+                      <li class="flex justify-between border-b pb-1"> <span>Ausbildung</span> <span class="text-muted-foreground w-1/2 text-right">Образование</span></li>
+                      <li class="flex justify-between"> <span>Kenntnisse</span> <span class="text-muted-foreground w-1/2 text-right">Навыки (IT, языки)</span></li>
+                    </ul>
+                  </div>
 
-        < div class= "bg-muted/30 p-4 rounded-lg border border-border" >
-        <h3 class="font-bold text-primary mb-3" > Das Anschreiben(Письмо) </h3>
-        < p class= "text-sm italic mb-2" > "Почему вы хотите работать именно у нас?" </p>
-        < ul class= "space-y-2 text-sm font-medium" >
-        <li class="p-2 bg-background rounded border" > "Hiermit bewerbe ich mich um die Stelle als..." </li>
-        < li class= "p-2 bg-background rounded border" > "Mit großem Interesse habe ich..." </li>
-        < li class= "p-2 bg-background rounded border" > "Ich bin überzeugt, dass..." </li>
-        </ul>
-        </div>
-        </div>
+                  <div class="bg-muted/30 p-4 rounded-lg border border-border">
+                    <h3 class="font-bold text-primary mb-3">Das Anschreiben (Письмо)</h3>
+                    <p class="text-sm italic mb-2">"Почему вы хотите работать именно у нас?"</p>
+                    <ul class="space-y-2 text-sm font-medium">
+                      <li class="p-2 bg-background rounded border">"Hiermit bewerbe ich mich um die Stelle als..."</li>
+                      <li class="p-2 bg-background rounded border">"Mit großem Interesse habe ich..."</li>
+                      <li class="p-2 bg-background rounded border">"Ich bin überzeugt, dass..."</li>
+                    </ul>
+                  </div>
+                </div>
 
-        < div class= "p-4 bg-yellow-50 rounded-lg border border-yellow-200" >
-        <h3 class="font-bold text-sm mb-1 text-yellow-800" >⚠️ Важно: Lücken im Lebenslauf </h3>
-        < p class= "text-xs text-yellow-900" >
-        "Пробелы" в резюме(периоды без работы) немцы замечают сразу.Лучше написать < em > "Neuorientierung" < /em> (поиск себя) или <em>"Weiterbildung"</em > (обучение), чем оставить пустоту.
+                <div class="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                  <h3 class="font-bold text-sm mb-1 text-yellow-800">⚠️ Важно: Lücken im Lebenslauf</h3>
+                  <p class="text-xs text-yellow-900">
+                    "Пробелы" в резюме (периоды без работы) немцы замечают сразу. Лучше написать <em>"Neuorientierung"</em> (поиск себя) или <em>"Weiterbildung"</em> (обучение), чем оставить пустоту.
                   </p>
-        </div>
-        </div>
-        </div>
+                </div>
+              </div>
+            </div>
           `,
           vocabulary: [
             {
@@ -4752,43 +4752,43 @@ export const curriculum: Curriculum = {
           id: 'b2-beruf-1-vorstellungsgespraech',
           title: 'Собеседование: Vorstellungsgespräch',
           explanation: `
-        < div class= "space-y-6" >
-        <div class="bg-card p-6 rounded-xl border shadow-sm" >
-        <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2" >
-        <span class="text-primary" >🤝</span> Das Vorstellungsgespräch (Собеседование)
-        </h2>
-        < p class= "text-lg mb-4 text-muted-foreground" >
-        Самый важный момент — рассказать о себе(Selbstpräsentation).Нужно говорить о своих сильных сторонах, но оставаться скромным.
+            <div class="space-y-6">
+              <div class="bg-card p-6 rounded-xl border shadow-sm">
+                <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2">
+                  <span class="text-primary">🤝</span> Das Vorstellungsgespräch (Собеседование)
+                </h2>
+                <p class="text-lg mb-4 text-muted-foreground">
+                  Самый важный момент — рассказать о себе (Selbstpräsentation). Нужно говорить о своих сильных сторонах, но оставаться скромным.
                 </p>
 
-        < div class= "grid grid-cols-1 md:grid-cols-2 gap-6 mb-6" >
-        <div class="bg-muted/30 p-4 rounded-lg border border-border" >
-        <h3 class="font-bold text-primary mb-3" > Stärken(Сильные стороны) </h3>
-        < ul class= "space-y-2 text-sm italic" >
-        <li>• Teamfähig(командный игрок) </li>
-        <li>• Zuverlässig(надежный) </li>
-        <li>• Belastbar(стрессоустойчивый) </li>
-        <li>• Flexibel(гибкий) </li>
-        <li>• Lernbereit(готов учиться) </li>
-        </ul>
-        </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div class="bg-muted/30 p-4 rounded-lg border border-border">
+                    <h3 class="font-bold text-primary mb-3">Stärken (Сильные стороны)</h3>
+                    <ul class="space-y-2 text-sm italic">
+                      <li>• Teamfähig (командный игрок)</li>
+                      <li>• Zuverlässig (надежный)</li>
+                      <li>• Belastbar (стрессоустойчивый)</li>
+                      <li>• Flexibel (гибкий)</li>
+                      <li>• Lernbereit (готов учиться)</li>
+                    </ul>
+                  </div>
 
-        < div class= "bg-muted/30 p-4 rounded-lg border border-border" >
-        <h3 class="font-bold text-primary mb-3" > Типичные вопросы </h3>
-        < ul class= "space-y-2 text-sm italic" >
-        <li class="bg-background p-2 rounded" > "Erzählen Sie etwas über sich." </li>
-        < li class= "bg-background p-2 rounded" > "Warum wollen Sie bei uns arbeiten?" </li>
-        < li class= "bg-background p-2 rounded" > "Was sind Ihre Gehaltsvorstellungen?" </li>
-        </ul>
-        </div>
-        </div>
+                  <div class="bg-muted/30 p-4 rounded-lg border border-border">
+                    <h3 class="font-bold text-primary mb-3">Типичные вопросы</h3>
+                    <ul class="space-y-2 text-sm italic">
+                      <li class="bg-background p-2 rounded">"Erzählen Sie etwas über sich."</li>
+                      <li class="bg-background p-2 rounded">"Warum wollen Sie bei uns arbeiten?"</li>
+                      <li class="bg-background p-2 rounded">"Was sind Ihre Gehaltsvorstellungen?"</li>
+                    </ul>
+                  </div>
+                </div>
 
-        < div class= "p-4 bg-primary/5 border-l-4 border-primary rounded-r-lg" >
-        <h3 class="font-bold text-sm mb-1" > Фраза - помощник: </h3>
-        < p class= "text-sm italic" > "Meine größte Stärke ist meine <strong>Zielstrebigkeit</strong>. In meinem letzten Job habe ich..."(Всегда подкрепляйте качества примерами!) </p>
-        </div>
-        </div>
-        </div>
+                <div class="p-4 bg-primary/5 border-l-4 border-primary rounded-r-lg">
+                  <h3 class="font-bold text-sm mb-1">Фраза-помощник:</h3>
+                  <p class="text-sm italic">"Meine größte Stärke ist meine <strong>Zielstrebigkeit</strong>. In meinem letzten Job habe ich..." (Всегда подкрепляйте качества примерами!)</p>
+                </div>
+              </div>
+            </div>
           `,
           vocabulary: [
             {
@@ -4828,44 +4828,44 @@ export const curriculum: Curriculum = {
           id: 'b2-beruf-2-buero',
           title: 'Офис: Телефон и E-Mail',
           explanation: `
-        < div class= "space-y-6" >
-        <div class="bg-card p-6 rounded-xl border shadow-sm" >
-        <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2" >
-        <span class="text-primary" >📞</span> Am Telefon (По телефону)
-        </h2>
-        < div class= "grid grid-cols-1 md:grid-cols-2 gap-6 mb-6" >
-        <div class="bg-muted p-4 rounded-lg" >
-        <h3 class="font-bold text-primary text-sm mb-2" > Sich melden(Представиться) </h3>
-        < p class= "text-xs italic bg-background p-2 rounded mb-1" > "Firma X, Müller hier, guten Tag." </p>
-        < p class= "text-xs italic bg-background p-2 rounded" > "Was kann ich für Sie tun?" </p>
-        </div>
-        < div class= "bg-muted p-4 rounded-lg" >
-        <h3 class="font-bold text-primary text-sm mb-2" > Verbinden(Соединить) </h3>
-        < p class= "text-xs italic bg-background p-2 rounded mb-1" > "Könnten Sie mich bitte mit Frau X verbinden?" </p>
-        < p class= "text-xs italic bg-background p-2 rounded" > "Einen Moment bitte, ich stelle durch." </p>
-        </div>
-        </div>
+            <div class="space-y-6">
+              <div class="bg-card p-6 rounded-xl border shadow-sm">
+                <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2">
+                  <span class="text-primary">📞</span> Am Telefon (По телефону)
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div class="bg-muted p-4 rounded-lg">
+                    <h3 class="font-bold text-primary text-sm mb-2">Sich melden (Представиться)</h3>
+                    <p class="text-xs italic bg-background p-2 rounded mb-1">"Firma X, Müller hier, guten Tag."</p>
+                    <p class="text-xs italic bg-background p-2 rounded">"Was kann ich für Sie tun?"</p>
+                  </div>
+                  <div class="bg-muted p-4 rounded-lg">
+                    <h3 class="font-bold text-primary text-sm mb-2">Verbinden (Соединить)</h3>
+                    <p class="text-xs italic bg-background p-2 rounded mb-1">"Könnten Sie mich bitte mit Frau X verbinden?"</p>
+                    <p class="text-xs italic bg-background p-2 rounded">"Einen Moment bitte, ich stelle durch."</p>
+                  </div>
+                </div>
 
-        < h2 class= "font-headline text-2xl font-bold mb-4 flex items-center gap-2" >
-        <span class="text-primary" >📧</span> E-Mail-Etikette
-        </h2>
-        < div class= "space-y-4" >
-        <div class="border-l-4 border-blue-500 bg-blue-50 p-3 rounded-r" >
-        <h3 class="font-bold text-sm" > Betreff(Тема) </h3>
-        < p class= "text-xs" > Всегда пишите четко: <em>"Anfrage bzgl. Termin am 12.05." < /em></p >
-        </div>
-        < div class= "border-l-4 border-green-500 bg-green-50 p-3 rounded-r" >
-        <h3 class="font-bold text-sm" > Anrede(Обращение) </h3>
-        < p class= "text-xs" > Официально: <em>"Sehr geehrte Damen und Herren," < /em></p >
-        <p class="text-xs" > Лично: <em>"Lieber Herr Schmidt," / "Liebe Frau Müller," < /em></p >
-        </div>
-        < div class= "border-l-4 border-gray-500 bg-gray-50 p-3 rounded-r" >
-        <h3 class="font-bold text-sm" > Grußformel(Прощание) </h3>
-        < p class= "text-xs" > Standard: <em>"Mit freundlichen Grüßen" < /em></p >
-        </div>
-        </div>
-        </div>
-        </div>
+                <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2">
+                  <span class="text-primary">📧</span> E-Mail-Etikette
+                </h2>
+                <div class="space-y-4">
+                  <div class="border-l-4 border-blue-500 bg-blue-50 p-3 rounded-r">
+                    <h3 class="font-bold text-sm">Betreff (Тема)</h3>
+                    <p class="text-xs">Всегда пишите четко: <em>"Anfrage bzgl. Termin am 12.05."</em></p>
+                  </div>
+                  <div class="border-l-4 border-green-500 bg-green-50 p-3 rounded-r">
+                    <h3 class="font-bold text-sm">Anrede (Обращение)</h3>
+                    <p class="text-xs">Официально: <em>"Sehr geehrte Damen und Herren,"</em></p>
+                    <p class="text-xs">Лично: <em>"Lieber Herr Schmidt," / "Liebe Frau Müller,"</em></p>
+                  </div>
+                  <div class="border-l-4 border-gray-500 bg-gray-50 p-3 rounded-r">
+                    <h3 class="font-bold text-sm">Grußformel (Прощание)</h3>
+                    <p class="text-xs">Standard: <em>"Mit freundlichen Grüßen"</em></p>
+                  </div>
+                </div>
+              </div>
+            </div>
           `,
           vocabulary: [
             {
@@ -4914,52 +4914,52 @@ export const curriculum: Curriculum = {
           id: 'b2-beruf-3-meetings',
           title: 'Meetings & Präsentationen',
           explanation: `
-        < div class= "space-y-6" >
-        <div class="bg-card p-6 rounded-xl border shadow-sm" >
-        <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2" >
-        <span class="text-primary" >📊</span> Präsentieren & Diskutieren
-        </h2>
-        < div class= "grid grid-cols-1 md:grid-cols-2 gap-6 mb-6" >
-        <div class="bg-muted p-4 rounded-lg" >
-        <h3 class="font-bold text-primary text-sm mb-2" > Eine Präsentation beginnen </h3>
-        < ul class= "space-y-2 text-xs italic" >
-        <li>"Ich möchte Ihnen heute ... vorstellen." </li>
-        < li > "Das Thema meines Vortrags lautet..." </li>
-        < li > "Zuerst spreche ich über ..., dann über..." </li>
-        </ul>
-        </div>
-        < div class= "bg-muted p-4 rounded-lg" >
-        <h3 class="font-bold text-primary text-sm mb-2" > Grafiken beschreiben </h3>
-        < ul class= "space-y-2 text-xs italic" >
-        <li>"Die Grafik zeigt die Entwicklung von..." </li>
-        < li > "Die Zahl ist gestiegen / gesunken." </li>
-        < li > "Im Vergleich zum Vorjahr..." </li>
-        </ul>
-        </div>
-        </div>
+            <div class="space-y-6">
+              <div class="bg-card p-6 rounded-xl border shadow-sm">
+                <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2">
+                  <span class="text-primary">📊</span> Презентации и Дискуссии
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div class="bg-muted p-4 rounded-lg">
+                    <h3 class="font-bold text-primary text-sm mb-2">Начало презентации</h3>
+                    <ul class="space-y-2 text-xs italic">
+                      <li>"Ich möchte Ihnen heute ... vorstellen."</li>
+                      <li>"Das Thema meines Vortrags lautet..."</li>
+                      <li>"Zuerst spreche ich über ..., dann über..."</li>
+                    </ul>
+                  </div>
+                  <div class="bg-muted p-4 rounded-lg">
+                    <h3 class="font-bold text-primary text-sm mb-2">Описание графиков</h3>
+                    <ul class="space-y-2 text-xs italic">
+                      <li>"Die Grafik zeigt die Entwicklung von..."</li>
+                      <li>"Die Zahl ist gestiegen / gesunken."</li>
+                      <li>"Im Vergleich zum Vorjahr..."</li>
+                    </ul>
+                  </div>
+                </div>
 
-        < div class= "space-y-4" >
-        <h3 class="font-bold text-primary text-sm" > Die Meinung äußern & widersprechen </h3>
-        < div class= "grid grid-cols-1 md:grid-cols-3 gap-2 text-xs" >
-        <div class="p-2 border rounded bg-background" >
-        <strong>Meinung: </strong><br/ >
-        "Ich bin der Ansicht, dass..." < br />
-        "Meiner Meinung nach..."
-        </div>
-        < div class= "p-2 border rounded bg-background" >
-        <strong>Zustimmung: </strong><br/ >
-        "Da haben Sie völlig recht." < br />
-        "Das sehe ich auch so."
-        </div>
-        < div class= "p-2 border rounded bg-background" >
-        <strong>Widerspruch(Höflich): </strong><br/ >
-        "Da muss ich Ihnen widersprechen." < br />
-        "Das sehe ich etwas anders, denn..."
-        </div>
-        </div>
-        </div>
-        </div>
-        </div>
+                <div class="space-y-4">
+                  <h3 class="font-bold text-primary text-sm">Выражение мнения и несогласие</h3>
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
+                    <div class="p-2 border rounded bg-background">
+                      <strong>Мнение:</strong><br/>
+                      "Ich bin der Ansicht, dass..."<br/>
+                      "Meiner Meinung nach..."
+                    </div>
+                    <div class="p-2 border rounded bg-background">
+                      <strong>Согласие:</strong><br/>
+                      "Da haben Sie völlig recht."<br/>
+                      "Das sehe ich auch so."
+                    </div>
+                    <div class="p-2 border rounded bg-background">
+                      <strong>Несогласие (вежливое):</strong><br/>
+                      "Da muss ich Ihnen widersprechen."<br/>
+                      "Das sehe ich etwas anders, denn..."
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           `,
           vocabulary: [
             {
@@ -5008,53 +5008,53 @@ export const curriculum: Curriculum = {
           id: 'b2-beruf-4-kundenservice',
           title: 'Kundenservice: Жалобы и Решения',
           explanation: `
-        < div class= "space-y-6" >
-        <div class="bg-card p-6 rounded-xl border shadow-sm" >
-        <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2" >
-        <span class="text-primary" >🛠️</span> Umgang mit Beschwerden (Работа с жалобами)
-        </h2>
-        < p class= "text-lg mb-4 text-muted-foreground" >
-        Важное правило в Германии: оставаться вежливым и искать решение(lösungsorientiert), даже если клиент зол.
+            <div class="space-y-6">
+              <div class="bg-card p-6 rounded-xl border shadow-sm">
+                <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2">
+                  <span class="text-primary">🛠️</span> Umgang mit Beschwerden (Работа с жалобами)
+                </h2>
+                <p class="text-lg mb-4 text-muted-foreground">
+                  Важное правило в Германии: оставаться вежливым и искать решение (lösungsorientiert), даже если клиент зол.
                 </p>
 
-        < div class= "grid grid-cols-1 md:grid-cols-2 gap-6 mb-6" >
-        <div class="bg-red-50/50 p-4 rounded-lg border border-red-100" >
-        <h3 class="font-bold text-red-800 text-sm mb-2" > Die Beschwerde verstehen </h3>
-        < ul class= "space-y-2 text-xs italic text-red-900" >
-        <li>"Ich verstehe Ihren Ärger." </li>
-        < li > "Es tut mir leid, dass Sie unzufrieden sind." </li>
-        < li > "Können Sie mir das Problem kurz schildern?" </li>
-        </ul>
-        </div>
-        < div class= "bg-green-50/50 p-4 rounded-lg border border-green-100" >
-        <h3 class="font-bold text-green-800 text-sm mb-2" > Eine Lösung anbieten </h3>
-        < ul class= "space-y-2 text-xs italic text-green-900" >
-        <li>"Wir finden sicher eine Lösung." </li>
-        < li > "Ich kümmere mich sofort darum." </li>
-        < li > "Wir bieten Ihnen ... als Entschädigung an." </li>
-        </ul>
-        </div>
-        </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div class="bg-red-50/50 p-4 rounded-lg border border-red-100">
+                    <h3 class="font-bold text-red-800 text-sm mb-2">Понять жалобу</h3>
+                    <ul class="space-y-2 text-xs italic text-red-900">
+                      <li>"Ich verstehe Ihren Ärger."</li>
+                      <li>"Es tut mir leid, dass Sie unzufrieden sind."</li>
+                      <li>"Können Sie mir das Problem kurz schildern?"</li>
+                    </ul>
+                  </div>
+                  <div class="bg-green-50/50 p-4 rounded-lg border border-green-100">
+                    <h3 class="font-bold text-green-800 text-sm mb-2">Предложить решение</h3>
+                    <ul class="space-y-2 text-xs italic text-green-900">
+                      <li>"Wir finden sicher eine Lösung."</li>
+                      <li>"Ich kümmere mich sofort darum."</li>
+                      <li>"Wir bieten Ihnen ... als Entschädigung an."</li>
+                    </ul>
+                  </div>
+                </div>
 
-        < div class= "space-y-4" >
-        <h3 class="font-bold text-primary text-sm" > Typische Wörter </h3>
-        < div class= "grid grid-cols-1 md:grid-cols-3 gap-2 text-xs" >
-        <div class="p-2 border rounded bg-background" >
-        <strong>die Reklamation < /strong><br/ >
-        Официальная претензия(обычно на качество товара).
-                     </div>
-        < div class= "p-2 border rounded bg-background" >
-        <strong>der Mangel < /strong><br/ >
-        Дефект, недостаток(z.B.technischer Mangel).
-                     </div>
-        < div class= "p-2 border rounded bg-background" >
-        <strong>kulant < /strong><br/ >
-        Идущий навстречу(kulant sein = уступить клиенту).
-                     </div>
-        </div>
-        </div>
-        </div>
-        </div>
+                <div class="space-y-4">
+                  <h3 class="font-bold text-primary text-sm">Типичные слова</h3>
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
+                    <div class="p-2 border rounded bg-background">
+                      <strong>die Reklamation</strong><br/>
+                      Официальная претензия (обычно на качество товара).
+                    </div>
+                    <div class="p-2 border rounded bg-background">
+                      <strong>der Mangel</strong><br/>
+                      Дефект, недостаток (z.B. technischer Mangel).
+                    </div>
+                    <div class="p-2 border rounded bg-background">
+                      <strong>kulant</strong><br/>
+                      Идущий навстречу (kulant sein = уступить клиенту).
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           `,
           vocabulary: [
             {

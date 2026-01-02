@@ -244,7 +244,7 @@ export function ExerciseEngine({ topic, customWords, onMastered, onWordUpdate }:
   // Effect to initialize the cycle
   useEffect(() => {
     // If we are already initialized or missing data, do nothing
-    if (isInitializedRef.current || !topic) return;
+    if (isInitializedRef.current || (!topic && !customWords)) return;
 
     if (allWords.length > 0 && !customWords) {
       // Logic for Topics: Check if we need to do learning
