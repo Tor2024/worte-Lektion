@@ -120,17 +120,25 @@ export function ExerciseEngine({ topic, customWords, onMastered, onWordUpdate }:
     // We need a ref to track if learning is done for this session.
   }, []);
 
-  const learningDoneRef = useRef(false);
+  // Ref to track if we have already initialized for this topic/mount
+  const isInitializedRef = useRef(false);
 
   // Effect to initialize the cycle
   useEffect(() => {
-    if (topic && !learningDoneRef.current && allWords.length > 0 && !customWords) {
-      setLearningQueue(allWords.map(w => w as VocabularyWord)); // Cast assuming UserVocabularyWord.word is VocabularyWord
+    // If we are already initialized or missing data, do nothing
+    if (isInitializedRef.current || !topic) return;
+
+    if (allWords.length > 0 && !customWords) {
+      // Logic for Topics: Check if we need to do learning
+      // We assume every new topic mount needs learning phase first
+      setLearningQueue(allWords.map(w => w as VocabularyWord));
       setCurrentStep('learning');
       setIsGenerating(false);
+      isInitializedRef.current = true;
     } else {
-      // Standard start
+      // Logic for Custom Words OR Fallback: Start standard cycle
       standardCycleStart();
+      isInitializedRef.current = true;
     }
   }, [topic, allWords, customWords]);
 
@@ -629,7 +637,7 @@ export function ExerciseEngine({ topic, customWords, onMastered, onWordUpdate }:
             const newQueue = learningQueue.slice(1);
             setLearningQueue(newQueue);
             if (newQueue.length === 0) {
-              learningDoneRef.current = true;
+              // Phase complete, move to next
               startExerciseCycle();
             }
           } else {
