@@ -62,15 +62,9 @@ export function RoleplayInterface({
         setSuggestions([]);
 
         try {
-            // We pass the history *including* the new user message to the backend logic if needed,
-            // but usually the backend prompt expects history *before* the current turn or handles it.
-            // Let's pass the *previous* history + current message effectively.
-            // Wait, our prop signature says `onSendMessage` takes history.
-            // We should probably pass the FULL history including the new message?
-            // Let's stick to passing the history *up to* the new message, and the new message separately, 
-            // or whatever the backend expects. The backend `EvaluateRoleplayInput` expects `history` (array of role/content).
-
-            const response = await onSendMessage(messages, input);
+            // FIX: Pass history INCLUDING the current user message
+            const currentHistory: RoleplayMessage[] = [...messages, userMsg];
+            const response = await onSendMessage(currentHistory, input);
 
             // Update user message with feedback
             setMessages(prev => {
@@ -144,7 +138,7 @@ export function RoleplayInterface({
                             {/* Feedback for user messages */}
                             {msg.role === 'user' && msg.feedback && (
                                 <div
-                                    className="mt-1 text-xs bg-destructive/10 text-destructive p-2 rounded-md max-w-full"
+                                    className="mt-1 text-xs bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 p-2 rounded-md border border-indigo-500/20 max-w-full"
                                     dangerouslySetInnerHTML={{ __html: msg.feedback }} // Assuming feedback is safe HTML
                                 />
                             )}

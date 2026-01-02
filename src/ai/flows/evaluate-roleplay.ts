@@ -57,8 +57,9 @@ const renderPrompt = (input: EvaluateRoleplayInput) => {
      - If the tone was off, correct it.
      - If it was good, praise it briefly.
   
-  3. **Generate Your Reply (German):**
+  4. **Generate Your Reply (German):**
      - Respond naturally as your character.
+     - **Critically Important:** Your response MUST be a direct reaction to the Student's LAST message in the conversation history. 
      - Move the conversation forward.
      - If the user hasn't met the objectives, guide them slightly.
      - If objectives are met, wrap up the conversation politely.
