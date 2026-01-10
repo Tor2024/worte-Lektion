@@ -27,7 +27,11 @@ export function LearningDashboard({
     onGenerateStory,
     onStartDrill,
     onUsageCoach,
-    onRoleplay
+    onRoleplay,
+    onPodcast,
+    onCollocation,
+    onSynonymSwap,
+    onInterivew
 }: LearningDashboardProps) {
 
     const container = {
