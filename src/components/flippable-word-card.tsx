@@ -71,7 +71,7 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                 <div className="flex flex-col items-center justify-center h-full gap-6 w-full">
                     <div className="flex flex-col items-center">
                         <Badge variant="outline" className="opacity-40 text-[10px] uppercase tracking-widest mb-3">
-                            {word.type} (RU &rarr; DE)
+                            {word.type} (RU → DE)
                         </Badge>
                         <h3 className="text-3xl font-bold font-headline select-none text-center leading-tight">
                             {word.russian}
@@ -106,7 +106,7 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                         </h3>
                         {word.type === 'noun' && (
                             <div className="text-base text-muted-foreground font-medium mt-1">
-                                {(word as any).plural ? `Pl: die ${(word as any).plural}` : 'Singular only'}
+                                {(word as any)?.plural ? `Pl: die ${(word as any).plural}` : 'Singular only'}
                             </div>
                         )}
                     </div>
@@ -115,53 +115,53 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                     {word.type === 'verb' && (
                         <div className="w-full flex-grow flex flex-col gap-3">
                             {/* Conjugation Table (Präsens) */}
-                            {(word as any).conjugations ? (
+                            {(word as any)?.conjugations ? (
                                 <div className="bg-white/50 dark:bg-black/20 p-3 rounded-xl border border-black/5 dark:border-white/10 text-xs shadow-sm">
                                     <span className="font-bold text-muted-foreground text-[10px] block mb-2 text-center uppercase tracking-widest">Präsens (Настоящее)</span>
                                     <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-left px-2">
-                                        <div className="flex justify-between border-b border-black/5 pb-1"><span className="opacity-50">ich</span> <span className="font-semibold text-foreground/90">{(word as any).conjugations.ich}</span></div>
-                                        <div className="flex justify-between border-b border-black/5 pb-1"><span className="opacity-50">wir</span> <span className="font-semibold text-foreground/90">{(word as any).conjugations.wir}</span></div>
-                                        <div className="flex justify-between border-b border-black/5 pb-1"><span className="opacity-50">du</span> <span className="font-semibold text-foreground/90">{(word as any).conjugations.du}</span></div>
-                                        <div className="flex justify-between border-b border-black/5 pb-1"><span className="opacity-50">ihr</span> <span className="font-semibold text-foreground/90">{(word as any).conjugations.ihr}</span></div>
-                                        <div className="flex justify-between pb-1"><span className="opacity-50">er/sie</span> <span className="font-semibold text-foreground/90">{(word as any).conjugations.er_sie_es}</span></div>
-                                        <div className="flex justify-between pb-1"><span className="opacity-50">sie</span> <span className="font-semibold text-foreground/90">{(word as any).conjugations.sie_Sie}</span></div>
+                                        <div className="flex justify-between border-b border-black/5 pb-1"><span className="opacity-50">ich</span> <span className="font-semibold text-foreground/90">{(word as any).conjugations?.ich || '-'}</span></div>
+                                        <div className="flex justify-between border-b border-black/5 pb-1"><span className="opacity-50">wir</span> <span className="font-semibold text-foreground/90">{(word as any).conjugations?.wir || '-'}</span></div>
+                                        <div className="flex justify-between border-b border-black/5 pb-1"><span className="opacity-50">du</span> <span className="font-semibold text-foreground/90">{(word as any).conjugations?.du || '-'}</span></div>
+                                        <div className="flex justify-between border-b border-black/5 pb-1"><span className="opacity-50">ihr</span> <span className="font-semibold text-foreground/90">{(word as any).conjugations?.ihr || '-'}</span></div>
+                                        <div className="flex justify-between pb-1"><span className="opacity-50">er/sie</span> <span className="font-semibold text-foreground/90">{(word as any).conjugations?.er_sie_es || '-'}</span></div>
+                                        <div className="flex justify-between pb-1"><span className="opacity-50">sie</span> <span className="font-semibold text-foreground/90">{(word as any).conjugations?.sie_Sie || '-'}</span></div>
                                     </div>
                                 </div>
                             ) : (
                                 <div className="text-sm text-muted-foreground italic text-center">
-                                    {(word as any).conjugation}
+                                    {(word as any)?.conjugation || '-'}
                                 </div>
                             )}
 
                             {/* Other Tenses Block */}
-                            {(word as any).verbTenses && (
+                            {(word as any)?.verbTenses && (
                                 <div className="bg-white/30 dark:bg-black/10 p-3 rounded-xl border border-black/5 dark:border-white/5 text-xs text-left">
                                     <div className="grid grid-cols-1 gap-1.5">
                                         <div className="flex items-center justify-between gap-2">
                                             <span className="opacity-60 w-24">Perfekt:</span>
-                                            <span className="font-bold text-foreground truncate">{(word as any).perfektForm}</span>
+                                            <span className="font-bold text-foreground truncate">{(word as any)?.perfektForm || '-'}</span>
                                         </div>
                                         <div className="flex items-center justify-between gap-2">
                                             <span className="opacity-60 w-24">Präteritum:</span>
-                                            <span className="font-medium text-foreground truncate">{(word as any).verbTenses.praeteritum}</span>
+                                            <span className="font-medium text-foreground truncate">{(word as any).verbTenses?.praeteritum || '-'}</span>
                                         </div>
                                         <div className="flex items-center justify-between gap-2">
                                             <span className="opacity-60 w-24">Futur I:</span>
-                                            <span className="font-medium text-foreground truncate">{(word as any).verbTenses.futur1}</span>
+                                            <span className="font-medium text-foreground truncate">{(word as any).verbTenses?.futur1 || '-'}</span>
                                         </div>
                                         <div className="flex items-center justify-between gap-2">
                                             <span className="opacity-60 w-24">Futur II:</span>
-                                            <span className="font-medium text-foreground truncate">{(word as any).verbTenses.futur2}</span>
+                                            <span className="font-medium text-foreground truncate">{(word as any).verbTenses?.futur2 || '-'}</span>
                                         </div>
                                     </div>
                                 </div>
                             )}
 
                             {/* Case - Highlighted */}
-                            {((word as any).preposition || (word as any).case) && (
+                            {((word as any)?.preposition || (word as any)?.case) && (
                                 <div className="mt-auto pt-2 text-center">
                                     <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-primary/10 text-primary font-bold text-sm shadow-sm ring-1 ring-primary/20">
-                                        {[(word as any).preposition ? `+ ${(word as any).preposition}` : null, (word as any).case ? `+ ${(word as any).case}` : null].filter(Boolean).join(' ')}
+                                        {[(word as any)?.preposition ? `+ ${(word as any).preposition}` : null, (word as any)?.case ? `+ ${(word as any).case}` : null].filter(Boolean).join(' ')}
                                     </div>
                                 </div>
                             )}

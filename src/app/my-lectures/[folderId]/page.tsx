@@ -37,6 +37,10 @@ export default function FolderDetailsPage({ params }: { params: Promise<{ folder
     const [sessionMode, setSessionMode] = useState(false);
     const [sessionWords, setSessionWords] = useState<UserVocabularyWord[]>([]);
 
+    // Batch Refresh State
+    const [isBatchRefreshing, setIsBatchRefreshing] = useState(false);
+    const [refreshProgress, setRefreshProgress] = useState('');
+
     const handleAddWord = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!newWordInput.trim() || isAdding) return;
@@ -97,9 +101,6 @@ export default function FolderDetailsPage({ params }: { params: Promise<{ folder
     }
 
     const displayWords = sessionMode ? sessionWords : folder.words;
-
-    const [isBatchRefreshing, setIsBatchRefreshing] = useState(false);
-    const [refreshProgress, setRefreshProgress] = useState('');
 
     const handleRefreshWord = async (userWord: UserVocabularyWord) => {
         try {
