@@ -29,6 +29,11 @@ const EnrichedWordSchema = z.object({
     perfektForm: z.string().optional().describe('For verbs: 3rd person singular Perfekt.'),
     preposition: z.string().optional().describe('For verbs: associated preposition if any (e.g. "auf" for "warten auf").'),
     case: z.enum(['Akkusativ', 'Dativ', 'Genitiv', 'Nominativ']).optional().describe('For verbs/prepositions: required case (e.g. "Akkusativ" for "warten auf").'),
+    verbTenses: z.object({
+        praeteritum: z.string(),
+        futur1: z.string(),
+        futur2: z.string(),
+    }).optional().describe('For Verbs: 3rd person singular forms for other tenses.'),
     // Noun specifics
     article: z.enum(['der', 'die', 'das']).optional().describe('For nouns: definite article.'),
     plural: z.string().optional().describe('For nouns: plural form.'),
@@ -67,7 +72,11 @@ const renderPrompt = (input: WordEnrichmentInput) => {
      - Provide the 3rd person singular Present (e.g. "er läuft", "es geht", "er hat Angst").
      - **CRITICAL**: Provide the FULL conjugation table for Present tense in the 'conjugations' object with keys: ich, du, er_sie_es, wir, ihr, sie_Sie.
      - **CRITICAL**: Provide the Perfekt form (3rd person sing.) including "hat" or "ist" (e.g. "hat gemacht", "ist gegangen").
-     - **CRITICAL**: If the verb is separable (trennbar), indicate this clearly in the usage or example.
+     - **CRITICAL**: Provide 'verbTenses' object with 3rd person singular forms for:
+        - `praeteritum`: e.g. "lief" or "machte"
+        - `futur1`: e.g. "wird laufen"
+        - `futur2`: e.g. "wird gelaufen sein"
+     - **CRITICAL**: If the verb is separable (trennbar), indicate this clearly.
      - **CRITICAL**: If the verb requires a specific **Preposition** (e.g. "warten auf"), fill 'preposition' AND 'case'.
      - **CRITICAL**: If the verb takes a direct object in **Dativ** (e.g. "helfen", "danken", "gefallen"), FILL 'case'="Dativ" (leave 'preposition' empty if none).
      - **CRITICAL**: If the verb requires a specific preposition or case (e.g. "warten auf + Akk", "helfen + Dat"), YOU MUST PROVIDE IT in the 'preposition' and 'case' fields. If it's a direct transitive verb, you can leave case as 'Akkusativ' (or appropriate) if relevant, but prioritize prepositional objects.

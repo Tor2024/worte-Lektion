@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { verifySynonymAnswer } from '@/ai/flows/verify-synonym-answer';
+import { Loader2 } from 'lucide-react';
 
 export interface SynonymItem {
     id: string;
@@ -25,20 +27,58 @@ export function SynonymGame({ items, onComplete }: SynonymGameProps) {
     const [answers, setAnswers] = useState<{ [key: string]: string }>({});
     const [results, setResults] = useState<{ [key: string]: boolean }>({});
 
-    const checkAnswer = (id: string, target: string) => {
-        const userAns = answers[id] || '';
-        if (userAns.toLowerCase().trim() === target.toLowerCase().trim()) {
-            const newResults = { ...results, [id]: true };
-            setResults(newResults);
+    const [checkingId, setCheckingId] = useState<string | null>(null);
+    const [customFeedbacks, setCustomFeedbacks] = useState<{ [key: string]: string }>({});
 
-            // Check completion
-            const allCorrect = items.every(item => newResults[item.id]);
-            if (allCorrect && onComplete) {
-                setTimeout(onComplete, 1500);
+    const checkAnswer = async (id: string, target: string, originalSentence: string, weakWord?: string) => {
+        const userAns = answers[id] || '';
+
+        // 1. Fast Strict Match
+        if (userAns.toLowerCase().trim() === target.toLowerCase().trim()) {
+            handleResult(id, true);
+            return;
+        }
+
+        // 2. AI Validation for inexact matches
+        setCheckingId(id);
+        try {
+            // Import dynamically or pass as prop? 
+            // Since this is a client component, we simply call the server action we just imported.
+            // Note: We need to import verifySynonymAnswer at top of file. 
+            // For now, assuming it's imported.
+
+            const result = await verifySynonymAnswer({
+                originalSentence,
+                weakWord: weakWord || '',
+                userAnswer: userAns,
+                targetSynonym: target
+            });
+
+            if (result.isCorrect) {
+                // User was correct!
+                setCustomFeedbacks(prev => ({ ...prev, [id]: result.feedback }));
+                handleResult(id, true);
+            } else {
+                // User was wrong, show AI explanation
+                setCustomFeedbacks(prev => ({ ...prev, [id]: result.feedback }));
+                handleResult(id, false);
             }
-        } else {
-            // Remove alert, just set state to false to show feedback
-            setResults(prev => ({ ...prev, [id]: false }));
+        } catch (error) {
+            console.error("AI Validation failed", error);
+            // Fallback to basic error
+            handleResult(id, false);
+        } finally {
+            setCheckingId(null);
+        }
+    };
+
+    const handleResult = (id: string, isCorrect: boolean) => {
+        setResults(prev => ({ ...prev, [id]: isCorrect }));
+
+        const item = items.find(i => i.id === id);
+        // Check completion
+        if (isCorrect && items.every(i => (i.id === id ? true : results[i.id]))) {
+            if (onComplete) setTimeout(onComplete, 1500);
         }
     };
 

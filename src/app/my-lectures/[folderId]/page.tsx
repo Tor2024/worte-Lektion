@@ -214,7 +214,7 @@ export default function FolderDetailsPage({ params }: { params: Promise<{ folder
             </div>
 
             {/* WORD GRID With Flip Cards */}
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
                 {displayWords.map((userWord) => (
                     <div key={userWord.id} className="relative group/wrapper">
                         <FlippableWordCard
