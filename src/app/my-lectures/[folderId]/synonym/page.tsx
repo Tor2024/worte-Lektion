@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { generateSynonymSwap, GenerateSynonymSwapOutput } from '@/ai/flows/generate-synonym-swap';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { SynonymGame } from '@/components/synonym-game';
 
 export default function SynonymPage({ params }: { params: Promise<{ folderId: string }> }) {
     const { folderId } = use(params);
@@ -97,42 +98,13 @@ export default function SynonymPage({ params }: { params: Promise<{ folderId: st
             {/* LIST */}
             {data && (
                 <div className="space-y-6">
-                    {data.items.map((item) => {
-                        const isCorrect = results[item.id] === true;
+                    <SynonymGame
+                        items={data.items}
+                        onComplete={() => {
+                            // Optional: Celebration or scroll to top
+                        }}
+                    />
 
-                        return (
-                            <Card key={item.id} className="overflow-hidden">
-                                <CardHeader className="bg-muted/30 pb-3">
-                                    <div className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-1">Слабый стиль (A2):</div>
-                                    <p className="text-lg italic text-muted-foreground">"{item.originalSentence}"</p>
-                                </CardHeader>
-                                <CardContent className="pt-4">
-                                    <div className="flex flex-col gap-4">
-                                        <div className="flex items-center gap-2">
-                                            <span className="font-bold text-orange-600">B2 Upgrade:</span>
-                                            <Input
-                                                placeholder="Какое слово подойдет лучше?"
-                                                value={answers[item.id] || ''}
-                                                onChange={(e) => setAnswers(prev => ({ ...prev, [item.id]: e.target.value }))}
-                                                className={cn("max-w-xs", isCorrect && "border-green-500 bg-green-50")}
-                                                disabled={isCorrect}
-                                            />
-                                            {!isCorrect && <Button size="sm" onClick={() => checkAnswer(item.id, item.targetSynonym)}>Check</Button>}
-                                        </div>
-
-                                        {isCorrect && (
-                                            <div className="bg-green-100 dark:bg-green-900/30 p-3 rounded-md text-green-800 dark:text-green-300 text-sm animate-in fade-in slide-in-from-top-2">
-                                                <p className="font-bold mb-1">Perfekt! "{item.betterSentence}"</p>
-                                                <p>{item.explanation}</p>
-                                            </div>
-                                        )}
-                                        {/* Cheat for demo/debugging if stuck */}
-                                        {/* <p className="text-xs text-muted-foreground">Hint: {item.targetSynonym}</p> */}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        );
-                    })}
                     <div className="flex justify-center pt-8">
                         <Button variant="outline" onClick={handleGenerate}>Попробовать другие слова</Button>
                     </div>
