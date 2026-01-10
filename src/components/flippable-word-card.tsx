@@ -102,9 +102,9 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                         <div className="text-sm text-muted-foreground italic flex flex-col gap-1 text-center">
                             <span>{(word as any).conjugation}</span>
                             <span>{(word as any).perfektForm}</span>
-                            {(word as any).preposition && (
+                            {((word as any).preposition || (word as any).case) && (
                                 <span className="font-bold text-primary mt-1">
-                                    + {(word as any).preposition} {(word as any).case ? `+ ${(word as any).case}` : ''}
+                                    {[(word as any).preposition ? `+ ${(word as any).preposition}` : null, (word as any).case ? `+ ${(word as any).case}` : null].filter(Boolean).join(' ')}
                                 </span>
                             )}
                         </div>
@@ -113,6 +113,13 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                         <Badge variant="secondary" className="mt-2">
                             + {(word as any).case}
                         </Badge>
+                    )}
+
+                    {/* Context Example on Front (Requested for Verbs, helpful for all) */}
+                    {userWord.context && (
+                        <p className="text-sm text-muted-foreground italic text-center mt-4 max-w-full break-words whitespace-normal px-2">
+                            "{userWord.context}"
+                        </p>
                     )}
                 </div>
             );
@@ -131,6 +138,17 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                     {word.type === 'noun' && (
                         <div className="text-sm text-muted-foreground">
                             {(word as any).plural ? `Pl: die ${(word as any).plural}` : ''}
+                        </div>
+                    )}
+                    {word.type === 'verb' && (
+                        <div className="text-sm text-muted-foreground italic flex flex-col gap-1 text-center">
+                            <span>{(word as any).conjugation}</span>
+                            <span>{(word as any).perfektForm}</span>
+                            {((word as any).preposition || (word as any).case) && (
+                                <span className="font-bold text-primary mt-1">
+                                    {[(word as any).preposition ? `+ ${(word as any).preposition}` : null, (word as any).case ? `+ ${(word as any).case}` : null].filter(Boolean).join(' ')}
+                                </span>
+                            )}
                         </div>
                     )}
 

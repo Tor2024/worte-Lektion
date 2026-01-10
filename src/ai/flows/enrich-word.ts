@@ -68,6 +68,8 @@ const renderPrompt = (input: WordEnrichmentInput) => {
      - **CRITICAL**: Provide the FULL conjugation table for Present tense in the 'conjugations' object with keys: ich, du, er_sie_es, wir, ihr, sie_Sie.
      - **CRITICAL**: Provide the Perfekt form (3rd person sing.) including "hat" or "ist" (e.g. "hat gemacht", "ist gegangen").
      - **CRITICAL**: If the verb is separable (trennbar), indicate this clearly in the usage or example.
+     - **CRITICAL**: If the verb requires a specific **Preposition** (e.g. "warten auf"), fill 'preposition' AND 'case'.
+     - **CRITICAL**: If the verb takes a direct object in **Dativ** (e.g. "helfen", "danken", "gefallen"), FILL 'case'="Dativ" (leave 'preposition' empty if none).
      - **CRITICAL**: If the verb requires a specific preposition or case (e.g. "warten auf + Akk", "helfen + Dat"), YOU MUST PROVIDE IT in the 'preposition' and 'case' fields. If it's a direct transitive verb, you can leave case as 'Akkusativ' (or appropriate) if relevant, but prioritize prepositional objects.
     4. If it is a **Noun**:
        - Provide article, plural form.
