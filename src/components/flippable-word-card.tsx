@@ -24,23 +24,28 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
     const [isRefreshing, setIsRefreshing] = useState(false); // Added isRefreshing state
     const word = userWord.word;
 
-    // Determine Card Base Color based on Gender/Type
-    let baseColorClass = "border-l-4 border-l-primary";
+    // Determine Card Base Color and Style
+    let cardStyle = "border-2 border-primary/20 bg-background hover:border-primary/50";
+    let badgeVariant: "outline" | "default" | "secondary" | "destructive" = "outline";
 
     if (word.type === 'noun') {
-        if ((word as any).article === 'der') baseColorClass = "border-l-blue-500";
-        else if ((word as any).article === 'die') baseColorClass = "border-l-pink-500";
-        else if ((word as any).article === 'das') baseColorClass = "border-l-green-500";
+        if ((word as any).article === 'der') {
+            cardStyle = "border-2 border-blue-200 bg-blue-50/50 dark:bg-blue-900/10 dark:border-blue-800 hover:border-blue-400";
+        } else if ((word as any).article === 'die') {
+            cardStyle = "border-2 border-pink-200 bg-pink-50/50 dark:bg-pink-900/10 dark:border-pink-800 hover:border-pink-400";
+        } else if ((word as any).article === 'das') {
+            cardStyle = "border-2 border-green-200 bg-green-50/50 dark:bg-green-900/10 dark:border-green-800 hover:border-green-400";
+        }
     } else if (word.type === 'verb') {
-        baseColorClass = "border-l-amber-500";
+        cardStyle = "border-2 border-amber-200 bg-amber-50/50 dark:bg-amber-900/10 dark:border-amber-800 hover:border-amber-400";
     } else if (word.type === 'conjunction') {
-        baseColorClass = "border-l-purple-500";
+        cardStyle = "border-2 border-purple-200 bg-purple-50/50 dark:bg-purple-900/10 dark:border-purple-800 hover:border-purple-400";
     } else if (word.type === 'preposition') {
-        baseColorClass = "border-l-yellow-500";
+        cardStyle = "border-2 border-yellow-200 bg-yellow-50/50 dark:bg-yellow-900/10 dark:border-yellow-800 hover:border-yellow-400";
     }
 
     const handleFlip = () => {
-        if (!isRefreshing) setIsFlipped(!isFlipped); // Modified handleFlip
+        if (!isRefreshing) setIsFlipped(!isFlipped);
     };
 
     // Added handleRefreshClick function
@@ -72,6 +77,9 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                     </h3>
                     {userWord.context && (
                         <p className="text-sm text-muted-foreground italic text-center max-w-[200px] truncate">"{userWord.context}"</p>
+                    )}
+                    {userWord.contextTranslation && (
+                        <p className="text-xs text-muted-foreground/70 text-center max-w-[200px] truncate">({userWord.contextTranslation})</p>
                     )}
                 </div>
             );
@@ -122,24 +130,24 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                     )}
 
                     {(userWord.synonyms && userWord.synonyms.length > 0) && (
-                        <div className="w-full text-left text-sm mt-2 p-2 bg-background/50 rounded-md">
+                        <div className="w-full text-left text-sm mt-2 p-2 bg-background/50 rounded-md border border-border/50">
                             <span className="text-xs font-bold text-muted-foreground uppercase">Синонимы:</span>
                             <div className="flex flex-wrap gap-1 mt-1">
                                 {userWord.synonyms.map((s, i) => (
-                                    <Badge key={i} variant="outline" className="text-xs font-normal">
-                                        {s.word}
+                                    <Badge key={i} variant="outline" className="text-xs font-normal whitespace-pre-wrap h-auto text-left">
+                                        {s.word} <span className="opacity-50 ml-1">({s.translation})</span>
                                     </Badge>
                                 ))}
                             </div>
                         </div>
                     )}
                     {(userWord.antonyms && userWord.antonyms.length > 0) && (
-                        <div className="w-full text-left text-sm mt-1 p-2 bg-background/50 rounded-md">
+                        <div className="w-full text-left text-sm mt-1 p-2 bg-background/50 rounded-md border border-border/50">
                             <span className="text-xs font-bold text-muted-foreground uppercase">Антонимы:</span>
                             <div className="flex flex-wrap gap-1 mt-1">
                                 {userWord.antonyms.map((s, i) => (
-                                    <Badge key={i} variant="outline" className="text-xs font-normal text-red-500 border-red-200">
-                                        {s.word}
+                                    <Badge key={i} variant="outline" className="text-xs font-normal text-red-600 border-red-200 dark:text-red-400 whitespace-pre-wrap h-auto text-left">
+                                        {s.word} <span className="opacity-50 ml-1">({s.translation})</span>
                                     </Badge>
                                 ))}
                             </div>
@@ -157,27 +165,30 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                 <div className="space-y-1 flex flex-col items-center">
                     <h4 className="text-xl font-bold text-primary mb-1">{word.russian}</h4>
                     {userWord.context && (
-                        <p className="text-sm text-muted-foreground italic text-center">"{userWord.context}"</p>
+                        <p className="text-sm text-muted-foreground italic text-center max-w-[250px] whitespace-pre-wrap">"{userWord.context}"</p>
+                    )}
+                    {userWord.contextTranslation && (
+                        <p className="text-xs text-muted-foreground/70 text-center max-w-[250px] whitespace-pre-wrap">({userWord.contextTranslation})</p>
                     )}
                     {(userWord.synonyms && userWord.synonyms.length > 0) && (
-                        <div className="w-full text-left text-sm mt-2 p-2 bg-background/50 rounded-md">
+                        <div className="w-full text-left text-sm mt-2 p-2 bg-background/50 rounded-md border border-border/50">
                             <span className="text-xs font-bold text-muted-foreground uppercase">Синонимы:</span>
                             <div className="flex flex-wrap gap-1 mt-1">
                                 {userWord.synonyms.map((s, i) => (
-                                    <Badge key={i} variant="outline" className="text-xs font-normal">
-                                        {s.word}
+                                    <Badge key={i} variant="outline" className="text-xs font-normal whitespace-pre-wrap h-auto text-left">
+                                        {s.word} <span className="opacity-50 ml-1">({s.translation})</span>
                                     </Badge>
                                 ))}
                             </div>
                         </div>
                     )}
                     {(userWord.antonyms && userWord.antonyms.length > 0) && (
-                        <div className="w-full text-left text-sm mt-1 p-2 bg-background/50 rounded-md">
+                        <div className="w-full text-left text-sm mt-1 p-2 bg-background/50 rounded-md border border-border/50">
                             <span className="text-xs font-bold text-muted-foreground uppercase">Антонимы:</span>
                             <div className="flex flex-wrap gap-1 mt-1">
                                 {userWord.antonyms.map((s, i) => (
-                                    <Badge key={i} variant="outline" className="text-xs font-normal text-red-500 border-red-200">
-                                        {s.word}
+                                    <Badge key={i} variant="outline" className="text-xs font-normal text-red-600 border-red-200 dark:text-red-400 whitespace-pre-wrap h-auto text-left">
+                                        {s.word} <span className="opacity-50 ml-1">({s.translation})</span>
                                     </Badge>
                                 ))}
                             </div>
@@ -193,7 +204,7 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
 
     return (
         <div
-            className={cn("relative h-64 w-full perspective-1000 cursor-pointer group", className)}
+            className={cn("relative h-96 w-full perspective-1000 cursor-pointer group", className)}
             onClick={handleFlip}
         >
             <motion.div
@@ -204,7 +215,7 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
             >
                 {/* FRONT SIDE */}
                 <Card
-                    className={cn("absolute inset-0 backface-hidden flex flex-col justify-between shadow-md hover:shadow-xl transition-shadow bg-card", baseColorClass)}
+                    className={cn("absolute inset-0 backface-hidden flex flex-col justify-between shadow-md hover:shadow-xl transition-shadow bg-card", cardStyle)}
                     style={{ backfaceVisibility: 'hidden' }}
                 >
                     <CardContent className="flex flex-col items-center justify-center h-full p-6 text-center space-y-4">
@@ -218,7 +229,7 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                             <Button
                                 variant="ghost"
                                 size="sm"
-                                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-20 h-6 w-6 p-0"
+                                className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity z-20 h-6 w-6 p-0"
                                 onClick={handleRefreshClick}
                                 disabled={isRefreshing}
                             >
@@ -230,7 +241,7 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
 
                 {/* BACK SIDE */}
                 <Card
-                    className={cn("absolute inset-0 backface-hidden rotate-y-180 bg-muted shadow-md", baseColorClass)}
+                    className={cn("absolute inset-0 backface-hidden rotate-y-180 bg-muted shadow-md", cardStyle)}
                     style={{ transform: 'rotateY(180deg)', backfaceVisibility: 'hidden' }}
                 >
                     <CardContent className="flex flex-col items-center justify-center h-full p-6 text-center space-y-4">

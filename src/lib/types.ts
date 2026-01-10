@@ -94,6 +94,7 @@ export interface UserVocabularyWord {
   word: VocabularyWord;
   sm2State: SM2State;
   context?: string;
+  contextTranslation?: string;
   synonyms?: Synonym[];
   antonyms?: Synonym[];
   addedAt: number;

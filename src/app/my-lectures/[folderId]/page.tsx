@@ -53,6 +53,7 @@ export default function FolderDetailsPage({ params }: { params: Promise<{ folder
                 sm2State: { ...INITIAL_SM2_STATE },
                 addedAt: Date.now(),
                 context: enriched.example,
+                contextTranslation: enriched.exampleMeaning,
                 synonyms: enriched.synonyms,
                 antonyms: enriched.antonyms
             };
@@ -107,7 +108,8 @@ export default function FolderDetailsPage({ params }: { params: Promise<{ folder
                 word: enriched as any,
                 synonyms: enriched.synonyms,
                 antonyms: enriched.antonyms,
-                context: enriched.example
+                context: enriched.example,
+                contextTranslation: enriched.exampleMeaning
             };
 
             updateWordInFolder(folderId, updatedWord);
@@ -207,7 +209,7 @@ export default function FolderDetailsPage({ params }: { params: Promise<{ folder
             <div className="flex justify-between items-center mb-4 px-1">
                 <div className="flex items-center space-x-2">
                     <Switch id="reverse-mode" checked={reverseMode} onCheckedChange={setReverseMode} />
-                    <Label htmlFor="reverse-mode" className="cursor-pointer">Reverse Mode (RU &rarr; DE)</Label>
+                    <Label htmlFor="reverse-mode" className="cursor-pointer">Режим перевода (RU &rarr; DE)</Label>
                 </div>
             </div>
 

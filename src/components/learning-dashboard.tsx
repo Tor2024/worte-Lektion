@@ -63,15 +63,15 @@ export function LearningDashboard({
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-2xl">
                             <Play className="fill-current h-6 w-6" />
-                            Start Smart Session
+                            Начать Смарт-Сессию
                         </CardTitle>
                         <CardDescription className="text-primary-foreground/80">
-                            Focus on 20 generated words: 5 new, 15 review.
+                            Фокус на 20 словах: 5 новых, 15 на повторение.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Button variant="secondary" className="w-full font-bold">
-                            Begin ({Math.min(20, totalWords)} words)
+                            Начать ({Math.min(20, totalWords)} слов)
                         </Button>
                     </CardContent>
                 </Card>
@@ -83,14 +83,14 @@ export function LearningDashboard({
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-lg">
                             <BookOpen className="h-5 w-5 text-blue-500" />
-                            AI Story Helper
+                            AI Генератор Историй
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <p className="text-sm text-muted-foreground mb-4">
-                            Generate a B2-level story using your current word list.
+                            История уровня B2 на основе вашего словаря.
                         </p>
-                        <Button variant="outline" className="w-full group-hover:bg-blue-50 dark:group-hover:bg-blue-900/20">Create Story</Button>
+                        <Button variant="outline" className="w-full group-hover:bg-blue-50 dark:group-hover:bg-blue-900/20">Создать историю</Button>
                     </CardContent>
                 </Card>
             </motion.div>
@@ -101,14 +101,14 @@ export function LearningDashboard({
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-lg">
                             <Dumbbell className="h-5 w-5 text-amber-500" />
-                            Grammar Precision
+                            Грамматический Дрилл
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <p className="text-sm text-muted-foreground mb-4">
-                            Drill prepositions, cases and verb conjugations.
+                            Тренировка предлогов, падежей и спряжений.
                         </p>
-                        <Button variant="outline" className="w-full group-hover:bg-amber-50 dark:group-hover:bg-amber-900/20">Start Drill</Button>
+                        <Button variant="outline" className="w-full group-hover:bg-amber-50 dark:group-hover:bg-amber-900/20">Начать Тренировку</Button>
                     </CardContent>
                 </Card>
             </motion.div>
@@ -121,14 +121,14 @@ export function LearningDashboard({
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-lg">
                             <MessageSquareQuote className="h-5 w-5 text-green-500" />
-                            Usage Coach
+                            Тренер Использования
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <p className="text-sm text-muted-foreground mb-4">
-                            Write sentences and get style & grammar feedback (B2).
+                            Пишите предложения и получайте разбор стиля и ошибок.
                         </p>
-                        <Button variant="outline" className="w-full group-hover:bg-green-50 dark:group-hover:bg-green-900/20">Write</Button>
+                        <Button variant="outline" className="w-full group-hover:bg-green-50 dark:group-hover:bg-green-900/20">Писать</Button>
                     </CardContent>
                 </Card>
             </motion.div>
@@ -139,14 +139,14 @@ export function LearningDashboard({
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-lg">
                             <Mic className="h-5 w-5 text-purple-500" />
-                            Roleplay
+                            Ролевая Игра
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <p className="text-sm text-muted-foreground mb-4">
-                            Activate these words in a realistic scenario.
+                            Используйте слова в реалистичном диалоге.
                         </p>
-                        <Button variant="outline" className="w-full group-hover:bg-purple-50 dark:group-hover:bg-purple-900/20">Start Talk</Button>
+                        <Button variant="outline" className="w-full group-hover:bg-purple-50 dark:group-hover:bg-purple-900/20">Начать Диалог</Button>
                     </CardContent>
                 </Card>
             </motion.div>
@@ -157,14 +157,14 @@ export function LearningDashboard({
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-lg">
                             <Headphones className="h-5 w-5 text-pink-500" />
-                            AI Podcast
+                            AI Подкаст
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <p className="text-sm text-muted-foreground mb-4">
-                            Listen to a generated radio show about your words.
+                            Слушайте радио-шоу о ваших словах.
                         </p>
-                        <Button variant="outline" className="w-full group-hover:bg-pink-50 dark:group-hover:bg-pink-900/20">Listen</Button>
+                        <Button variant="outline" className="w-full group-hover:bg-pink-50 dark:group-hover:bg-pink-900/20">Слушать</Button>
                     </CardContent>
                 </Card>
             </motion.div>
@@ -175,14 +175,14 @@ export function LearningDashboard({
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-lg">
                             <Briefcase className="h-5 w-5 text-blue-800" />
-                            Job Interview
+                            Собеседование
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <p className="text-sm text-muted-foreground mb-4">
-                            Strict HR simulation to test professional vocabulary.
+                            Симуляция интервью с HR для проверки лексики.
                         </p>
-                        <Button variant="outline" className="w-full group-hover:bg-blue-50 dark:group-hover:bg-blue-900/20">Start Interview</Button>
+                        <Button variant="outline" className="w-full group-hover:bg-blue-50 dark:group-hover:bg-blue-900/20">Начать Интервью</Button>
                     </CardContent>
                 </Card>
             </motion.div>
@@ -193,14 +193,14 @@ export function LearningDashboard({
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-lg">
                             <RefreshCw className="h-5 w-5 text-indigo-500" />
-                            Collocations
+                            Коллокации
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <p className="text-sm text-muted-foreground mb-4">
-                            Learn fixed phrases (Nomen-Verb-Verbindungen).
+                            Учите устойчивые фразы (Nomen-Verb-Verbindungen).
                         </p>
-                        <Button variant="outline" className="w-full group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/20">Find Pairs</Button>
+                        <Button variant="outline" className="w-full group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/20">Искать Пары</Button>
                     </CardContent>
                 </Card>
             </motion.div>
@@ -211,14 +211,14 @@ export function LearningDashboard({
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-lg">
                             <Sparkles className="h-5 w-5 text-orange-500" />
-                            Style Upgrade
+                            Апгрейд Стиля
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <p className="text-sm text-muted-foreground mb-4">
-                            Replace simple A2 words with your B2 vocabulary.
+                            Замените простые слова (A2) на профессиональные (B2).
                         </p>
-                        <Button variant="outline" className="w-full group-hover:bg-orange-50 dark:group-hover:bg-orange-900/20">Upgrade Style</Button>
+                        <Button variant="outline" className="w-full group-hover:bg-orange-50 dark:group-hover:bg-orange-900/20">Улучшить Стиль</Button>
                     </CardContent>
                 </Card>
             </motion.div>

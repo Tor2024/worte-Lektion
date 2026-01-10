@@ -39,13 +39,14 @@ const EnrichedWordSchema = z.object({
     structure: z.string().optional().describe('For conjunctions: Position of the verb (e.g. "Verb am Ende", "Verb an Position 2", "Inversion").'),
     // Common
     example: z.string().describe('A simple example sentence using the word in context.'),
+    exampleMeaning: z.string().describe('Russian translation of the example sentence.'),
     synonyms: z.array(z.object({
         word: z.string(),
         translation: z.string().describe('Russian translation of the synonym')
     })).optional().describe('List of 2-3 synonyms with translations.'),
     antonyms: z.array(z.object({
         word: z.string(),
-        translation: z.string().describe('Russian translation of the antonym')
+        translation: z.string().describe('Russian translation of the synonym')
     })).optional().describe('List of 1-2 antonyms with translations (if applicable).'),
 });
 
@@ -74,7 +75,7 @@ const renderPrompt = (input: WordEnrichmentInput) => {
      - **CRITICAL**: Indicate the verb position/structure: "Verb am Ende" (Nebensatz), "Verb an Position 2" (Hauptsatz ADUSO), or "Verg an Position 1" (Inversion etc).
   6. Provide 2-3 **Synonyms** with Russian translations (e.g. "beginnen" -> "anfangen (начинать)").
   7. Provide 1-2 **Antonyms** with Russian translations if applicable (e.g. "gut" -> "schlecht (плохой)").
-  8. Generate a simple, clear example sentence.
+  8. Generate a simple, clear example sentence AND its Russian translation.
 
   Return ONLY valid JSON matching the schema.`;
 };
