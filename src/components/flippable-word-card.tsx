@@ -68,101 +68,112 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
         if (reverse) {
             // RU Front
             return (
-                <div className="flex flex-col items-center gap-4">
-                    <Badge variant="outline" className="opacity-50 text-xs uppercase tracking-wider mb-2">
-                        {word.type} (Translate to DE)
-                    </Badge>
-                    <h3 className="text-2xl font-bold font-headline select-none text-center">
-                        {word.russian}
-                    </h3>
-                    {userWord.context && (
-                        <p className="text-sm text-muted-foreground italic text-center max-w-full break-words whitespace-normal">"{userWord.context}"</p>
-                    )}
-                    {userWord.contextTranslation && (
-                        <p className="text-xs text-muted-foreground/70 text-center max-w-full break-words whitespace-normal">({userWord.contextTranslation})</p>
+                <div className="flex flex-col items-center justify-center h-full gap-6 w-full">
+                    <div className="flex flex-col items-center">
+                        <Badge variant="outline" className="opacity-40 text-[10px] uppercase tracking-widest mb-3">
+                            {word.type} (RU &rarr; DE)
+                        </Badge>
+                        <h3 className="text-3xl font-bold font-headline select-none text-center leading-tight">
+                            {word.russian}
+                        </h3>
+                    </div>
+
+                    {(userWord.context || userWord.contextTranslation) && (
+                        <div className="relative text-center max-w-sm mx-auto p-4 bg-background/30 rounded-xl border border-border/20">
+                            {userWord.context && (
+                                <p className="text-base text-foreground/90 italic mb-1 leading-relaxed">"{userWord.context}"</p>
+                            )}
+                            {userWord.contextTranslation && (
+                                <p className="text-sm text-muted-foreground/80">({userWord.contextTranslation})</p>
+                            )}
+                        </div>
                     )}
                 </div>
             );
         } else {
             // DE Front
             return (
-                <div className="flex flex-col items-center gap-2">
-                    <Badge variant="outline" className="opacity-50 text-xs uppercase tracking-wider mb-2">
+                <div className="flex flex-col items-center w-full h-full relative">
+                    {/* Top: Meta Badge */}
+                    <Badge variant="outline" className="opacity-40 text-[10px] uppercase tracking-widest mb-4">
                         {word.type}
                     </Badge>
-                    <h3 className="text-3xl font-bold font-headline select-none text-center break-words hyphens-auto max-w-full">
-                        {formatGermanWord(word)}
-                    </h3>
-                    {word.type === 'noun' && (
-                        <div className="text-sm text-muted-foreground">
-                            {(word as any).plural ? `Pl: die ${(word as any).plural}` : 'Singular only'}
-                        </div>
-                    )}
+
+                    {/* Center Top: Word */}
+                    <div className="mb-6 flex flex-col items-center">
+                        <h3 className="text-4xl font-black font-headline select-none text-center break-words hyphens-auto tracking-tight leading-none text-foreground">
+                            {formatGermanWord(word)}
+                        </h3>
+                        {word.type === 'noun' && (
+                            <div className="text-base text-muted-foreground font-medium mt-1">
+                                {(word as any).plural ? `Pl: die ${(word as any).plural}` : 'Singular only'}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Middle: Rich Verb Details */}
                     {word.type === 'verb' && (
-                        <div className="text-sm text-left w-full space-y-3 pt-2">
+                        <div className="w-full flex-grow flex flex-col gap-3">
                             {/* Conjugation Table (Präsens) */}
-                            {(word as any).conjugations && (
-                                <div className="bg-background/50 p-2 rounded border border-border/50 text-xs">
-                                    <span className="font-bold opacity-70 block mb-1 text-center uppercase tracking-wider">Präsens (Сейчас)</span>
-                                    <div className="grid grid-cols-2 gap-x-2 gap-y-0.5">
-                                        <div><span className="opacity-50 mr-1">ich</span> <span className="font-medium">{(word as any).conjugations.ich}</span></div>
-                                        <div><span className="opacity-50 mr-1">wir</span> <span className="font-medium">{(word as any).conjugations.wir}</span></div>
-                                        <div><span className="opacity-50 mr-1">du</span> <span className="font-medium">{(word as any).conjugations.du}</span></div>
-                                        <div><span className="opacity-50 mr-1">ihr</span> <span className="font-medium">{(word as any).conjugations.ihr}</span></div>
-                                        <div><span className="opacity-50 mr-1">er/sie</span> <span className="font-medium">{(word as any).conjugations.er_sie_es}</span></div>
-                                        <div><span className="opacity-50 mr-1">sie</span> <span className="font-medium">{(word as any).conjugations.sie_Sie}</span></div>
+                            {(word as any).conjugations ? (
+                                <div className="bg-white/50 dark:bg-black/20 p-3 rounded-xl border border-black/5 dark:border-white/10 text-xs shadow-sm">
+                                    <span className="font-bold text-muted-foreground text-[10px] block mb-2 text-center uppercase tracking-widest">Präsens (Настоящее)</span>
+                                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-left px-2">
+                                        <div className="flex justify-between border-b border-black/5 pb-1"><span className="opacity-50">ich</span> <span className="font-semibold text-foreground/90">{(word as any).conjugations.ich}</span></div>
+                                        <div className="flex justify-between border-b border-black/5 pb-1"><span className="opacity-50">wir</span> <span className="font-semibold text-foreground/90">{(word as any).conjugations.wir}</span></div>
+                                        <div className="flex justify-between border-b border-black/5 pb-1"><span className="opacity-50">du</span> <span className="font-semibold text-foreground/90">{(word as any).conjugations.du}</span></div>
+                                        <div className="flex justify-between border-b border-black/5 pb-1"><span className="opacity-50">ihr</span> <span className="font-semibold text-foreground/90">{(word as any).conjugations.ihr}</span></div>
+                                        <div className="flex justify-between pb-1"><span className="opacity-50">er/sie</span> <span className="font-semibold text-foreground/90">{(word as any).conjugations.er_sie_es}</span></div>
+                                        <div className="flex justify-between pb-1"><span className="opacity-50">sie</span> <span className="font-semibold text-foreground/90">{(word as any).conjugations.sie_Sie}</span></div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="text-sm text-muted-foreground italic text-center">
+                                    {(word as any).conjugation}
+                                </div>
+                            )}
+
+                            {/* Other Tenses Block */}
+                            {(word as any).verbTenses && (
+                                <div className="bg-white/30 dark:bg-black/10 p-3 rounded-xl border border-black/5 dark:border-white/5 text-xs text-left">
+                                    <div className="grid grid-cols-1 gap-1.5">
+                                        <div className="flex items-center justify-between gap-2">
+                                            <span className="opacity-60 w-24">Perfekt:</span>
+                                            <span className="font-bold text-foreground truncate">{(word as any).perfektForm}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between gap-2">
+                                            <span className="opacity-60 w-24">Präteritum:</span>
+                                            <span className="font-medium text-foreground truncate">{(word as any).verbTenses.praeteritum}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between gap-2">
+                                            <span className="opacity-60 w-24">Futur I:</span>
+                                            <span className="font-medium text-foreground truncate">{(word as any).verbTenses.futur1}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between gap-2">
+                                            <span className="opacity-60 w-24">Futur II:</span>
+                                            <span className="font-medium text-foreground truncate">{(word as any).verbTenses.futur2}</span>
+                                        </div>
                                     </div>
                                 </div>
                             )}
 
-                            {/* Other Tenses */}
-                            <div className="space-y-1 bg-background/50 p-2 rounded border border-border/50 text-xs">
-                                <span className="font-bold opacity-70 block mb-1 text-center uppercase tracking-wider">Времена</span>
-
-                                <div className="flex justify-between border-b border-border/30 pb-1">
-                                    <span className="opacity-80">Perfekt (Разговорное):</span>
-                                    <span className="font-bold">{(word as any).perfektForm}</span>
-                                </div>
-
-                                {(word as any).verbTenses && (
-                                    <>
-                                        <div className="flex justify-between border-b border-border/30 pb-1">
-                                            <span className="opacity-80">Präteritum (Письменное):</span>
-                                            <span className="font-medium">{(word as any).verbTenses.praeteritum}</span>
-                                        </div>
-                                        <div className="flex justify-between border-b border-border/30 pb-1">
-                                            <span className="opacity-80">Futur I (Будущее):</span>
-                                            <span className="font-medium">{(word as any).verbTenses.futur1}</span>
-                                        </div>
-                                        <div className="flex justify-between">
-                                            <span className="opacity-80">Futur II (Буд. заверш.):</span>
-                                            <span className="font-medium opacity-80">{(word as any).verbTenses.futur2}</span>
-                                        </div>
-                                    </>
-                                )}
-                            </div>
-
-                            {/* Case/Prep */}
+                            {/* Case - Highlighted */}
                             {((word as any).preposition || (word as any).case) && (
-                                <div className="text-center pt-1">
-                                    <span className="font-bold text-primary text-sm px-2 py-1 bg-primary/10 rounded-full">
+                                <div className="mt-auto pt-2 text-center">
+                                    <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-primary/10 text-primary font-bold text-sm shadow-sm ring-1 ring-primary/20">
                                         {[(word as any).preposition ? `+ ${(word as any).preposition}` : null, (word as any).case ? `+ ${(word as any).case}` : null].filter(Boolean).join(' ')}
-                                    </span>
+                                    </div>
                                 </div>
                             )}
                         </div>
                     )}
-                    {word.type === 'preposition' && (
-                        <Badge variant="secondary" className="mt-2">
-                            + {(word as any).case}
-                        </Badge>
-                    )}
 
-                    {/* Context Example on Front (Requested for Verbs, helpful for all) */}
-                    {userWord.context && (
-                        <p className="text-sm text-muted-foreground italic text-center mt-4 max-w-full break-words whitespace-normal px-2">
-                            "{userWord.context}"
-                        </p>
+                    {word.type !== 'verb' && userWord.context && (
+                        <div className="mt-auto mb-4 w-full">
+                            <div className="p-4 bg-background/30 rounded-xl border border-border/20 text-center">
+                                <p className="text-base text-foreground/90 italic leading-snug">"{userWord.context}"</p>
+                            </div>
+                        </div>
                     )}
                 </div>
             );
@@ -269,8 +280,9 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
     };
 
     return (
+    return (
         <div
-            className={cn("relative h-96 w-full perspective-1000 cursor-pointer group", className)}
+            className={cn("relative h-[550px] w-full perspective-1000 cursor-pointer group", className)}
             onClick={handleFlip}
         >
             <motion.div
@@ -281,14 +293,14 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
             >
                 {/* FRONT SIDE */}
                 <Card
-                    className={cn("absolute inset-0 backface-hidden flex flex-col shadow-md hover:shadow-xl transition-shadow bg-card overflow-hidden", cardStyle)}
+                    className={cn("absolute inset-0 backface-hidden flex flex-col shadow-lg hover:shadow-2xl transition-all duration-300 bg-card overflow-hidden", cardStyle)}
                     style={{ backfaceVisibility: 'hidden' }}
                 >
-                    <div className="flex-grow overflow-y-auto no-scrollbar p-4 flex flex-col items-center justify-center text-center space-y-4">
+                    <div className="flex-grow flex flex-col p-6 items-center justify-between text-center relative z-10">
                         {renderFrontContent()}
                     </div>
 
-                    <div className="absolute bottom-3 right-3 text-xs text-muted-foreground flex items-center gap-1 opacity-50 group-hover:opacity-100 transition-opacity bg-background/80 px-2 py-1 rounded backdrop-blur-sm pointer-events-none">
+                    <div className="absolute bottom-3 right-3 text-xs text-muted-foreground/60 flex items-center gap-1 opacity-50 group-hover:opacity-100 transition-opacity bg-background/40 px-2 py-1 rounded backdrop-blur-sm pointer-events-none">
                         <RotateCcw className="h-3 w-3" /> Click to flip
                     </div>
 
@@ -307,12 +319,11 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
 
                 {/* BACK SIDE */}
                 <Card
-                    className={cn("absolute inset-0 backface-hidden rotate-y-180 bg-muted shadow-md flex flex-col overflow-hidden", cardStyle)}
+                    className={cn("absolute inset-0 backface-hidden rotate-y-180 bg-muted shadow-lg flex flex-col overflow-hidden", cardStyle)}
                     style={{ transform: 'rotateY(180deg)', backfaceVisibility: 'hidden' }}
                 >
-                    <div className="flex-grow overflow-y-auto no-scrollbar p-3 flex flex-col items-center justify-center text-center space-y-2">
+                    <div className="flex-grow flex flex-col p-6 items-center justify-center text-center space-y-4 relative z-10 w-full">
                         {renderBackContent()}
-                        <div className="h-4 w-full flex-shrink-0" /> {/* Spacer for bottom scroll */}
                     </div>
                 </Card>
             </motion.div>

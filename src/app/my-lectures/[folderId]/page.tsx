@@ -98,6 +98,9 @@ export default function FolderDetailsPage({ params }: { params: Promise<{ folder
 
     const displayWords = sessionMode ? sessionWords : folder.words;
 
+    const [isBatchRefreshing, setIsBatchRefreshing] = useState(false);
+    const [refreshProgress, setRefreshProgress] = useState('');
+
     const handleRefreshWord = async (userWord: UserVocabularyWord) => {
         try {
             const german = userWord.word.german;
@@ -119,6 +122,33 @@ export default function FolderDetailsPage({ params }: { params: Promise<{ folder
         }
     };
 
+    const handleBatchRefresh = async () => {
+        if (!confirm(`Обновить все слова (${folder.words.length}) с помощью AI? Это займет некоторое время.`)) return;
+
+        setIsBatchRefreshing(true);
+        const total = folder.words.length;
+        let count = 0;
+
+        try {
+            for (const word of folder.words) {
+                count++;
+                setRefreshProgress(`${count} / ${total}`);
+
+                try {
+                    await handleRefreshWord(word);
+                } catch (err) {
+                    console.error(`Failed to refresh word ${word.word.german}`, err);
+                }
+
+                // Add delay to be gentle on rate limits (1.5s)
+                await new Promise(resolve => setTimeout(resolve, 1500));
+            }
+        } finally {
+            setIsBatchRefreshing(false);
+            setRefreshProgress('');
+        }
+    };
+
     return (
         <div className="container mx-auto py-8">
             <div className="mb-6">
@@ -133,7 +163,19 @@ export default function FolderDetailsPage({ params }: { params: Promise<{ folder
                         <h1 className="text-3xl font-bold font-headline">{folder.name}</h1>
                         <p className="text-muted-foreground">{folder.words.length} слов</p>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 items-center">
+                        {isBatchRefreshing ? (
+                            <div className="flex items-center gap-2 px-4 py-2 bg-secondary/50 rounded-md">
+                                <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                                <span className="text-sm font-medium">{refreshProgress}</span>
+                            </div>
+                        ) : (
+                            <Button variant="outline" onClick={handleBatchRefresh} disabled={folder.words.length === 0}>
+                                <RotateCcw className="h-4 w-4 mr-2" />
+                                Обновить все
+                            </Button>
+                        )}
+
                         <Button variant="default" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white" onClick={() => router.push(`/my-lectures/${folderId}/deep-dive`)}>
                             Start Deep Dive
                         </Button>
