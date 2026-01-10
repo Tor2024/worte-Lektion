@@ -73,9 +73,9 @@ const renderPrompt = (input: WordEnrichmentInput) => {
      - **CRITICAL**: Provide the FULL conjugation table for Present tense in the 'conjugations' object with keys: ich, du, er_sie_es, wir, ihr, sie_Sie.
      - **CRITICAL**: Provide the Perfekt form (3rd person sing.) including "hat" or "ist" (e.g. "hat gemacht", "ist gegangen").
      - **CRITICAL**: Provide 'verbTenses' object with 3rd person singular forms for:
-        - `praeteritum`: e.g. "lief" or "machte"
-        - `futur1`: e.g. "wird laufen"
-        - `futur2`: e.g. "wird gelaufen sein"
+        - 'praeteritum': e.g. "lief" or "machte"
+        - 'futur1': e.g. "wird laufen"
+        - 'futur2': e.g. "wird gelaufen sein"
      - **CRITICAL**: If the verb is separable (trennbar), indicate this clearly.
      - **CRITICAL**: If the verb requires a specific **Preposition** (e.g. "warten auf"), fill 'preposition' AND 'case'.
      - **CRITICAL**: If the verb takes a direct object in **Dativ** (e.g. "helfen", "danken", "gefallen"), FILL 'case'="Dativ" (leave 'preposition' empty if none).
