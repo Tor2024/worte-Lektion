@@ -203,7 +203,10 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                 style={{ transformStyle: 'preserve-3d' }}
             >
                 {/* FRONT SIDE */}
-                <Card className={cn("absolute inset-0 backface-hidden flex flex-col justify-between shadow-md hover:shadow-xl transition-shadow", baseColorClass)}>
+                <Card
+                    className={cn("absolute inset-0 backface-hidden flex flex-col justify-between shadow-md hover:shadow-xl transition-shadow bg-card", baseColorClass)}
+                    style={{ backfaceVisibility: 'hidden' }}
+                >
                     <CardContent className="flex flex-col items-center justify-center h-full p-6 text-center space-y-4">
                         {renderFrontContent()}
 
@@ -227,7 +230,7 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
 
                 {/* BACK SIDE */}
                 <Card
-                    className={cn("absolute inset-0 backface-hidden rotate-y-180 bg-muted/30 shadow-md", baseColorClass)}
+                    className={cn("absolute inset-0 backface-hidden rotate-y-180 bg-muted shadow-md", baseColorClass)}
                     style={{ transform: 'rotateY(180deg)', backfaceVisibility: 'hidden' }}
                 >
                     <CardContent className="flex flex-col items-center justify-center h-full p-6 text-center space-y-4">
