@@ -280,7 +280,6 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
     };
 
     return (
-    return (
         <div
             className={cn("relative h-[550px] w-full perspective-1000 cursor-pointer group", className)}
             onClick={handleFlip}
