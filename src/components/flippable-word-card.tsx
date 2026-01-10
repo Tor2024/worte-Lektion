@@ -76,10 +76,10 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                         {word.russian}
                     </h3>
                     {userWord.context && (
-                        <p className="text-sm text-muted-foreground italic text-center max-w-[200px] truncate">"{userWord.context}"</p>
+                        <p className="text-sm text-muted-foreground italic text-center max-w-full break-words whitespace-normal">"{userWord.context}"</p>
                     )}
                     {userWord.contextTranslation && (
-                        <p className="text-xs text-muted-foreground/70 text-center max-w-[200px] truncate">({userWord.contextTranslation})</p>
+                        <p className="text-xs text-muted-foreground/70 text-center max-w-full break-words whitespace-normal">({userWord.contextTranslation})</p>
                     )}
                 </div>
             );
@@ -170,10 +170,10 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                 <div className="space-y-1 flex flex-col items-center">
                     <h4 className="text-xl font-bold text-primary mb-1">{word.russian}</h4>
                     {userWord.context && (
-                        <p className="text-sm text-muted-foreground italic text-center max-w-[250px] whitespace-pre-wrap">"{userWord.context}"</p>
+                        <p className="text-sm text-muted-foreground italic text-center max-w-full break-words whitespace-normal">"{userWord.context}"</p>
                     )}
                     {userWord.contextTranslation && (
-                        <p className="text-xs text-muted-foreground/70 text-center max-w-[250px] whitespace-pre-wrap">({userWord.contextTranslation})</p>
+                        <p className="text-xs text-muted-foreground/70 text-center max-w-full break-words whitespace-normal">({userWord.contextTranslation})</p>
                     )}
                     {(userWord.synonyms && userWord.synonyms.length > 0) && (
                         <div className="w-full text-left text-sm mt-2 p-2 bg-background/50 rounded-md border border-border/50">
