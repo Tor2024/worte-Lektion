@@ -119,7 +119,7 @@ export function PodcastPlayer({ data }: PodcastPlayerProps) {
                 <CardContent className="p-4 flex flex-col items-center">
                     <div className="flex items-center gap-2 mb-2">
                         <Headphones className="h-4 w-4 text-primary" />
-                        <span className="font-bold text-sm tracking-widest text-primary uppercase">Now Playing</span>
+                        <span className="font-bold text-sm tracking-widest text-primary uppercase">Сейчас играет</span>
                     </div>
                     <h3 className="text-xl font-headline font-bold mb-6 text-center">{data.title}</h3>
 
