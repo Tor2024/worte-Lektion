@@ -99,62 +99,58 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                         </div>
                     )}
                     {word.type === 'verb' && (
-                        {
-                            word.type === 'verb' && (
-                                <div className="text-sm text-left w-full space-y-3 pt-2">
-                                    {/* Conjugation Table (Präsens) */}
-                                    {(word as any).conjugations && (
-                                        <div className="bg-background/50 p-2 rounded border border-border/50 text-xs">
-                                            <span className="font-bold opacity-70 block mb-1 text-center uppercase tracking-wider">Präsens (Сейчас)</span>
-                                            <div className="grid grid-cols-2 gap-x-2 gap-y-0.5">
-                                                <div><span className="opacity-50 mr-1">ich</span> <span className="font-medium">{(word as any).conjugations.ich}</span></div>
-                                                <div><span className="opacity-50 mr-1">wir</span> <span className="font-medium">{(word as any).conjugations.wir}</span></div>
-                                                <div><span className="opacity-50 mr-1">du</span> <span className="font-medium">{(word as any).conjugations.du}</span></div>
-                                                <div><span className="opacity-50 mr-1">ihr</span> <span className="font-medium">{(word as any).conjugations.ihr}</span></div>
-                                                <div><span className="opacity-50 mr-1">er/sie</span> <span className="font-medium">{(word as any).conjugations.er_sie_es}</span></div>
-                                                <div><span className="opacity-50 mr-1">sie</span> <span className="font-medium">{(word as any).conjugations.sie_Sie}</span></div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Other Tenses */}
-                                    <div className="space-y-1 bg-background/50 p-2 rounded border border-border/50 text-xs">
-                                        <span className="font-bold opacity-70 block mb-1 text-center uppercase tracking-wider">Времена</span>
-
-                                        <div className="flex justify-between border-b border-border/30 pb-1">
-                                            <span className="opacity-80">Perfekt (Разговорное):</span>
-                                            <span className="font-bold">{(word as any).perfektForm}</span>
-                                        </div>
-
-                                        {(word as any).verbTenses && (
-                                            <>
-                                                <div className="flex justify-between border-b border-border/30 pb-1">
-                                                    <span className="opacity-80">Präteritum (Письменное):</span>
-                                                    <span className="font-medium">{(word as any).verbTenses.praeteritum}</span>
-                                                </div>
-                                                <div className="flex justify-between border-b border-border/30 pb-1">
-                                                    <span className="opacity-80">Futur I (Будущее):</span>
-                                                    <span className="font-medium">{(word as any).verbTenses.futur1}</span>
-                                                </div>
-                                                <div className="flex justify-between">
-                                                    <span className="opacity-80">Futur II (Буд. заверш.):</span>
-                                                    <span className="font-medium opacity-80">{(word as any).verbTenses.futur2}</span>
-                                                </div>
-                                            </>
-                                        )}
+                        <div className="text-sm text-left w-full space-y-3 pt-2">
+                            {/* Conjugation Table (Präsens) */}
+                            {(word as any).conjugations && (
+                                <div className="bg-background/50 p-2 rounded border border-border/50 text-xs">
+                                    <span className="font-bold opacity-70 block mb-1 text-center uppercase tracking-wider">Präsens (Сейчас)</span>
+                                    <div className="grid grid-cols-2 gap-x-2 gap-y-0.5">
+                                        <div><span className="opacity-50 mr-1">ich</span> <span className="font-medium">{(word as any).conjugations.ich}</span></div>
+                                        <div><span className="opacity-50 mr-1">wir</span> <span className="font-medium">{(word as any).conjugations.wir}</span></div>
+                                        <div><span className="opacity-50 mr-1">du</span> <span className="font-medium">{(word as any).conjugations.du}</span></div>
+                                        <div><span className="opacity-50 mr-1">ihr</span> <span className="font-medium">{(word as any).conjugations.ihr}</span></div>
+                                        <div><span className="opacity-50 mr-1">er/sie</span> <span className="font-medium">{(word as any).conjugations.er_sie_es}</span></div>
+                                        <div><span className="opacity-50 mr-1">sie</span> <span className="font-medium">{(word as any).conjugations.sie_Sie}</span></div>
                                     </div>
-
-                                    {/* Case/Prep */}
-                                    {((word as any).preposition || (word as any).case) && (
-                                        <div className="text-center pt-1">
-                                            <span className="font-bold text-primary text-sm px-2 py-1 bg-primary/10 rounded-full">
-                                                {[(word as any).preposition ? `+ ${(word as any).preposition}` : null, (word as any).case ? `+ ${(word as any).case}` : null].filter(Boolean).join(' ')}
-                                            </span>
-                                        </div>
-                                    )}
                                 </div>
-                            )
-                        }
+                            )}
+
+                            {/* Other Tenses */}
+                            <div className="space-y-1 bg-background/50 p-2 rounded border border-border/50 text-xs">
+                                <span className="font-bold opacity-70 block mb-1 text-center uppercase tracking-wider">Времена</span>
+
+                                <div className="flex justify-between border-b border-border/30 pb-1">
+                                    <span className="opacity-80">Perfekt (Разговорное):</span>
+                                    <span className="font-bold">{(word as any).perfektForm}</span>
+                                </div>
+
+                                {(word as any).verbTenses && (
+                                    <>
+                                        <div className="flex justify-between border-b border-border/30 pb-1">
+                                            <span className="opacity-80">Präteritum (Письменное):</span>
+                                            <span className="font-medium">{(word as any).verbTenses.praeteritum}</span>
+                                        </div>
+                                        <div className="flex justify-between border-b border-border/30 pb-1">
+                                            <span className="opacity-80">Futur I (Будущее):</span>
+                                            <span className="font-medium">{(word as any).verbTenses.futur1}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="opacity-80">Futur II (Буд. заверш.):</span>
+                                            <span className="font-medium opacity-80">{(word as any).verbTenses.futur2}</span>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+
+                            {/* Case/Prep */}
+                            {((word as any).preposition || (word as any).case) && (
+                                <div className="text-center pt-1">
+                                    <span className="font-bold text-primary text-sm px-2 py-1 bg-primary/10 rounded-full">
+                                        {[(word as any).preposition ? `+ ${(word as any).preposition}` : null, (word as any).case ? `+ ${(word as any).case}` : null].filter(Boolean).join(' ')}
+                                    </span>
+                                </div>
+                            )}
+                        </div>
                     )}
                     {word.type === 'preposition' && (
                         <Badge variant="secondary" className="mt-2">
