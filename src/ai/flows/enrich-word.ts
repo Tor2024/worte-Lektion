@@ -13,11 +13,11 @@ export type WordEnrichmentInput = z.infer<typeof WordEnrichmentInputSchema>;
 const WordTypeSchema = z.enum(['noun', 'verb', 'adjective', 'conjunction', 'preposition', 'other']);
 
 const EnrichedWordSchema = z.object({
-    german: z.string().describe('The canonical German form. For nouns, ONLY the noun itself without the article (e.g. "Haus", not "das Haus"). For verbs, the infinitive.'),
+    german: z.string().describe('The canonical German form. For nouns, the noun itself. For verbs, the infinitive OR the fixed phrase if provided (e.g. "es geht um...").'),
     russian: z.string().describe('Russian translation.'),
     type: WordTypeSchema,
     // Verb specifics
-    conjugation: z.string().optional().describe('For verbs: 3rd person singular Present (e.g. "er läuft").'),
+    conjugation: z.string().optional().describe('For verbs: 3rd person singular Present (e.g. "er läuft" or "es geht").'),
     conjugations: z.object({
         ich: z.string(),
         du: z.string(),
@@ -26,7 +26,7 @@ const EnrichedWordSchema = z.object({
         ihr: z.string(),
         sie_Sie: z.string(),
     }).optional().describe('Full conjugation table for Present tense.'),
-    perfektForm: z.string().optional().describe('For verbs: 3rd person singular Perfekt (e.g. "ist gelaufen" or "hat gemacht"). MUST include auxiliary verb.'),
+    perfektForm: z.string().optional().describe('For verbs: 3rd person singular Perfekt.'),
     preposition: z.string().optional().describe('For verbs: associated preposition if any (e.g. "auf" for "warten auf").'),
     case: z.enum(['Akkusativ', 'Dativ', 'Genitiv', 'Nominativ']).optional().describe('For verbs/prepositions: required case (e.g. "Akkusativ" for "warten auf").'),
     // Noun specifics
@@ -62,8 +62,9 @@ const renderPrompt = (input: WordEnrichmentInput) => {
   Instructions:
   1. Identify the word type.
   2. Provide the Russian translation.
-  3. If it is a **Verb**:
-     - Provide the 3rd person singular Present (e.g. "er läuft").
+  3. If it is a **Verb** or **Fixed Expression** (e.g. "es geht um", "Angst haben"):
+     - **CRITICAL**: If the user input is a specific phrase (e.g. "es geht um"), KEEP IT as the 'german' field. Do not reduce it to just "gehen".
+     - Provide the 3rd person singular Present (e.g. "er läuft", "es geht", "er hat Angst").
      - **CRITICAL**: Provide the FULL conjugation table for Present tense in the 'conjugations' object with keys: ich, du, er_sie_es, wir, ihr, sie_Sie.
      - **CRITICAL**: Provide the Perfekt form (3rd person sing.) including "hat" or "ist" (e.g. "hat gemacht", "ist gegangen").
      - **CRITICAL**: If the verb is separable (trennbar), indicate this clearly in the usage or example.

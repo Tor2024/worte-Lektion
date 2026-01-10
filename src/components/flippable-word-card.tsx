@@ -102,6 +102,11 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                         <div className="text-sm text-muted-foreground italic flex flex-col gap-1 text-center">
                             <span>{(word as any).conjugation}</span>
                             <span>{(word as any).perfektForm}</span>
+                            {(word as any).preposition && (
+                                <span className="font-bold text-primary mt-1">
+                                    + {(word as any).preposition} {(word as any).case ? `+ ${(word as any).case}` : ''}
+                                </span>
+                            )}
                         </div>
                     )}
                     {word.type === 'preposition' && (
@@ -218,7 +223,7 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                     className={cn("absolute inset-0 backface-hidden flex flex-col justify-between shadow-md hover:shadow-xl transition-shadow bg-card", cardStyle)}
                     style={{ backfaceVisibility: 'hidden' }}
                 >
-                    <CardContent className="flex flex-col items-center justify-center h-full p-6 text-center space-y-4">
+                    <CardContent className="flex flex-col items-center justify-center h-full p-3 text-center space-y-2 overflow-y-auto no-scrollbar">
                         {renderFrontContent()}
 
                         <div className="absolute bottom-4 right-4 text-xs text-muted-foreground flex items-center gap-1 opacity-50 group-hover:opacity-100 transition-opacity">
@@ -241,10 +246,10 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
 
                 {/* BACK SIDE */}
                 <Card
-                    className={cn("absolute inset-0 backface-hidden rotate-y-180 bg-muted shadow-md", cardStyle)}
+                    className={cn("absolute inset-0 backface-hidden rotate-y-180 bg-muted shadow-md flex flex-col", cardStyle)}
                     style={{ transform: 'rotateY(180deg)', backfaceVisibility: 'hidden' }}
                 >
-                    <CardContent className="flex flex-col items-center justify-center h-full p-6 text-center space-y-4">
+                    <CardContent className="flex flex-col items-center justify-center h-full p-3 text-center space-y-2 overflow-y-auto no-scrollbar">
                         {renderBackContent()}
                     </CardContent>
                 </Card>
