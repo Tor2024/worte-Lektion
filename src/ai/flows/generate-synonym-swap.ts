@@ -13,6 +13,7 @@ export type GenerateSynonymSwapInput = z.infer<typeof GenerateSynonymSwapInputSc
 const SynonymSwapItemSchema = z.object({
     id: z.string(),
     originalSentence: z.string().describe('A sentence using a simple/A2 word (e.g. "Das ist sehr wichtig").'),
+    weakWord: z.string().describe('The specific A2 word in the sentence that needs to be replaced (e.g. "wichtig").'),
     targetSynonym: z.string().describe('The B2/C1 synonym from the user\'s list or related (e.g. "entscheidend", "wesentlich").'),
     betterSentence: z.string().describe('The same sentence but upgraded with the target synonym.'),
     explanation: z.string().describe('Why the synonym is better in this context (Russian).'),
@@ -38,7 +39,8 @@ const renderPrompt = (input: GenerateSynonymSwapInput) => {
   1. Pick words from the source list that are high-level (B2/C1).
   2. For each, create a "Weak" sentence (A2 level) that uses a simpler synonym.
      - *Example User Word:* "erforderlich"
-     - *Weak Sentence:* "Es ist nötig, dass wir das machen." (using 'nötig')
+     - *Weak Sentence:* "Es ist nötig, dass wir das machen."
+     - *Weak Word:* "nötig"
      - *Target:* "erforderlich"
   3. The goal is for the user to guess which of THEIR vocabulary words replaces the weak word.
   

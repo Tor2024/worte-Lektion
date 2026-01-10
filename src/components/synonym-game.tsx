@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 export interface SynonymItem {
     id: string;
     originalSentence: string;
+    weakWord?: string; // Made optional for backward compatibility
     targetSynonym: string;
     betterSentence: string;
     explanation: string;
@@ -41,6 +42,26 @@ export function SynonymGame({ items, onComplete }: SynonymGameProps) {
         }
     };
 
+    // Helper to highlight the weak word
+    const renderSentence = (sentence: string, weakWord?: string) => {
+        if (!weakWord) return sentence;
+
+        const parts = sentence.split(new RegExp(`(${weakWord})`, 'gi'));
+        return (
+            <span>
+                {parts.map((part, i) =>
+                    part.toLowerCase() === weakWord.toLowerCase() ? (
+                        <span key={i} className="font-bold text-destructive underline decoration-wavy decoration-destructive/50 underline-offset-4 mx-1">
+                            {part}
+                        </span>
+                    ) : (
+                        part
+                    )
+                )}
+            </span>
+        );
+    };
+
     return (
         <div className="space-y-6">
             {items.map((item) => {
@@ -50,7 +71,7 @@ export function SynonymGame({ items, onComplete }: SynonymGameProps) {
                     <Card key={item.id} className="overflow-hidden">
                         <CardHeader className="bg-muted/30 pb-3">
                             <div className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-1">Слабый стиль (A2):</div>
-                            <p className="text-lg italic text-muted-foreground">"{item.originalSentence}"</p>
+                            <p className="text-lg italic text-muted-foreground">"{renderSentence(item.originalSentence, item.weakWord)}"</p>
                         </CardHeader>
                         <CardContent className="pt-4">
                             <div className="flex flex-col gap-4">

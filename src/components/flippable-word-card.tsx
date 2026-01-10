@@ -90,7 +90,7 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                     <Badge variant="outline" className="opacity-50 text-xs uppercase tracking-wider mb-2">
                         {word.type}
                     </Badge>
-                    <h3 className="text-3xl font-bold font-headline select-none text-center">
+                    <h3 className="text-3xl font-bold font-headline select-none text-center break-words hyphens-auto max-w-full">
                         {formatGermanWord(word)}
                     </h3>
                     {word.type === 'noun' && (
@@ -220,38 +220,39 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
             >
                 {/* FRONT SIDE */}
                 <Card
-                    className={cn("absolute inset-0 backface-hidden flex flex-col justify-between shadow-md hover:shadow-xl transition-shadow bg-card", cardStyle)}
+                    className={cn("absolute inset-0 backface-hidden flex flex-col shadow-md hover:shadow-xl transition-shadow bg-card overflow-hidden", cardStyle)}
                     style={{ backfaceVisibility: 'hidden' }}
                 >
-                    <CardContent className="flex flex-col items-center justify-center h-full p-3 text-center space-y-2 overflow-y-auto no-scrollbar">
+                    <div className="flex-grow overflow-y-auto no-scrollbar p-4 flex flex-col items-center justify-center text-center space-y-4">
                         {renderFrontContent()}
+                    </div>
 
-                        <div className="absolute bottom-4 right-4 text-xs text-muted-foreground flex items-center gap-1 opacity-50 group-hover:opacity-100 transition-opacity">
-                            <RotateCcw className="h-3 w-3" /> Click to flip
-                        </div>
+                    <div className="absolute bottom-3 right-3 text-xs text-muted-foreground flex items-center gap-1 opacity-50 group-hover:opacity-100 transition-opacity bg-background/80 px-2 py-1 rounded backdrop-blur-sm pointer-events-none">
+                        <RotateCcw className="h-3 w-3" /> Click to flip
+                    </div>
 
-                        {onRefresh && ( // Added Refresh button
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity z-20 h-6 w-6 p-0"
-                                onClick={handleRefreshClick}
-                                disabled={isRefreshing}
-                            >
-                                <RotateCcw className={cn("h-3 w-3", isRefreshing && "animate-spin")} />
-                            </Button>
-                        )}
-                    </CardContent>
+                    {onRefresh && (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity z-20 h-6 w-6 p-0 bg-background/50 hover:bg-background/80"
+                            onClick={handleRefreshClick}
+                            disabled={isRefreshing}
+                        >
+                            <RotateCcw className={cn("h-3 w-3", isRefreshing && "animate-spin")} />
+                        </Button>
+                    )}
                 </Card>
 
                 {/* BACK SIDE */}
                 <Card
-                    className={cn("absolute inset-0 backface-hidden rotate-y-180 bg-muted shadow-md flex flex-col", cardStyle)}
+                    className={cn("absolute inset-0 backface-hidden rotate-y-180 bg-muted shadow-md flex flex-col overflow-hidden", cardStyle)}
                     style={{ transform: 'rotateY(180deg)', backfaceVisibility: 'hidden' }}
                 >
-                    <CardContent className="flex flex-col items-center justify-center h-full p-3 text-center space-y-2 overflow-y-auto no-scrollbar">
+                    <div className="flex-grow overflow-y-auto no-scrollbar p-3 flex flex-col items-center justify-center text-center space-y-2">
                         {renderBackContent()}
-                    </CardContent>
+                        <div className="h-4 w-full flex-shrink-0" /> {/* Spacer for bottom scroll */}
+                    </div>
                 </Card>
             </motion.div>
         </div>
