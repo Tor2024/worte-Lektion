@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Button } from "./ui/button";
+import { SpeakButton } from "./speak-button";
 import { Input } from "./ui/input";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Loader2, Send, Lightbulb, CheckCircle2 } from "lucide-react";
@@ -134,6 +135,11 @@ export function RoleplayInterface({
                             >
                                 {msg.content}
                             </div>
+                            {msg.role === 'model' && (
+                                <div className="mt-1 ml-1">
+                                    <SpeakButton text={msg.content} size="sm" className="h-6 w-6" />
+                                </div>
+                            )}
 
                             {/* Feedback for user messages */}
                             {msg.role === 'user' && msg.feedback && (

@@ -52,6 +52,8 @@ CREATE TABLE custom_words (
   example_singular TEXT,
   example_plural TEXT,
   conjugation TEXT, -- JSON string or comma separated
+  synonyms JSONB, -- Array of {word, translation}
+  antonyms JSONB, -- Array of {word, translation}
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
 );
 

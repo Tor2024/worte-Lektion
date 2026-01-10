@@ -39,6 +39,14 @@ const EnrichedWordSchema = z.object({
     structure: z.string().optional().describe('For conjunctions: Position of the verb (e.g. "Verb am Ende", "Verb an Position 2", "Inversion").'),
     // Common
     example: z.string().describe('A simple example sentence using the word in context.'),
+    synonyms: z.array(z.object({
+        word: z.string(),
+        translation: z.string().describe('Russian translation of the synonym')
+    })).optional().describe('List of 2-3 synonyms with translations.'),
+    antonyms: z.array(z.object({
+        word: z.string(),
+        translation: z.string().describe('Russian translation of the antonym')
+    })).optional().describe('List of 1-2 antonyms with translations (if applicable).'),
 });
 
 export type EnrichedWordOutput = z.infer<typeof EnrichedWordSchema>;
@@ -64,7 +72,9 @@ const renderPrompt = (input: WordEnrichmentInput) => {
        - **CRITICAL**: The 'german' field MUST NOT include the article (e.g., return "Reinigung", not "die Reinigung").
   5. If it is a **Conjunction**:
      - **CRITICAL**: Indicate the verb position/structure: "Verb am Ende" (Nebensatz), "Verb an Position 2" (Hauptsatz ADUSO), or "Verg an Position 1" (Inversion etc).
-  6. Generate a simple, clear example sentence.
+  6. Provide 2-3 **Synonyms** with Russian translations (e.g. "beginnen" -> "anfangen (начинать)").
+  7. Provide 1-2 **Antonyms** with Russian translations if applicable (e.g. "gut" -> "schlecht (плохой)").
+  8. Generate a simple, clear example sentence.
 
   Return ONLY valid JSON matching the schema.`;
 };

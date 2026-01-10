@@ -74,6 +74,11 @@ interface OtherWord extends BaseVocabularyWord {
   example: string;
 }
 
+export interface Synonym {
+  word: string;
+  translation: string;
+}
+
 export type VocabularyWord = Noun | Verb | Adjective | Conjunction | Preposition | Adverb | OtherWord;
 
 export interface SM2State {
@@ -89,7 +94,10 @@ export interface UserVocabularyWord {
   word: VocabularyWord;
   sm2State: SM2State;
   context?: string;
+  synonyms?: Synonym[];
+  antonyms?: Synonym[];
   addedAt: number;
+  deepDiveStage?: number; // 0=None, 1=Podcast, 2=Collocation, 3=Synonym, 4=Interview
 }
 
 export interface CustomFolder {
