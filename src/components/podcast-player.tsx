@@ -56,10 +56,21 @@ export function PodcastPlayer({ data }: PodcastPlayerProps) {
         // Try to assign different voices
         if (voices.length > 0) {
             // Valid German voices
-            const maleVoice = voices.find(v => v.name.includes('Male') || v.name.includes('Markus')) || voices[0];
-            const femaleVoice = voices.find(v => v.name.includes('Female') || v.name.includes('Anna')) || voices[1] || voices[0];
+            // Improved Voice Selection
+            // Host = Max (Male)
+            // Expert = Anna (Female)
 
-            utterance.voice = line.speaker === 'Host' ? maleVoice : femaleVoice;
+            const maleKeywords = ['Male', 'Markus', 'Stefan', 'Paul'];
+            const femaleKeywords = ['Female', 'Anna', 'Katja', 'Hedda', 'Steffi'];
+
+            const maleVoice = voices.find(v => maleKeywords.some(k => v.name.includes(k))) || voices.find(v => !v.name.includes('Google Deutsch')) || voices[1] || voices[0];
+            const femaleVoice = voices.find(v => femaleKeywords.some(k => v.name.includes(k))) || voices.find(v => v.name.includes('Google Deutsch')) || voices[0];
+
+            // If we ended up with the same voice, force a swap if possible
+            const finalMale = maleVoice;
+            const finalFemale = (femaleVoice === maleVoice && voices.length > 1) ? voices.find(v => v !== maleVoice) : femaleVoice;
+
+            utterance.voice = line.speaker === 'Host' ? finalMale : finalFemale;
         }
 
         utterance.onend = () => {
