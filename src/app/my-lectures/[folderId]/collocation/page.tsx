@@ -70,7 +70,7 @@ export default function CollocationPage({ params }: { params: Promise<{ folderId
                         <h2 className="text-xl font-bold mb-2">Мастер Связок (B2+)</h2>
                         <p className="text-muted-foreground mb-6 max-w-md">
                             Учите не просто слова, а устойчивые выражения (Nomen-Verb-Verbindungen).
-                            Например: вместо "kritisiert" -> "Übt Kritik an".
+                            Например: вместо "kritisiert" &rarr; "Übt Kritik an".
                         </p>
                         <Button size="lg" onClick={handleGenerate} className="bg-indigo-600 hover:bg-indigo-700 text-white">
                             Найти связки
