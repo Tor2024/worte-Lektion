@@ -25,6 +25,13 @@ interface Noun extends BaseVocabularyWord {
   isIrregular?: boolean;
 }
 
+export interface Governance {
+  preposition: string; // e.g. "auf", "an", or "без предлога"
+  case: 'Akkusativ' | 'Dativ' | 'Genitiv' | 'Nominativ' | 'no-case';
+  meaning: string; // Russian explanation
+  example: string; // German example sentence
+}
+
 interface Verb extends BaseVocabularyWord {
   type: 'verb';
   conjugation: string; // 3rd person singular Present
@@ -42,6 +49,7 @@ interface Verb extends BaseVocabularyWord {
   auxiliaryVerb?: 'haben' | 'sein';
   preposition?: string; // e.g. "auf"
   case?: 'Akkusativ' | 'Dativ' | 'Genitiv' | 'Nominativ'; // e.g. "Akkusativ" for "warten auf + Akk"
+  governance?: Governance[];
 }
 
 interface Adjective extends BaseVocabularyWord {
@@ -49,6 +57,7 @@ interface Adjective extends BaseVocabularyWord {
   comparative: string;
   superlative: string;
   example: string;
+  governance?: Governance[];
 }
 
 interface Conjunction extends BaseVocabularyWord {

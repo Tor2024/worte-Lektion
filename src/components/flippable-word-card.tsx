@@ -157,14 +157,57 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                                 </div>
                             )}
 
-                            {/* Case - Highlighted */}
-                            {((word as any)?.preposition || (word as any)?.case) && (
+                            {/* Governance List - NEW */}
+                            {(word as any)?.governance && (word as any).governance.length > 0 && (
+                                <div className="w-full mt-2 flex flex-col gap-2">
+                                    <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest text-center mb-1">Управление (Rektion)</div>
+                                    {(word as any).governance.map((gov: any, idx: number) => (
+                                        <div key={idx} className="bg-primary/5 dark:bg-primary/10 p-3 rounded-lg border border-primary/10 text-left">
+                                            <div className="flex flex-wrap items-center gap-1.5 mb-1">
+                                                <span className="font-bold text-primary">{word.german}</span>
+                                                <Badge variant="secondary" className="bg-primary/20 text-primary hover:bg-primary/30 text-[10px] px-1.5 py-0 h-5">
+                                                    {gov.preposition} + {gov.case}
+                                                </Badge>
+                                                <span className="text-muted-foreground mx-1">→</span>
+                                                <span className="text-sm font-medium">{gov.meaning}</span>
+                                            </div>
+                                            <p className="text-xs text-muted-foreground italic leading-relaxed">
+                                                {gov.example}
+                                            </p>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Legacy Case - Show only if no governance list */}
+                            {!((word as any)?.governance && (word as any).governance.length > 0) && ((word as any)?.preposition || (word as any)?.case) && (
                                 <div className="mt-auto pt-2 text-center">
                                     <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-primary/10 text-primary font-bold text-sm shadow-sm ring-1 ring-primary/20">
                                         {[(word as any)?.preposition ? `+ ${(word as any).preposition}` : null, (word as any)?.case ? `+ ${(word as any).case}` : null].filter(Boolean).join(' ')}
                                     </div>
                                 </div>
                             )}
+                        </div>
+                    )}
+
+                    {word.type === 'adjective' && (word as any)?.governance && (word as any).governance.length > 0 && (
+                        <div className="w-full mt-2 flex flex-col gap-2">
+                            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest text-center mb-1">Управление (Rektion)</div>
+                            {(word as any).governance.map((gov: any, idx: number) => (
+                                <div key={idx} className="bg-primary/5 dark:bg-primary/10 p-3 rounded-lg border border-primary/10 text-left">
+                                    <div className="flex flex-wrap items-center gap-1.5 mb-1">
+                                        <span className="font-bold text-primary">{word.german}</span>
+                                        <Badge variant="secondary" className="bg-primary/20 text-primary hover:bg-primary/30 text-[10px] px-1.5 py-0 h-5">
+                                            {gov.preposition} + {gov.case}
+                                        </Badge>
+                                        <span className="text-muted-foreground mx-1">→</span>
+                                        <span className="text-sm font-medium">{gov.meaning}</span>
+                                    </div>
+                                    <p className="text-xs text-muted-foreground italic leading-relaxed">
+                                        {gov.example}
+                                    </p>
+                                </div>
+                            ))}
                         </div>
                     )}
 
@@ -195,14 +238,37 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                         </div>
                     )}
                     {word.type === 'verb' && (
-                        <div className="text-sm text-muted-foreground italic flex flex-col gap-1 text-center">
+                        <div className="text-sm text-muted-foreground italic flex flex-col gap-1 text-center w-full">
                             <span>{(word as any).conjugation}</span>
                             <span>{(word as any).perfektForm}</span>
-                            {((word as any).preposition || (word as any).case) && (
-                                <span className="font-bold text-primary mt-1">
-                                    {[(word as any).preposition ? `+ ${(word as any).preposition}` : null, (word as any).case ? `+ ${(word as any).case}` : null].filter(Boolean).join(' ')}
-                                </span>
+
+                            {(word as any).governance && (word as any).governance.length > 0 ? (
+                                <div className="mt-2 space-y-1">
+                                    {(word as any).governance.map((gov: any, i: number) => (
+                                        <div key={i} className="text-xs font-bold text-primary">
+                                            {gov.preposition} + {gov.case} <span className="text-muted-foreground">→</span> {gov.meaning}
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                ((word as any).preposition || (word as any).case) && (
+                                    <span className="font-bold text-primary mt-1">
+                                        {[(word as any).preposition ? `+ ${(word as any).preposition}` : null, (word as any).case ? `+ ${(word as any).case}` : null].filter(Boolean).join(' ')}
+                                    </span>
+                                )
                             )}
+                        </div>
+                    )}
+
+                    {word.type === 'adjective' && (word as any).governance && (word as any).governance.length > 0 && (
+                        <div className="text-sm text-muted-foreground italic flex flex-col gap-1 text-center w-full mt-2">
+                            <div className="space-y-1">
+                                {(word as any).governance.map((gov: any, i: number) => (
+                                    <div key={i} className="text-xs font-bold text-primary">
+                                        {gov.preposition} + {gov.case} <span className="text-muted-foreground">→</span> {gov.meaning}
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     )}
 

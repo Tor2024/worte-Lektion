@@ -12,6 +12,13 @@ export type WordEnrichmentInput = z.infer<typeof WordEnrichmentInputSchema>;
 
 const WordTypeSchema = z.enum(['noun', 'verb', 'adjective', 'conjunction', 'preposition', 'other']);
 
+const GovernanceSchema = z.object({
+    preposition: z.string().describe('The preposition (e.g. "auf", "an") or "без предлога" if none.'),
+    case: z.enum(['Akkusativ', 'Dativ', 'Genitiv', 'Nominativ', 'no-case']).describe('The required case.'),
+    meaning: z.string().describe('Russian explanation of the meaning for this specific governance.'),
+    example: z.string().describe('German example sentence using this specific governance.'),
+});
+
 const EnrichedWordSchema = z.object({
     german: z.string().describe('The canonical German form. For nouns, the noun itself. For verbs, the infinitive OR the fixed phrase if provided (e.g. "es geht um...").'),
     russian: z.string().describe('Russian translation.'),
@@ -53,6 +60,7 @@ const EnrichedWordSchema = z.object({
         word: z.string(),
         translation: z.string().describe('Russian translation of the synonym')
     })).optional().describe('List of 1-2 antonyms with translations (if applicable).'),
+    governance: z.array(GovernanceSchema).optional().describe('List of normative prepositions and cases for verbs and adjectives.'),
 });
 
 export type EnrichedWordOutput = z.infer<typeof EnrichedWordSchema>;
@@ -67,27 +75,26 @@ const renderPrompt = (input: WordEnrichmentInput) => {
   Instructions:
   1. Identify the word type.
   2. Provide the Russian translation.
-  3. If it is a **Verb** or **Fixed Expression** (e.g. "es geht um", "Angst haben"):
-     - **CRITICAL**: If the user input is a specific phrase (e.g. "es geht um"), KEEP IT as the 'german' field. Do not reduce it to just "gehen".
-     - Provide the 3rd person singular Present (e.g. "er läuft", "es geht", "er hat Angst").
-     - **CRITICAL**: Provide the FULL conjugation table for Present tense in the 'conjugations' object with keys: ich, du, er_sie_es, wir, ihr, sie_Sie.
-     - **CRITICAL**: Provide the Perfekt form (3rd person sing.) including "hat" or "ist" (e.g. "hat gemacht", "ist gegangen").
-     - **CRITICAL**: Provide 'verbTenses' object with 3rd person singular forms for:
-        - 'praeteritum': e.g. "lief" or "machte"
-        - 'futur1': e.g. "wird laufen"
-        - 'futur2': e.g. "wird gelaufen sein"
-     - **CRITICAL**: If the verb is separable (trennbar), indicate this clearly.
-     - **CRITICAL**: If the verb requires a specific **Preposition** (e.g. "warten auf"), fill 'preposition' AND 'case'.
-     - **CRITICAL**: If the verb takes a direct object in **Dativ** (e.g. "helfen", "danken", "gefallen"), FILL 'case'="Dativ" (leave 'preposition' empty if none).
-     - **CRITICAL**: If the verb requires a specific preposition or case (e.g. "warten auf + Akk", "helfen + Dat"), YOU MUST PROVIDE IT in the 'preposition' and 'case' fields. If it's a direct transitive verb, you can leave case as 'Akkusativ' (or appropriate) if relevant, but prioritize prepositional objects.
-    4. If it is a **Noun**:
-       - Provide article, plural form.
-       - **CRITICAL**: The 'german' field MUST NOT include the article (e.g., return "Reinigung", not "die Reinigung").
-  5. If it is a **Conjunction**:
-     - **CRITICAL**: Indicate the verb position/structure: "Verb am Ende" (Nebensatz), "Verb an Position 2" (Hauptsatz ADUSO), or "Verg an Position 1" (Inversion etc).
-  6. Provide 2-3 **Synonyms** with Russian translations (e.g. "beginnen" -> "anfangen (начинать)").
-  7. Provide 1-2 **Antonyms** with Russian translations if applicable (e.g. "gut" -> "schlecht (плохой)").
-  8. Generate a simple, clear example sentence AND its Russian translation.
+  3. If it is a **Verb** or **Adjective**:
+     - **CRITICAL: GOVERNANCE (Reksion)**:
+       - Determine the normative German prepositions and cases required by this word.
+       - **Strictly follow German norms**. Do not use "logical" or direct translations of Russian prepositions.
+       - If there is only one governance, provide it in the 'governance' list.
+       - If there are multiple governances (different prepositions or different cases with different meanings, e.g., "bestehen auf/aus/in"), provide EACH one separately.
+       - For each governance item:
+         - 'preposition': The German preposition OR "без предлога" if it takes a direct object or has no preposition.
+         - 'case': The required case (Akkusativ, Dativ, Genitiv, Nominativ). Use 'no-case' only if truly applicable (rare).
+         - 'meaning': A brief Russian explanation of the meaning for this specific case/preposition combo.
+         - 'example': A clear German example sentence using this specific governance.
+  4. If it is a **Verb** or **Fixed Expression**:
+     - **CRITICAL**: Keep providing all previous details: 3rd person singular Present, FULL conjugation table ('conjugations'), Perfekt form, and 'verbTenses'.
+     - Keep 'preposition' and 'case' at the top level for backward compatibility (fill them from the primary governance item), but prioritize the 'governance' array in the UI.
+  5. If it is a **Noun**:
+     - Provide article, plural form.
+  6. If it is a **Conjunction**:
+     - Indicate the verb position/structure.
+  7. Provide 2-3 **Synonyms** and 1-2 **Antonyms** with Russian translations.
+  8. Generate a default example sentence (main example) and its translation.
 
   Return ONLY valid JSON matching the schema.`;
 };
