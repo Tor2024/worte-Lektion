@@ -100,7 +100,7 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                     </Badge>
 
                     {/* Center Top: Word */}
-                    <div className="mb-6 flex flex-col items-center">
+                    <div className="mb-4 flex flex-col items-center">
                         <h3 className="text-4xl font-black font-headline select-none text-center break-words hyphens-auto tracking-tight leading-none text-foreground">
                             {formatGermanWord(word)}
                         </h3>
@@ -113,7 +113,7 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
 
                     {/* Middle: Rich Verb Details */}
                     {word.type === 'verb' && (
-                        <div className="w-full flex-grow flex flex-col gap-3">
+                        <div className="w-full flex-grow flex flex-col gap-2">
                             {/* Conjugation Table (Präsens) */}
                             {(word as any)?.conjugations ? (
                                 <div className="bg-white/50 dark:bg-black/20 p-3 rounded-xl border border-black/5 dark:border-white/10 text-xs shadow-sm">
@@ -347,7 +347,7 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
 
     return (
         <div
-            className={cn("relative h-[550px] w-full perspective-1000 cursor-pointer group", className)}
+            className={cn("relative h-[700px] w-full perspective-1000 cursor-pointer group", className)}
             onClick={handleFlip}
         >
             <motion.div
