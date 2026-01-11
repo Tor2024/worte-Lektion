@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Play, Pause, SkipBack, SkipForward, Headphones } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { cleanTextForSpeech } from '@/lib/german-utils';
 
 export interface PodcastScript {
     title: string;
@@ -50,7 +51,7 @@ export function PodcastPlayer({ data }: PodcastPlayerProps) {
         }
 
         const line = data.script[index];
-        const utterance = new SpeechSynthesisUtterance(line.text);
+        const utterance = new SpeechSynthesisUtterance(cleanTextForSpeech(line.text));
         utterance.lang = 'de-DE';
 
         // Try to assign different voices
@@ -70,7 +71,7 @@ export function PodcastPlayer({ data }: PodcastPlayerProps) {
             const finalMale = maleVoice;
             const finalFemale = (femaleVoice === maleVoice && voices.length > 1) ? voices.find(v => v !== maleVoice) : femaleVoice;
 
-            utterance.voice = line.speaker === 'Host' ? finalMale : finalFemale;
+            utterance.voice = (line.speaker === 'Host' ? finalMale : finalFemale) || null;
         }
 
         utterance.onend = () => {

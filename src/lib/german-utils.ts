@@ -26,3 +26,12 @@ export function formatGermanWord(word: VocabularyWord): string {
 
     return word.german;
 }
+
+/**
+ * Strips markdown and other technical characters that shouldn't be voiced by TTS.
+ * Prevents hearing "stern" or "star" when encountering bold (**) or italic (*) text.
+ */
+export function cleanTextForSpeech(text: string): string {
+    if (!text) return "";
+    return text.replace(/[*_~`#]/g, '');
+}

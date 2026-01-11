@@ -4,6 +4,7 @@ import { useSpeech } from '@/hooks/use-speech';
 import { Button } from '@/components/ui/button';
 import { Volume2, VolumeX, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { cleanTextForSpeech } from '@/lib/german-utils';
 
 interface SpeakButtonProps {
     text: string;
@@ -30,7 +31,9 @@ export function SpeakButton({
         if (isSpeaking) {
             stop();
         } else {
-            speak(text, lang);
+            // Clean markdown bold/italic characters before speaking
+            const cleanedText = cleanTextForSpeech(text);
+            speak(cleanedText, lang);
         }
     };
 
