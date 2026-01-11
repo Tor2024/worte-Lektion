@@ -34,6 +34,10 @@ export function SpeakButton({
         }
     };
 
+    const handlePointerDown = (e: React.PointerEvent) => {
+        e.stopPropagation();
+    };
+
     return (
         <Button
             variant={variant}
@@ -44,6 +48,7 @@ export function SpeakButton({
                 className
             )}
             onClick={handleClick}
+            onPointerDown={handlePointerDown}
             title={isSpeaking ? "Остановить" : "Озвучить"}
             type="button"
         >

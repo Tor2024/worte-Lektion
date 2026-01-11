@@ -297,7 +297,7 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                         </div>
                     )}
 
-                    <div className="flex gap-2 mt-4">
+                    <div className="flex gap-2 mt-4" onClick={(e) => e.stopPropagation()}>
                         <SpeakButton text={formatGermanWord(word)} variant="ghost" size="sm" className="h-8 w-8" />
                     </div>
                 </div>
@@ -337,7 +337,7 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                             </div>
                         </div>
                     )}
-                    <div className="mt-4 flex gap-2">
+                    <div className="mt-4 flex gap-2" onClick={(e) => e.stopPropagation()}>
                         <SpeakButton text={formatGermanWord(word)} variant="ghost" size="sm" className="h-8 w-8" />
                     </div>
                 </div>

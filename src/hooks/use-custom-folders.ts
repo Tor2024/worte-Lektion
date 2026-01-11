@@ -52,7 +52,7 @@ export function useCustomFolders() {
             if (f.id === folderId) {
                 return {
                     ...f,
-                    words: [...f.words, userWord],
+                    words: [userWord, ...f.words],
                     updatedAt: Date.now()
                 };
             }
