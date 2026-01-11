@@ -201,6 +201,7 @@ export default function FolderDetailsPage({ params }: { params: Promise<{ folder
                     onCollocation={() => router.push(`/my-lectures/${folderId}/collocation`)}
                     onSynonymSwap={() => router.push(`/my-lectures/${folderId}/synonym`)}
                     onStartDrill={() => router.push(`/my-lectures/${folderId}/drill`)}
+                    onRektionDrill={() => router.push(`/my-lectures/${folderId}/rektion`)}
                 />
             )}
 

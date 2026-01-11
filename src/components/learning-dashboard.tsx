@@ -19,6 +19,7 @@ interface LearningDashboardProps {
     onCollocation?: () => void;
     onSynonymSwap?: () => void;
     onInterivew?: () => void;
+    onRektionDrill?: () => void;
 }
 
 export function LearningDashboard({
@@ -31,7 +32,8 @@ export function LearningDashboard({
     onPodcast,
     onCollocation,
     onSynonymSwap,
-    onInterivew
+    onInterivew,
+    onRektionDrill
 }: LearningDashboardProps) {
 
     const container = {
@@ -219,6 +221,22 @@ export function LearningDashboard({
                             Замените простые слова (A2) на профессиональные (B2).
                         </p>
                         <Button variant="outline" className="w-full group-hover:bg-orange-50 dark:group-hover:bg-orange-900/20">Улучшить Стиль</Button>
+                    </CardContent>
+                </Card>
+            </motion.div>            {/* 9. Rektion Trainer */}
+            <motion.div variants={item}>
+                <Card className="h-full hover:border-primary/50 transition-colors cursor-pointer group border-2 border-primary/20 bg-primary/5" onClick={onRektionDrill}>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-lg">
+                            <Shuffle className="h-5 w-5 text-red-500" />
+                            Глобальное Управление
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-sm text-muted-foreground mb-4">
+                            Блиц-тест на предлоги и падежи изо всех ваших папок.
+                        </p>
+                        <Button variant="default" className="w-full group-hover:bg-primary/90">Тренировать Блиц</Button>
                     </CardContent>
                 </Card>
             </motion.div>
