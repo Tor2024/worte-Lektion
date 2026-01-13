@@ -202,12 +202,14 @@ export function RektionTrainer({ words, onBack }: RektionTrainerProps) {
                         {isAnswered && (
                             <CardFooter className="flex-col bg-muted/30 pt-6">
                                 <div className="text-center mb-6">
-                                    <p className="text-lg font-bold text-foreground">
-                                        {currentQuestion.correctGovernance.meaning}
-                                    </p>
-                                    <p className="text-sm italic text-muted-foreground mt-2 px-4 italic leading-relaxed">
-                                        "{currentQuestion.correctGovernance.example}"
-                                    </p>
+                                    <div
+                                        className="text-lg font-bold text-foreground prose prose-slate dark:prose-invert max-w-none"
+                                        dangerouslySetInnerHTML={{ __html: currentQuestion.correctGovernance.meaning }}
+                                    />
+                                    <div
+                                        className="text-sm italic text-muted-foreground mt-2 px-4 italic leading-relaxed prose prose-slate dark:prose-invert max-w-none"
+                                        dangerouslySetInnerHTML={{ __html: `"${currentQuestion.correctGovernance.example}"` }}
+                                    />
                                 </div>
                                 <Button size="lg" className="w-full h-12 text-lg font-bold group" onClick={nextQuestion}>
                                     Дальше <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />

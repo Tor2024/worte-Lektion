@@ -589,7 +589,10 @@ export function ExerciseEngine({ topic, customWords, onMastered, onWordUpdate }:
               <SpeakButton text={exerciseData.readingText} variant="outline" size="sm" showText />
             </CardHeader>
             <CardContent>
-              <p className="text-lg leading-relaxed">{exerciseData.readingText}</p>
+              <div
+                className="text-lg leading-relaxed prose prose-slate dark:prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: exerciseData.readingText }}
+              />
               <div className="mt-8 flex gap-4">
                 <Button onClick={handleGlobalContinue} className="w-full sm:w-auto">Продолжить</Button>
               </div>
@@ -676,7 +679,10 @@ export function ExerciseEngine({ topic, customWords, onMastered, onWordUpdate }:
             <Card>
               <CardHeader><CardTitle className="text-center font-headline">Как это по-немецки?</CardTitle></CardHeader>
               <CardContent className="space-y-4">
-                <div className="text-3xl font-bold text-center py-6">{learningWord.russian}</div>
+                <div
+                  className="text-3xl font-bold text-center py-6 prose prose-slate dark:prose-invert max-w-none"
+                  dangerouslySetInnerHTML={{ __html: learningWord.russian }}
+                />
 
                 {learningFeedback ? (
                   <div className="animate-in fade-in zoom-in duration-300">
@@ -795,7 +801,10 @@ export function ExerciseEngine({ topic, customWords, onMastered, onWordUpdate }:
             </CardHeader>
             <CardContent>
               <div className="text-lg text-foreground mb-4">
-                <p className="font-medium bg-muted/30 p-4 rounded-md mb-2">{stdExercise.question}</p>
+                <div
+                  className="font-medium bg-muted/30 p-4 rounded-md mb-2 prose prose-slate dark:prose-invert max-w-none"
+                  dangerouslySetInnerHTML={{ __html: stdExercise.question }}
+                />
               </div>
 
               {stdExercise.type === 'multiple-choice' ? (

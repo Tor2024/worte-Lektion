@@ -81,10 +81,16 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                     {(userWord.context || userWord.contextTranslation) && (
                         <div className="relative text-center max-w-sm mx-auto p-4 bg-background/30 rounded-xl border border-border/20">
                             {userWord.context && (
-                                <p className="text-base text-foreground/90 italic mb-1 leading-relaxed">"{userWord.context}"</p>
+                                <p
+                                    className="text-base text-foreground/90 italic mb-1 leading-relaxed prose prose-slate dark:prose-invert max-w-none"
+                                    dangerouslySetInnerHTML={{ __html: `"${userWord.context}"` }}
+                                />
                             )}
                             {userWord.contextTranslation && (
-                                <p className="text-sm text-muted-foreground/80">({userWord.contextTranslation})</p>
+                                <p
+                                    className="text-sm text-muted-foreground/80 prose prose-slate dark:prose-invert max-w-none"
+                                    dangerouslySetInnerHTML={{ __html: `(${userWord.contextTranslation})` }}
+                                />
                             )}
                         </div>
                     )}
@@ -169,11 +175,15 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                                                     {gov.preposition} + {gov.case}
                                                 </Badge>
                                                 <span className="text-muted-foreground mx-1">→</span>
-                                                <span className="text-sm font-medium">{gov.meaning}</span>
+                                                <span
+                                                    className="text-sm font-medium prose prose-slate dark:prose-invert max-w-none inline"
+                                                    dangerouslySetInnerHTML={{ __html: gov.meaning }}
+                                                />
                                             </div>
-                                            <p className="text-xs text-muted-foreground italic leading-relaxed">
-                                                {gov.example}
-                                            </p>
+                                            <div
+                                                className="text-xs text-muted-foreground italic leading-relaxed prose prose-slate dark:prose-invert max-w-none"
+                                                dangerouslySetInnerHTML={{ __html: gov.example }}
+                                            />
                                         </div>
                                     ))}
                                 </div>
@@ -214,7 +224,10 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                     {word.type !== 'verb' && userWord.context && (
                         <div className="mt-auto mb-4 w-full">
                             <div className="p-4 bg-background/30 rounded-xl border border-border/20 text-center">
-                                <p className="text-base text-foreground/90 italic leading-snug">"{userWord.context}"</p>
+                                <div
+                                    className="text-base text-foreground/90 italic leading-snug prose prose-slate dark:prose-invert max-w-none"
+                                    dangerouslySetInnerHTML={{ __html: `"${userWord.context}"` }}
+                                />
                             </div>
                         </div>
                     )}
@@ -308,10 +321,16 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                 <div className="space-y-1 flex flex-col items-center">
                     <h4 className="text-xl font-bold text-primary mb-1">{word.russian}</h4>
                     {userWord.context && (
-                        <p className="text-sm text-muted-foreground italic text-center max-w-full break-words whitespace-normal">"{userWord.context}"</p>
+                        <div
+                            className="text-sm text-muted-foreground italic text-center max-w-full break-words whitespace-normal prose prose-slate dark:prose-invert"
+                            dangerouslySetInnerHTML={{ __html: `"${userWord.context}"` }}
+                        />
                     )}
                     {userWord.contextTranslation && (
-                        <p className="text-xs text-muted-foreground/70 text-center max-w-full break-words whitespace-normal">({userWord.contextTranslation})</p>
+                        <div
+                            className="text-xs text-muted-foreground/70 text-center max-w-full break-words whitespace-normal prose prose-slate dark:prose-invert"
+                            dangerouslySetInnerHTML={{ __html: `(${userWord.contextTranslation})` }}
+                        />
                     )}
                     {(userWord.synonyms && userWord.synonyms.length > 0) && (
                         <div className="w-full text-left text-sm mt-2 p-2 bg-background/50 rounded-md border border-border/50">
