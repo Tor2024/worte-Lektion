@@ -13,6 +13,7 @@ export type WordType = 'noun' | 'verb' | 'adjective' | 'conjunction' | 'preposit
 interface BaseVocabularyWord {
   german: string;
   russian: string;
+  level?: 'A0' | 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'Beruf';
 }
 
 interface Noun extends BaseVocabularyWord {

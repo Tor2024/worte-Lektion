@@ -39,37 +39,62 @@ export function RektionTrainer({ words, onBack }: RektionTrainerProps) {
         const actionableWords = words.filter(w =>
             (w.word.type === 'verb' || w.word.type === 'adjective') &&
             (w.word as any).governance &&
-            (w.word as any).governance.length > 0
+            (w.word as any).governance.length > 0 &&
+            (w.word as any).governance.some((g: Governance) => g.preposition && g.preposition !== 'ohne' && g.preposition.trim() !== '')
         );
 
         if (actionableWords.length === 0) return;
 
-        // Shuffle and take up to 20
-        const shuffled = [...actionableWords].sort(() => 0.5 - Math.random()).slice(0, 20);
+        const LEVEL_PRIORITY: Record<string, number> = {
+            'Beruf': 10,
+            'B2': 9,
+            'B1': 8,
+            'A2': 7,
+            'A1': 6,
+            'A0': 5
+        };
 
-        const generatedQuestions: RektionQuestion[] = shuffled.flatMap(userWord => {
+        // Sort by priority (Level) then shuffle slightly within tiers
+        const prioritized = [...actionableWords].sort((a, b) => {
+            const levelA = (a.word.level && LEVEL_PRIORITY[a.word.level]) || 0;
+            const levelB = (b.word.level && LEVEL_PRIORITY[b.word.level]) || 0;
+
+            // If levels differ significantly, prioritize higher level
+            if (levelA !== levelB) return levelB - levelA;
+
+            // Otherwise random shuffle
+            return 0.5 - Math.random();
+        });
+
+        // Take top 20
+        const selectedWords = prioritized.slice(0, 20);
+
+        const generatedQuestions: RektionQuestion[] = selectedWords.flatMap(userWord => {
             const wordData = userWord.word as any;
-            return wordData.governance.map((gov: Governance) => {
-                const correctAnswer = `${gov.preposition} + ${gov.case}`;
+            return wordData.governance
+                .filter((gov: Governance) => gov.preposition && gov.preposition !== 'ohne' && gov.preposition.trim() !== '')
+                .map((gov: Governance) => {
+                    const correctAnswer = `${gov.preposition} + ${gov.case}`;
 
-                // Generate distractors
-                const distractors = new Set<string>();
-                while (distractors.size < 3) {
-                    const randomPrep = COMMON_PREPOSITIONS[Math.floor(Math.random() * COMMON_PREPOSITIONS.length)];
-                    const randomCase = CASES[Math.floor(Math.random() * CASES.length)];
-                    const option = `${randomPrep} + ${randomCase}`;
-                    if (option !== correctAnswer) {
-                        distractors.add(option);
+                    // Generate distractors
+                    const distractors = new Set<string>();
+                    while (distractors.size < 3) {
+                        const randomPrep = COMMON_PREPOSITIONS[Math.floor(Math.random() * COMMON_PREPOSITIONS.length)];
+                        const randomCase = CASES[Math.floor(Math.random() * CASES.length)];
+                        const option = `${randomPrep} + ${randomCase}`;
+                        // Strict check: No empty preps, no 'ohne', no duplicate of correct answer
+                        if (option !== correctAnswer && randomPrep !== 'ohne' && randomPrep.trim() !== '') {
+                            distractors.add(option);
+                        }
                     }
-                }
 
-                return {
-                    word: wordData.german,
-                    type: wordData.type,
-                    correctGovernance: gov,
-                    options: [...Array.from(distractors), correctAnswer].sort(() => 0.5 - Math.random())
-                };
-            });
+                    return {
+                        word: wordData.german,
+                        type: wordData.type,
+                        correctGovernance: gov,
+                        options: [...Array.from(distractors), correctAnswer].sort(() => 0.5 - Math.random())
+                    };
+                });
         }).sort(() => 0.5 - Math.random()).slice(0, 15); // Limit session length
 
         setQuestions(generatedQuestions);
