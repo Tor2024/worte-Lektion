@@ -1,147 +1,218 @@
 
-'use client';
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useStudyQueue } from '@/hooks/use-study-queue';
 import { StudyQueueItem } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { BrainCircuit, CheckCircle, XCircle, ArrowRight } from 'lucide-react';
+import { BrainCircuit, CheckCircle, XCircle, ArrowRight, Layers, Target, PenTool } from 'lucide-react';
 import { PrimingView } from '@/components/smart-session/priming-view';
 import { RecognitionView } from '@/components/smart-session/recognition-view';
 import { ProductionView } from '@/components/smart-session/production-view';
 import { RemedialView } from '@/components/smart-session/remedial-view';
-import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { Badge } from '@/components/ui/badge';
 
+type GlobalPhase = 'priming' | 'recognition' | 'production' | 'remedial';
 type SessionState = 'loading' | 'intro' | 'active' | 'summary';
 
 export function SmartSessionManager() {
-    const { getDailySession, updateItemStatus, queue } = useStudyQueue();
+    const { getDailySession, updateItemStatus } = useStudyQueue();
     const [sessionQueue, setSessionQueue] = useState<StudyQueueItem[]>([]);
-    const [currentIndex, setCurrentIndex] = useState(0);
     const [sessionState, setSessionState] = useState<SessionState>('loading');
-    const [currentStep, setCurrentStep] = useState<'priming' | 'recognition' | 'production' | 'remedial'>('priming');
-    const [score, setScore] = useState(0);
+
+    // Phase Management
+    const [currentPhase, setCurrentPhase] = useState<GlobalPhase>('priming');
+    const [phaseIndex, setPhaseIndex] = useState(0); // Index within the current phase
+
+    // Drill State (Phase 2)
+    const [recognitionHits, setRecognitionHits] = useState<Record<string, number>>({});
+
+    // Score/Results
+    const [results, setResults] = useState<Record<string, 'success' | 'fail'>>({});
 
     useEffect(() => {
-        // Init session
-        const items = getDailySession(20); // Get 20 items max
+        const items = getDailySession(20);
         setSessionQueue(items);
         setSessionState(items.length > 0 ? 'intro' : 'summary');
     }, [getDailySession]);
 
-    const currentItem = sessionQueue[currentIndex];
-
-    // Determine initial step based on item status
-    useEffect(() => {
-        if (!currentItem) return;
-
-        if (currentItem.status === 'leech') {
-            setCurrentStep('remedial');
-        } else if (currentItem.status === 'new') {
-            setCurrentStep('priming');
-        } else {
-            setCurrentStep('recognition'); // Skip priming for reviews
+    // Derived: Current item based on phaseIndex
+    const currentItem = useMemo(() => {
+        if (currentPhase === 'recognition') {
+            // In recognition, we filter for words that haven't reached 2 hits yet
+            const pendingWords = sessionQueue.filter(w => (recognitionHits[w.id] || 0) < 2);
+            return pendingWords[phaseIndex % pendingWords.length];
         }
-    }, [currentItem]);
-
+        return sessionQueue[phaseIndex];
+    }, [sessionQueue, phaseIndex, currentPhase, recognitionHits]);
 
     const handleNext = (result: 'success' | 'fail') => {
-        // Logic to move between steps or words
-        // 3D Flow:
-        // New: Priming -> Recognition -> Production
-        // Review: Recognition -> Production
+        if (!currentItem) return;
 
-        if (result === 'fail') {
-            // If fail, we generally update status and maybe move to next or stay?
-            // For now, simple logic: Fail instantly moves to next word to keep flow, but marks as fail
-            updateItemStatus(currentItem.id, 'fail');
-            goToNextWord();
-            return;
+        if (currentPhase === 'priming') {
+            if (phaseIndex < sessionQueue.length - 1) {
+                setPhaseIndex(i => i + 1);
+            } else {
+                // Move to Recognition
+                setCurrentPhase('recognition');
+                setPhaseIndex(0);
+            }
         }
+        else if (currentPhase === 'recognition') {
+            if (result === 'success') {
+                const newHits = (recognitionHits[currentItem.id] || 0) + 1;
+                setRecognitionHits(prev => ({ ...prev, [currentItem.id]: newHits }));
 
-        // Success logic
-        if (currentStep === 'priming') {
-            setCurrentStep('recognition');
-        } else if (currentStep === 'remedial') {
-            setCurrentStep('production');
-        } else if (currentStep === 'recognition') {
-            setCurrentStep('production');
-        } else if (currentStep === 'production') {
-            // Full success!
-            updateItemStatus(currentItem.id, 'success');
-            setScore(s => s + 1);
-            goToNextWord();
+                // Check if all words reached 2 hits
+                const allDone = sessionQueue.every(w => {
+                    const hits = w.id === currentItem.id ? newHits : (recognitionHits[w.id] || 0);
+                    return hits >= 2;
+                });
+
+                if (allDone) {
+                    setCurrentPhase('production');
+                    setPhaseIndex(0);
+                } else {
+                    // Move to next pending word
+                    setPhaseIndex(i => i + 1);
+                }
+            } else {
+                // Fail in recognition resets hits for this word
+                setRecognitionHits(prev => ({ ...prev, [currentItem.id]: 0 }));
+                setPhaseIndex(i => i + 1);
+                setResults(prev => ({ ...prev, [currentItem.id]: 'fail' }));
+            }
+        }
+        else if (currentPhase === 'production') {
+            const finalResult = result === 'fail' ? 'fail' : (results[currentItem.id] === 'fail' ? 'fail' : 'success');
+            setResults(prev => ({ ...prev, [currentItem.id]: finalResult }));
+
+            if (phaseIndex < sessionQueue.length - 1) {
+                setPhaseIndex(i => i + 1);
+            } else {
+                // End Session: Sync results back to queue
+                // Create a complete results map for the update
+                const finalResultsMap = { ...results, [currentItem.id]: finalResult };
+                sessionQueue.forEach(item => {
+                    const res = (finalResultsMap[item.id] || 'success') as 'success' | 'fail';
+                    updateItemStatus(item.id, res);
+                });
+                setSessionState('summary');
+            }
         }
     };
 
-    const goToNextWord = () => {
-        if (currentIndex < sessionQueue.length - 1) {
-            setCurrentIndex(i => i + 1);
-        } else {
-            setSessionState('summary');
-        }
-    };
-
-    if (sessionState === 'loading') return <div className="p-10 text-center animate-pulse">Загрузка нейро-связей...</div>;
+    if (sessionState === 'loading') return <div className="p-10 text-center animate-pulse text-primary font-bold">Синхронизация нейро-слоев...</div>;
 
     if (sessionState === 'intro') {
         return (
             <div className="flex flex-col items-center justify-center p-8 text-center space-y-6 max-w-lg mx-auto mt-10">
-                <BrainCircuit className="h-24 w-24 text-primary mb-4" />
-                <h1 className="text-3xl font-headline font-bold">Готовность к загрузке</h1>
-                <p className="text-muted-foreground text-lg">
-                    Мы подготовили <strong>{sessionQueue.length}</strong> объектов для интеграции в память.
-                    <br />
-                    <span className="text-sm opacity-75">(Включая приоритетные глаголы)</span>
+                <div className="relative">
+                    <BrainCircuit className="h-24 w-24 text-primary animate-pulse" />
+                    <Badge className="absolute -top-2 -right-2 bg-green-500">v2.0 Beta</Badge>
+                </div>
+                <h1 className="text-4xl font-black tracking-tighter">ПАКЕТНЫЙ РЕЖИМ</h1>
+                <p className="text-muted-foreground text-lg leading-relaxed">
+                    Подготовлено <strong>{sessionQueue.length}</strong> объектов.
+                    <br />Слова будут усвоены через 3 фазы:
+                    <span className="block mt-2 font-mono text-sm">ЗНАКОМСТВО → ДРИЛЛ (x2) → КОНТЕКСТ</span>
                 </p>
-                <Button size="lg" className="w-full text-lg h-14" onClick={() => setSessionState('active')}>
-                    Начать Синхронизацию
+                <Button size="lg" className="w-full text-xl h-16 shadow-xl hover:scale-[1.02] transition-transform" onClick={() => setSessionState('active')}>
+                    Начать Сессию
                 </Button>
             </div>
         );
     }
 
     if (sessionState === 'summary') {
+        const finalScore = Object.values(results).filter(r => r === 'success').length;
         return (
             <div className="flex flex-col items-center justify-center p-8 text-center space-y-6 max-w-lg mx-auto mt-10">
-                <CheckCircle className="h-24 w-24 text-green-500 mb-4" />
-                <h1 className="text-3xl font-headline font-bold">Сессия Завершена</h1>
-                <div className="text-6xl font-black text-primary">{score}/{sessionQueue.length}</div>
-                <p className="text-muted-foreground">
-                    Нейронные связи обновлены. Следующее повторение запланировано.
+                <div className="bg-green-100 p-6 rounded-full">
+                    <CheckCircle className="h-24 w-24 text-green-500" />
+                </div>
+                <h1 className="text-4xl font-black">СИНХРОНИЗАЦИЯ ЗАВЕРШЕНА</h1>
+                <div className="text-7xl font-black text-primary">{finalScore}/{sessionQueue.length}</div>
+                <p className="text-muted-foreground text-lg italic">
+                    Уровень усвоения: {Math.round((finalScore / sessionQueue.length) * 100)}%. Новые нейронные связи прописаны успешно.
                 </p>
-                <Button asChild size="lg" className="w-full">
-                    <Link href="/">Вернуться на базу</Link>
+                <Button asChild size="lg" className="w-full h-14 text-lg">
+                    <Link href="/">Вернуться в штаб</Link>
                 </Button>
             </div>
         );
     }
 
-    // Active View
-    const progress = ((currentIndex) / sessionQueue.length) * 100;
+    // Active View Calculations
+    const getPhaseTitle = () => {
+        switch (currentPhase) {
+            case 'priming': return 'Фаза 1: Знакомство';
+            case 'recognition': return 'Фаза 2: Дрилл (x2)';
+            case 'production': return 'Фаза 3: Контекст';
+            default: return '';
+        }
+    };
+
+    const getPhaseIcon = () => {
+        switch (currentPhase) {
+            case 'priming': return <Layers className="h-5 w-5" />;
+            case 'recognition': return <Target className="h-5 w-5" />;
+            case 'production': return <PenTool className="h-5 w-5" />;
+            default: return null;
+        }
+    };
+
+    const progressValue = currentPhase === 'priming'
+        ? (phaseIndex / sessionQueue.length) * 33
+        : currentPhase === 'recognition'
+            ? 33 + (Object.values(recognitionHits).reduce((a, b) => a + Math.min(b, 2), 0) / (sessionQueue.length * 2)) * 33
+            : 66 + (phaseIndex / sessionQueue.length) * 34;
 
     return (
-        <div className="max-w-2xl mx-auto p-4 space-y-6">
-            <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
-                <span>Прогресс</span>
-                <span>{currentIndex + 1} / {sessionQueue.length}</span>
+        <div className="max-w-2xl mx-auto p-4 space-y-8">
+            <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-primary font-bold">
+                        {getPhaseIcon()}
+                        {getPhaseTitle()}
+                    </div>
+                    <Badge variant="outline" className="font-mono">
+                        {currentPhase === 'recognition'
+                            ? `${sessionQueue.filter(w => (recognitionHits[w.id] || 0) >= 2).length} / ${sessionQueue.length} ГОТОВО`
+                            : `${phaseIndex + 1} / ${sessionQueue.length}`
+                        }
+                    </Badge>
+                </div>
+                <Progress value={progressValue} className="h-3 shadow-inner" />
             </div>
-            <Progress value={progress} className="h-2" />
 
-            <div className="min-h-[400px]">
-                {currentStep === 'priming' && (
-                    <PrimingView item={currentItem} onNext={() => handleNext('success')} />
-                )}
-                {currentStep === 'recognition' && (
-                    <RecognitionView item={currentItem} onResult={handleNext} />
-                )}
-                {currentStep === 'production' && (
-                    <ProductionView item={currentItem} onResult={handleNext} />
-                )}
-                {currentStep === 'remedial' && (
-                    <RemedialView word={currentItem.word} onComplete={() => handleNext('success')} />
+            <div className="min-h-[500px] flex flex-col justify-center">
+                {currentItem && (
+                    <>
+                        {currentPhase === 'priming' && (
+                            <PrimingView item={currentItem} onNext={() => handleNext('success')} />
+                        )}
+                        {currentPhase === 'recognition' && (
+                            <div className="space-y-4">
+                                <div className="flex justify-center gap-2 mb-4">
+                                    {[1, 2].map(h => (
+                                        <div
+                                            key={h}
+                                            className={cn(
+                                                "w-12 h-2 rounded-full",
+                                                (recognitionHits[currentItem.id] || 0) >= h ? "bg-green-500 shadow-[0_0_10px_purple-400]" : "bg-muted"
+                                            )}
+                                        />
+                                    ))}
+                                </div>
+                                <RecognitionView item={currentItem} onResult={handleNext} />
+                            </div>
+                        )}
+                        {currentPhase === 'production' && (
+                            <ProductionView item={currentItem} onResult={handleNext} />
+                        )}
+                    </>
                 )}
             </div>
         </div>

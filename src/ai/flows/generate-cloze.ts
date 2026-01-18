@@ -62,17 +62,19 @@ const renderPrompt = (input: GenerateClozeInput) => {
     4. Provide the EXACT missing form in 'missingWord'.
     5. Provide a Russian translation.
     6. **CRITICAL**: Provide a 'grammarExplanation'. Explain clearly in Russian WHY this form is correct (e.g. "Here we use Akkusativ because the verb 'sehen' requires it...").
+       - **USE HTML TAGS**: Highlight key terms, endings, or case names using <b>bold</b> or <u>underline</u>.
+       - Example: "Здесь используется <b>Akkusativ</b>, так как глагол требует прямого дополнения."
     7. Provide 2-3 extra simple example sentences using this word (full sentences, no blanks) in 'examples'.
     
     Example for "Apfel" (Noun):
     Sentence: "Ich esse einen roten ___ ."
     Missing: "Apfel"
-    Explanation: "Мы используем 'einen roten', так как глагол 'essen' требует Akkusativ (Винительный падеж), а 'Apfel' — мужского рода."
+    Explanation: "Мы используем **einen roten**, так как глагол **essen** требует **Akkusativ** (Винительный падеж), а **Apfel** — мужского рода."
     
     Example for "fahren" (Verb):
     Sentence: "Wir ___ morgen nach Berlin."
     Missing: "fahren"
-    Explanation: "Мы используем 'fahren' (1-е лицо мн.ч.), так как подлежащее 'Wir' (мы)."
+    Explanation: "Мы используем форму **fahren** (1-е лицо мн.ч.), так как подлежащее — **Wir** (мы)."
     
     Output JSON matching the schema.
   `;

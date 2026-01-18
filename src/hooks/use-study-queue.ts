@@ -69,37 +69,36 @@ export function useStudyQueue() {
 
 
     // THE CORE ALGORITHM: Generator for Daily Session
-    const getDailySession = useCallback((limit: number = 25) => {
+    const getDailySession = useCallback((limit: number = 20) => {
         if (queue.length === 0) return [];
+
+        const LEVEL_PRIORITY: Record<string, number> = {
+            'Beruf': 100,
+            'B2': 90,
+            'B1': 80,
+            'A2': 70,
+            'A1': 60,
+            'A0': 50
+        };
 
         const now = Date.now();
 
-        // 1. Find Reviews (Review Due < Now)
-        const dueReviews = queue.filter(item =>
-            (item.status === 'review' || item.status === 'leech') &&
-            item.nextReviewNum <= now
+        // 1. All actionable items (Due or New)
+        const actionableItems = queue.filter(item =>
+            item.status === 'new' ||
+            ((item.status === 'review' || item.status === 'leech') && item.nextReviewNum <= now)
         );
 
-        // 2. Find New Words (prioritizing Verbs)
-        const newWords = queue
-            .filter(item => item.status === 'new')
-            .sort((a, b) => {
-                // Verb priority logic
-                const aScore = a.word.type === 'verb' ? 10 : 1;
-                const bScore = b.word.type === 'verb' ? 10 : 1;
-                return bScore - aScore; // Highest score first
-            });
+        // 2. Sort by Level Priority, then word type (verbs higher), then just mix
+        const sortedItems = [...actionableItems].sort((a, b) => {
+            const priorityA = (a.word.level ? LEVEL_PRIORITY[a.word.level as keyof typeof LEVEL_PRIORITY] : 0) + (a.word.type === 'verb' ? 5 : 0);
+            const priorityB = (b.word.level ? LEVEL_PRIORITY[b.word.level as keyof typeof LEVEL_PRIORITY] : 0) + (b.word.type === 'verb' ? 5 : 0);
 
-        // 3. Mix them
-        // Ideally: All reviews + fill the rest with new words
-        const sessionItems = [...dueReviews];
-        const remainingSlots = limit - sessionItems.length;
+            if (priorityA !== priorityB) return priorityB - priorityA;
+            return 0.5 - Math.random();
+        });
 
-        if (remainingSlots > 0) {
-            sessionItems.push(...newWords.slice(0, remainingSlots));
-        }
-
-        return sessionItems;
+        return sortedItems.slice(0, limit);
     }, [queue]);
 
     const updateItemStatus = useCallback((wordId: string, result: 'success' | 'fail') => {

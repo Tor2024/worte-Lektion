@@ -8,6 +8,7 @@ import { SpeakButton } from '@/components/speak-button';
 import { formatGermanWord } from '@/lib/german-utils';
 import { BrainCircuit } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Badge } from '@/components/ui/badge';
 
 interface PrimingViewProps {
     item: StudyQueueItem;
@@ -23,8 +24,14 @@ export function PrimingView({ item, onNext }: PrimingViewProps) {
             animate={{ opacity: 1, scale: 1 }}
             className="flex flex-col items-center space-y-8"
         >
-            <div className="flex items-center gap-2 text-muted-foreground uppercase text-xs tracking-widest">
-                <BrainCircuit className="h-4 w-4" /> Фаза 1: Загрузка Образа
+            <div className="flex items-center gap-3 text-muted-foreground uppercase text-xs tracking-widest font-bold">
+                <BrainCircuit className="h-4 w-4" />
+                <span>Фаза 1: Загрузка Образа</span>
+                {word.level && (
+                    <Badge variant="secondary" className="ml-2 bg-primary/10 text-primary border-primary/20">
+                        {word.level}
+                    </Badge>
+                )}
             </div>
 
             <Card className="w-full bg-card border-none shadow-2xl overflow-hidden relative">
@@ -52,6 +59,39 @@ export function PrimingView({ item, onNext }: PrimingViewProps) {
                                 className="italic text-foreground/80 leading-relaxed max-w-sm"
                                 dangerouslySetInnerHTML={{ __html: word.example }}
                             />
+                        </div>
+                    )}
+
+                    {/* Verb Conjugations */}
+                    {word.type === 'verb' && (word as any).conjugations && (
+                        <div className="w-full max-w-sm mt-4 p-4 bg-primary/5 rounded-xl border border-primary/10">
+                            <h4 className="text-xs font-bold uppercase tracking-widest text-primary/60 mb-3">Спряжение (Präsens)</h4>
+                            <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                                <div className="flex justify-between border-b border-primary/10 pb-1">
+                                    <span className="text-muted-foreground">ich</span>
+                                    <span className="font-bold">{(word as any).conjugations.ich}</span>
+                                </div>
+                                <div className="flex justify-between border-b border-primary/10 pb-1">
+                                    <span className="text-muted-foreground">wir</span>
+                                    <span className="font-bold">{(word as any).conjugations.wir}</span>
+                                </div>
+                                <div className="flex justify-between border-b border-primary/10 pb-1">
+                                    <span className="text-muted-foreground">du</span>
+                                    <span className="font-bold">{(word as any).conjugations.du}</span>
+                                </div>
+                                <div className="flex justify-between border-b border-primary/10 pb-1">
+                                    <span className="text-muted-foreground">ihr</span>
+                                    <span className="font-bold">{(word as any).conjugations.ihr}</span>
+                                </div>
+                                <div className="flex justify-between border-b border-primary/10 pb-1">
+                                    <span className="text-muted-foreground">er/sie/es</span>
+                                    <span className="font-bold">{(word as any).conjugations.er_sie_es}</span>
+                                </div>
+                                <div className="flex justify-between border-b border-primary/10 pb-1">
+                                    <span className="text-muted-foreground">sie/Sie</span>
+                                    <span className="font-bold">{(word as any).conjugations.sie_Sie}</span>
+                                </div>
+                            </div>
                         </div>
                     )}
                 </CardContent>

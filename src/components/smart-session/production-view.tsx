@@ -5,7 +5,7 @@ import { StudyQueueItem } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { BrainCircuit, Loader2, Sparkles, Send } from 'lucide-react';
+import { BrainCircuit, Loader2, Sparkles, Send, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { generateClozeWithAI, type GenerateClozeOutput } from '@/ai/flows/generate-cloze';
@@ -126,55 +126,62 @@ export function ProductionView({ item, onResult }: ProductionViewProps) {
             </Card>
 
             {feedback && (
-                <div className="w-full max-w-md animate-in slide-in-from-bottom-4 fade-in">
-                    <Alert variant={feedback === 'correct' ? 'default' : 'destructive'} className="mb-4">
-                        <AlertTitle>
-                            {feedback === 'correct' ? (
-                                <div className="flex flex-col gap-1">
-                                    <span>Отлично!</span>
-                                    {userAnswer.trim().toLowerCase() !== clozeData.missingWord.toLowerCase() && (
-                                        <span className="text-xs font-normal opacity-90">
-                                            (Основной вариант: {clozeData.missingWord})
-                                        </span>
-                                    )}
+                <div className="w-full max-w-lg space-y-4 animate-in slide-in-from-bottom-4 shadow-2xl rounded-2xl overflow-hidden border">
+                    {feedback === 'correct' ? (
+                        <div className="p-6 bg-green-50 text-green-800 flex items-start gap-4">
+                            <div className="bg-green-100 p-2 rounded-full"><Sparkles className="h-6 w-6 text-green-600" /></div>
+                            <div>
+                                <div className="text-xl font-black">Правда!</div>
+                                {userAnswer.trim().toLowerCase() !== clozeData.missingWord.toLowerCase() && (
+                                    <div className="text-sm opacity-80 mt-1">Обычно говорят: <b>{clozeData.missingWord}</b></div>
+                                )}
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="flex flex-col">
+                            {/* Correction Header */}
+                            <div className="p-6 bg-slate-50 border-b flex flex-col items-center text-center gap-3">
+                                <div className="text-xs font-bold uppercase tracking-widest text-slate-400">Коррекция</div>
+                                <div className="flex items-center gap-4 text-xl">
+                                    <span className="text-red-400 line-through decoration-2 opacity-50">{userAnswer}</span>
+                                    <ArrowRight className="h-5 w-5 text-slate-300" />
+                                    <span className="text-green-600 font-black text-2xl underline decoration-3">{clozeData.missingWord}</span>
                                 </div>
-                            ) : 'Ошибка'}
-                        </AlertTitle>
-                        <AlertDescription className="mt-2 text-sm leading-relaxed">
-                            {feedback === 'incorrect' && (
-                                <div className="space-y-3">
-                                    <p>Правильно: <span className="font-bold underline text-lg">{clozeData.missingWord}</span></p>
+                            </div>
 
-                                    {clozeData.acceptedAnswers && clozeData.acceptedAnswers.length > 1 && (
-                                        <p className="text-xs text-muted-foreground">
-                                            Также верно: {clozeData.acceptedAnswers.filter(a => a !== clozeData.missingWord).join(', ')}
-                                        </p>
-                                    )}
-
-                                    {(clozeData as any).grammarExplanation && (
-                                        <div className="bg-background/20 p-2 rounded">
-                                            <strong>Почему так?</strong><br />
-                                            {(clozeData as any).grammarExplanation}
-                                        </div>
-                                    )}
-
-                                    {(clozeData as any).examples && (clozeData as any).examples.length > 0 && (
-                                        <div>
-                                            <strong>Примеры:</strong>
-                                            <ul className="list-disc pl-4 mt-1 space-y-1 italic text-xs">
-                                                {(clozeData as any).examples.map((ex: string, i: number) => (
-                                                    <li key={i}>{ex}</li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                    )}
+                            {/* Analysis Section */}
+                            <div className="p-6 bg-white space-y-6">
+                                <div className="space-y-2">
+                                    <div className="text-xs font-bold uppercase tracking-widest text-primary/60 flex items-center gap-2">
+                                        <BrainCircuit className="h-4 w-4" /> Почему так?
+                                    </div>
+                                    <div
+                                        className="text-slate-700 leading-relaxed prose prose-slate max-w-none text-sm"
+                                        dangerouslySetInnerHTML={{ __html: clozeData.grammarExplanation }}
+                                    />
                                 </div>
-                            )}
-                        </AlertDescription>
-                    </Alert>
-                    <Button size="lg" className="w-full" onClick={handleContinue}>
-                        Продолжить
-                    </Button>
+
+                                {clozeData.examples && clozeData.examples.length > 0 && (
+                                    <div className="space-y-2">
+                                        <div className="text-xs font-bold uppercase tracking-widest text-slate-400">Еще примеры</div>
+                                        <div className="grid gap-2">
+                                            {clozeData.examples.map((ex, i) => (
+                                                <div key={i} className="text-xs italic bg-slate-50 p-2 rounded border-l-2 border-slate-200 text-slate-600">
+                                                    {ex}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="p-4 bg-white border-t">
+                        <Button size="lg" className="w-full h-14 text-lg shadow-lg font-bold" onClick={handleContinue}>
+                            {feedback === 'correct' ? 'Идем дальше' : 'Понял, двигаемся далее'}
+                        </Button>
+                    </div>
                 </div>
             )}
         </motion.div>
