@@ -21,7 +21,7 @@ type Stage = 'intro' | 'podcast' | 'collocation' | 'synonym' | 'interview' | 'do
 
 export default function DeepDivePage({ params }: { params: Promise<{ folderId: string }> }) {
     const { folderId } = use(params);
-    const { getFolder, updateWord } = useCustomFolders();
+    const { getFolder, updateWordInFolder } = useCustomFolders();
     const folder = getFolder(folderId);
 
     const [stage, setStage] = useState<Stage>('intro');
@@ -81,7 +81,7 @@ export default function DeepDivePage({ params }: { params: Promise<{ folderId: s
                 // Save progress!
                 folder?.words.forEach(w => {
                     if (words.includes(w.word.german)) {
-                        updateWord(folder.id, w.id, { ...w, deepDiveStage: 4 });
+                        updateWordInFolder(folder.id, { ...w, deepDiveStage: 4 });
                     }
                 });
             }
