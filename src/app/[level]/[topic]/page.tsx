@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { SpacedRepetitionWrapper } from '@/components/spaced-repetition-wrapper';
 import { TopicVocabulary } from '@/components/topic-vocabulary';
+import { AiTheoryExpander } from '@/components/ai-theory-expander';
 
 type TopicPageProps = {
   params: Promise<{
@@ -62,7 +63,7 @@ export default async function TopicPage({ params }: TopicPageProps) {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <TopicVocabulary words={allWords} />
+              <TopicVocabulary words={allWords} topicTitle={topic.title} />
             </CardContent>
           </Card>
         )}
@@ -82,7 +83,7 @@ export default async function TopicPage({ params }: TopicPageProps) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="prose prose-lg max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: topic.explanation }} />
+            <AiTheoryExpander title={topic.title} initialHtml={topic.explanation} />
           </CardContent>
         </Card>
 

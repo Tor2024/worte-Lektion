@@ -1,10 +1,11 @@
 
-import { CustomFolder, SM2State } from './types';
+import { CustomFolder, SM2State, StudyQueueItem } from './types';
 
 const KEYS = {
     PROGRESS: 'userProgress',
     SRS: 'deutsch-curriculum-srs-v1',
     CUSTOM_FOLDERS: 'deutsch-learning-custom-folders',
+    STUDY_QUEUE: 'deutsch-learning-study-queue-v1',
 } as const;
 
 export type ProgressData = { [key: string]: number };
@@ -67,6 +68,25 @@ export const storage = {
             window.localStorage.setItem(KEYS.CUSTOM_FOLDERS, JSON.stringify(data));
         } catch (e) {
             console.warn('LS Write Error (Folders)', e);
+        }
+    },
+
+    getStudyQueue: (): StudyQueueItem[] => {
+        if (typeof window === 'undefined') return [];
+        try {
+            const item = window.localStorage.getItem(KEYS.STUDY_QUEUE);
+            return item ? JSON.parse(item) : [];
+        } catch (e) {
+            console.warn('LS Read Error (Queue)', e);
+            return [];
+        }
+    },
+    setStudyQueue: (data: StudyQueueItem[]) => {
+        if (typeof window === 'undefined') return;
+        try {
+            window.localStorage.setItem(KEYS.STUDY_QUEUE, JSON.stringify(data));
+        } catch (e) {
+            console.warn('LS Write Error (Queue)', e);
         }
     }
 };

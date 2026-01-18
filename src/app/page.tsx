@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { BookOpen, ArrowRight, BrainCircuit } from 'lucide-react';
+import { BookOpen, ArrowRight, BrainCircuit, Siren } from 'lucide-react';
 import Image from 'next/image';
 import {
   getLevelImage,
@@ -23,7 +23,66 @@ import { ProgressCircle } from '@/components/progress-circle';
 import { GlobalVocabularyTrainer } from '@/components/global-vocabulary-trainer';
 import type { VocabularyWord } from '@/lib/types';
 import { commonWords } from '@/lib/common-words';
-import { useUnifiedSRS } from '@/hooks/use-unified-srs';
+import { useStudyQueue } from '@/hooks/use-study-queue';
+
+function DailySessionWidget() {
+  const { totalDue, totalNew, totalLeeches, isLoading } = useStudyQueue();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => { setIsClient(true) }, []);
+
+  if (!isClient) return null;
+
+  return (
+    <Card className="flex flex-col bg-gradient-to-br from-indigo-500/10 via-transparent to-transparent border-indigo-500/20 shadow-xl relative overflow-hidden group h-full">
+      <div className="absolute top-0 right-0 p-8 opacity-5">
+        <BrainCircuit className="h-32 w-32" />
+      </div>
+      <CardHeader className="relative z-10">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="p-2 bg-indigo-500/10 rounded-lg">
+            <BrainCircuit className="h-6 w-6 text-indigo-500" />
+          </div>
+          <span className="text-xs font-bold uppercase tracking-widest text-indigo-500">План на сегодня</span>
+        </div>
+        <CardTitle className="text-3xl font-headline font-bold">15 Минут</CardTitle>
+        <CardDescription className="text-base">
+          Ежедневная тренировка: новые слова + повторение + контекст.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex-grow flex flex-col justify-center relative z-10 py-6">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-background/50 p-4 rounded-xl border">
+            <div className="text-3xl font-black text-foreground">{isLoading ? '...' : totalDue}</div>
+            <div className="text-xs font-bold text-muted-foreground uppercase">Повторить</div>
+          </div>
+          <div className="bg-background/50 p-4 rounded-xl border">
+            <div className="text-3xl font-black text-foreground">{isLoading ? '...' : totalNew}</div>
+            <div className="text-xs font-bold text-muted-foreground uppercase">Новые</div>
+          </div>
+          {totalLeeches > 0 && (
+            <div className="col-span-2 bg-red-500/10 border border-red-500/50 p-3 rounded-xl flex items-center justify-between animate-pulse">
+              <div className="flex items-center gap-2">
+                <Siren className="h-5 w-5 text-red-500" />
+                <span className="text-sm font-bold text-red-600">Сложные слова: {totalLeeches}</span>
+              </div>
+            </div>
+          )}
+        </div>
+        <p className="text-sm text-muted-foreground mt-4">
+          Слова из ваших папок автоматически добавляются сюда.
+        </p>
+      </CardContent>
+      <CardFooter className="relative z-10 pb-8">
+        <Button asChild size="lg" className="w-full h-14 text-lg bg-indigo-600 hover:bg-indigo-700 shadow-xl shadow-indigo-500/20 hover:scale-[1.02] transition-transform">
+          <Link href="/daily-session">
+            Начать тренировку <ArrowRight className="ml-2 h-5 w-5" />
+          </Link>
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+}
 
 
 export default function DashboardPage() {
@@ -79,7 +138,7 @@ export default function DashboardPage() {
     return Math.round(totalProficiency / level.topics.length);
   };
 
-  const { dueWords } = useUnifiedSRS();
+
 
   return (
     <div className="container mx-auto py-8">
@@ -95,44 +154,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16 items-stretch">
         <GlobalVocabularyTrainer words={allLearnedWords} />
 
-        <Card className="flex flex-col bg-gradient-to-br from-primary/5 via-transparent to-transparent border-primary/20 shadow-xl relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-8 opacity-5">
-            <BrainCircuit className="h-32 w-32" />
-          </div>
-          <CardHeader className="relative z-10">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <BrainCircuit className="h-6 w-6 text-primary" />
-              </div>
-              <span className="text-xs font-bold uppercase tracking-widest text-primary">Умное повторение</span>
-            </div>
-            <CardTitle className="text-3xl font-headline font-bold">Центр SRS</CardTitle>
-            <CardDescription className="text-base">
-              Используйте научно обоснованный метод интервальных повторений для запоминания слов навсегда.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex-grow flex flex-col justify-center relative z-10 py-6">
-            <div className="flex items-center gap-4 mb-2">
-              <div className="text-5xl font-black text-foreground">
-                {isClient ? dueWords.length : '...'}
-              </div>
-              <div className="flex flex-col">
-                <span className="text-sm font-bold text-muted-foreground leading-none">СЛОВ К</span>
-                <span className="text-sm font-bold text-muted-foreground leading-none">ПОВТОРЕНИЮ</span>
-              </div>
-            </div>
-            <p className="text-sm text-muted-foreground mt-4">
-              Мы объединили слова из всех пройденных вами тем и ваших личных словарей.
-            </p>
-          </CardContent>
-          <CardFooter className="relative z-10 pb-8">
-            <Button asChild size="lg" className="w-full h-14 text-lg shadow-xl shadow-primary/20 hover:scale-[1.02] transition-transform">
-              <Link href="/review">
-                Запустить сессию <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
-          </CardFooter>
-        </Card>
+        <DailySessionWidget />
       </div>
 
       <h2 className="text-3xl font-bold font-headline mb-6 text-center">Уровни обучения</h2>

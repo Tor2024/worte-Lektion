@@ -143,6 +143,19 @@ export interface Curriculum {
   levels: Level[];
 }
 
+export type QueueStatus = 'new' | 'learning' | 'review' | 'leech' | 'graduated';
+export type QueueStage = 'priming' | 'recognition' | 'production' | 'completed';
+
+export interface StudyQueueItem {
+  id: string; // The German word itself will be the ID for simplicity and uniqueness
+  word: VocabularyWord;
+  status: QueueStatus;
+  currentStage: QueueStage; // For the "3D" flow tracking within a session
+  nextReviewNum: number; // Timestamp
+  tags: string[]; // e.g., 'folder-id' to track origin
+  consecutiveMistakes: number; // For leech tracking
+}
+
 export const INITIAL_SM2_STATE: SM2State = {
   interval: 0,
   repetitions: 0,

@@ -115,6 +115,9 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                                 {(word as any)?.plural ? `Pl: die ${(word as any).plural}` : 'Singular only'}
                             </div>
                         )}
+                        <div className="mt-2" onClick={(e) => e.stopPropagation()}>
+                            <SpeakButton text={formatGermanWord(word)} variant="ghost" size="sm" className="h-8 w-8 text-muted-foreground/50 hover:text-primary hover:bg-primary/10" />
+                        </div>
                     </div>
 
                     {/* Middle: Rich Verb Details */}
@@ -213,9 +216,10 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                                         <span className="text-muted-foreground mx-1">→</span>
                                         <span className="text-sm font-medium">{gov.meaning}</span>
                                     </div>
-                                    <p className="text-xs text-muted-foreground italic leading-relaxed">
-                                        {gov.example}
-                                    </p>
+                                    <p
+                                        className="text-xs text-muted-foreground italic leading-relaxed"
+                                        dangerouslySetInnerHTML={{ __html: gov.example }}
+                                    />
                                 </div>
                             ))}
                         </div>

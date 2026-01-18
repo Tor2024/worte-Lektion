@@ -52,7 +52,9 @@ const generateLessonSummaryFlow = ai.defineFlow(
 
       Formatting:
       - Use HTML tags: <p>, <strong>, <ul>, <li>.
-      - Keep it concise but helpful for a student.
+      - **CRITICAL:** Do NOT be brief. Be detailed.
+      - If mistakes were made, look for a SYSTEMATIC pattern (e.g. "You consistently mistake Dativ for Akkusativ").
+      - Explain the "WHY" and "HOW" for every major error.
       - Language: Russian.
     `;
 

@@ -159,7 +159,13 @@ export const curriculum: Curriculum = {
                 { type: 'other', german: 'morgen', russian: 'завтра', example: 'Morgen ist Dienstag.' },
                 { type: 'noun', german: 'Tag', russian: 'день', article: 'der', plural: 'Tage', pluralArticle: 'die', exampleSingular: 'Einen schönen Tag!', examplePlural: 'Sieben Tage.' },
                 { type: 'noun', german: 'Woche', russian: 'неделя', article: 'die', plural: 'Wochen', pluralArticle: 'die', exampleSingular: 'Nächste Woche.', examplePlural: 'Zwei Wochen.' },
-                { type: 'other', german: 'wann', russian: 'когда', example: 'Wann kommst du?' }
+                { type: 'other', german: 'wann', russian: 'когда', example: 'Wann kommst du?' },
+                { type: 'noun', german: 'Stunde', russian: 'час (длительность)', article: 'die', plural: 'Stunden', pluralArticle: 'die', exampleSingular: 'Eine Stunde warten.', examplePlural: 'Zwei Stunden.' },
+                { type: 'noun', german: 'Minute', russian: 'минута', article: 'die', plural: 'Minuten', pluralArticle: 'die', exampleSingular: 'Nur eine Minute.', examplePlural: 'Zehn Minuten.' },
+                { type: 'other', german: 'spät', russian: 'поздно', example: 'Es ist schon spät.' },
+                { type: 'other', german: 'früh', russian: 'рано', example: 'Ich stehe früh auf.' },
+                { type: 'noun', german: 'Morgen', russian: 'утро', article: 'der', plural: 'Morgen', pluralArticle: 'die', exampleSingular: 'Guten Morgen!', examplePlural: 'Alle Morgen.' },
+                { type: 'noun', german: 'Abend', russian: 'вечер', article: 'der', plural: 'Abende', pluralArticle: 'die', exampleSingular: 'Am Abend.', examplePlural: 'Schöne Abende.' }
               ]
             }
           ],
