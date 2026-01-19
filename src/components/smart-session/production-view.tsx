@@ -9,6 +9,7 @@ import { BrainCircuit, Loader2, Sparkles, Send, ArrowRight } from 'lucide-react'
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { generateClozeWithAI, type GenerateClozeOutput } from '@/ai/flows/generate-cloze';
+import { evaluateProductionWithAI, type EvaluateProductionOutput } from '@/ai/flows/evaluate-production';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface ProductionViewProps {
@@ -22,6 +23,8 @@ export function ProductionView({ item, onResult }: ProductionViewProps) {
     const [clozeData, setClozeData] = useState<GenerateClozeOutput | null>(null);
     const [userAnswer, setUserAnswer] = useState('');
     const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
+    const [dynamicEvaluation, setDynamicEvaluation] = useState<EvaluateProductionOutput | null>(null);
+    const [isEvaluating, setIsEvaluating] = useState(false);
 
     // Fetch AI context on mount
     useEffect(() => {
@@ -40,7 +43,7 @@ export function ProductionView({ item, onResult }: ProductionViewProps) {
         return () => { mounted = false; };
     }, [word]);
 
-    const handleSubmit = (e?: React.FormEvent) => {
+    const handleSubmit = async (e?: React.FormEvent) => {
         if (e) e.preventDefault();
         if (!clozeData) return;
 
@@ -54,7 +57,25 @@ export function ProductionView({ item, onResult }: ProductionViewProps) {
             isCorrect = clozeData.acceptedAnswers.some(ans => ans.toLowerCase() === normalizedUser);
         }
 
-        setFeedback(isCorrect ? 'correct' : 'incorrect');
+        if (isCorrect) {
+            setFeedback('correct');
+        } else {
+            setFeedback('incorrect');
+            setIsEvaluating(true);
+            try {
+                const evalResult = await evaluateProductionWithAI({
+                    germanSentence: clozeData.sentenceWithBlank.replace('___', clozeData.missingWord),
+                    userAnswer: userAnswer,
+                    correctAnswer: clozeData.missingWord,
+                    targetWordRussian: word.russian,
+                });
+                setDynamicEvaluation(evalResult);
+            } catch (err) {
+                console.error("Evaluation failed", err);
+            } finally {
+                setIsEvaluating(false);
+            }
+        }
     };
 
     const handleContinue = () => {
@@ -151,24 +172,58 @@ export function ProductionView({ item, onResult }: ProductionViewProps) {
 
                             {/* Analysis Section */}
                             <div className="p-6 bg-white space-y-6">
-                                <div className="space-y-2">
-                                    <div className="text-xs font-bold uppercase tracking-widest text-primary/60 flex items-center gap-2">
-                                        <BrainCircuit className="h-4 w-4" /> Почему так?
+                                {isEvaluating ? (
+                                    <div className="flex items-center gap-2 text-primary animate-pulse py-4">
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                        <span className="text-sm font-bold">ИИ анализирует вашу ошибку...</span>
                                     </div>
-                                    <div
-                                        className="text-slate-700 leading-relaxed prose prose-slate max-w-none text-sm"
-                                        dangerouslySetInnerHTML={{ __html: clozeData.grammarExplanation }}
-                                    />
-                                </div>
+                                ) : dynamicEvaluation ? (
+                                    <div className="space-y-6">
+                                        {/* Word Definitions */}
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div className="bg-slate-50 p-3 rounded-lg border">
+                                                <div className="text-[10px] font-bold uppercase text-slate-400 mb-1">Вариант: {userAnswer}</div>
+                                                <div className="text-sm text-slate-700">{dynamicEvaluation.userWordDefinition || "Слово не распознано"}</div>
+                                            </div>
+                                            <div className="bg-primary/5 p-3 rounded-lg border border-primary/10">
+                                                <div className="text-[10px] font-bold uppercase text-primary/60 mb-1">Ожидалось: {clozeData.missingWord}</div>
+                                                <div className="text-sm text-slate-700">{dynamicEvaluation.correctWordDefinition}</div>
+                                            </div>
+                                        </div>
+
+                                        {/* Comparison */}
+                                        <div className="space-y-2">
+                                            <div className="text-xs font-bold uppercase tracking-widest text-primary/60 flex items-center gap-2">
+                                                <BrainCircuit className="h-4 w-4" /> Почему так?
+                                            </div>
+                                            <div
+                                                className="text-slate-700 leading-relaxed prose prose-slate max-w-none text-sm"
+                                                dangerouslySetInnerHTML={{ __html: dynamicEvaluation.comparisonFeedback }}
+                                            />
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-2">
+                                        <div className="text-xs font-bold uppercase tracking-widest text-primary/60 flex items-center gap-2">
+                                            <BrainCircuit className="h-4 w-4" /> Почему так?
+                                        </div>
+                                        <div
+                                            className="text-slate-700 leading-relaxed prose prose-slate max-w-none text-sm"
+                                            dangerouslySetInnerHTML={{ __html: clozeData.grammarExplanation }}
+                                        />
+                                    </div>
+                                )}
 
                                 {clozeData.examples && clozeData.examples.length > 0 && (
                                     <div className="space-y-2">
                                         <div className="text-xs font-bold uppercase tracking-widest text-slate-400">Еще примеры</div>
                                         <div className="grid gap-2">
                                             {clozeData.examples.map((ex, i) => (
-                                                <div key={i} className="text-xs italic bg-slate-50 p-2 rounded border-l-2 border-slate-200 text-slate-600">
-                                                    {ex}
-                                                </div>
+                                                <div
+                                                    key={i}
+                                                    className="text-xs italic bg-slate-50 p-2 rounded border-l-2 border-slate-200 text-slate-600"
+                                                    dangerouslySetInnerHTML={{ __html: ex }}
+                                                />
                                             ))}
                                         </div>
                                     </div>

@@ -21,7 +21,8 @@ const GenerateClozeOutputSchema = z.object({
     missingWord: z.string().describe('The actual word form that fits in the blank.'),
     hint: z.string().optional().describe('A grammatical hint, e.g. "Akkusativ" or "Präteritum"'),
     grammarExplanation: z.string().describe('Detailed explanation of why this specific form is used here (case, gender, conjugation rule) in Russian.'),
-    examples: z.array(z.string()).describe('2-3 additional simple German sentences using this word in different contexts.'),
+    targetWordDefinition: z.string().describe('Short Russian definition of the correct word/form in this context.'),
+    examples: z.array(z.string()).describe('2-3 additional simple German sentences using this word in different contexts. DO NOT use HTML tags here.'),
     acceptedAnswers: z.array(z.string()).describe('List of ALL grammatically correct answers for this specific blank (e.g. ["einen", "den"]). Start with the most common one.'),
 });
 
@@ -64,7 +65,8 @@ const renderPrompt = (input: GenerateClozeInput) => {
     6. **CRITICAL**: Provide a 'grammarExplanation'. Explain clearly in Russian WHY this form is correct (e.g. "Here we use Akkusativ because the verb 'sehen' requires it...").
        - **USE HTML TAGS**: Highlight key terms, endings, or case names using <b>bold</b> or <u>underline</u>.
        - Example: "Здесь используется <b>Akkusativ</b>, так как глагол требует прямого дополнения."
-    7. Provide 2-3 extra simple example sentences using this word (full sentences, no blanks) in 'examples'.
+    7. Provide 2-3 extra simple example sentences using this word (full sentences, no blanks) in 'examples'. **DO NOT** use HTML tags inside these examples.
+    8. Provide a short Russian definition of the target word in 'targetWordDefinition'.
     
     Example for "Apfel" (Noun):
     Sentence: "Ich esse einen roten ___ ."
