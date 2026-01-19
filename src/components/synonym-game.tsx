@@ -126,7 +126,7 @@ export function SynonymGame({ items, onComplete }: SynonymGameProps) {
                                         className={cn("max-w-xs", isCorrect && "border-green-500 bg-green-50", isWrong && "border-red-500 bg-red-50")}
                                         disabled={isDone}
                                     />
-                                    {!isDone && <Button size="sm" onClick={() => checkAnswer(item.id, item.targetSynonym)}>Check</Button>}
+                                    {!isDone && <Button size="sm" onClick={() => checkAnswer(item.id, item.targetSynonym, item.originalSentence, item.weakWord)}>Check</Button>}
                                 </div>
 
                                 {isCorrect && (

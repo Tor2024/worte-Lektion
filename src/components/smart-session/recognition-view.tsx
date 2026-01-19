@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button';
 import { formatGermanWord } from '@/lib/german-utils';
 import { BrainCircuit, Check, X } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useSpeech } from '@/hooks/use-speech';
 import { commonWords } from '@/lib/common-words'; // Fallback for distractors
 
 interface RecognitionViewProps {
@@ -19,6 +20,11 @@ export function RecognitionView({ item, onResult }: RecognitionViewProps) {
     const { word } = item;
     const [selectedOption, setSelectedOption] = useState<string | null>(null);
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+    const { speak } = useSpeech();
+
+    useEffect(() => {
+        speak(formatGermanWord(word));
+    }, [speak, word]);
 
     const options = useMemo(() => {
         // Simple distractor logic: grab 3 random words from commonWords that are NOT the current word

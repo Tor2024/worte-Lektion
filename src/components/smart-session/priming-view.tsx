@@ -9,6 +9,8 @@ import { formatGermanWord } from '@/lib/german-utils';
 import { BrainCircuit } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
+import { useSpeech } from '@/hooks/use-speech';
+import { useEffect } from 'react';
 
 interface PrimingViewProps {
     item: StudyQueueItem;
@@ -17,6 +19,11 @@ interface PrimingViewProps {
 
 export function PrimingView({ item, onNext }: PrimingViewProps) {
     const { word } = item;
+    const { speak } = useSpeech();
+
+    useEffect(() => {
+        speak(formatGermanWord(word));
+    }, [speak, word]);
 
     return (
         <motion.div

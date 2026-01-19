@@ -192,7 +192,7 @@ export function SmartSessionManager() {
                 {currentItem && (
                     <>
                         {currentPhase === 'priming' && (
-                            <PrimingView item={currentItem} onNext={() => handleNext('success')} />
+                            <PrimingView key={currentItem.id} item={currentItem} onNext={() => handleNext('success')} />
                         )}
                         {currentPhase === 'recognition' && (
                             <div className="space-y-4">
@@ -207,11 +207,11 @@ export function SmartSessionManager() {
                                         />
                                     ))}
                                 </div>
-                                <RecognitionView item={currentItem} onResult={handleNext} />
+                                <RecognitionView key={currentItem.id} item={currentItem} onResult={handleNext} />
                             </div>
                         )}
                         {currentPhase === 'production' && (
-                            <ProductionView item={currentItem} onResult={handleNext} />
+                            <ProductionView key={currentItem.id} item={currentItem} onResult={handleNext} />
                         )}
                     </>
                 )}
