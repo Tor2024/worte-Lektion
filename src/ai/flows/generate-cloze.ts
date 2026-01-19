@@ -47,9 +47,10 @@ const renderPrompt = (input: GenerateClozeInput) => {
 
     Rules:
     1. The sentence should be A1-A2 level (simple, daily usage).
-    2. The word MUST be used in a context that requires specific grammar:
+    2. **STRICT TENSE RULE**: All verbs MUST be in **Präsens** (Present Tense). DO NOT use Perfekt, Partizip II, Präteritum or any other tenses.
+    3. The word MUST be used in a context that requires specific grammar:
        - If Noun: Ensure the article or adjective ending proves the case (e.g. "Ich sehe den ___").
-       - If Verb: Use a conjugated form (not infinitive) if possible, or a specific tense.
+       - If Verb: Use a conjugated form in **Präsens**. Focus on testing correct person/number conjugation (e.g., ich, du, wir).
     
     3. **Ambiguity Handling**:
        - If multiple answers are valid (e.g. "einen" OR "den"), list BOTH in 'acceptedAnswers'.
@@ -76,7 +77,7 @@ const renderPrompt = (input: GenerateClozeInput) => {
     Example for "fahren" (Verb):
     Sentence: "Wir ___ morgen nach Berlin."
     Missing: "fahren"
-    Explanation: "Мы используем форму **fahren** (1-е лицо мн.ч.), так как подлежащее — **Wir** (мы)."
+    Explanation: "Мы используем форму **fahren** для **Präsens** (Настоящее время), так как подлежащее — **Wir** (мы), окончание **-en**."
     
     Output JSON matching the schema.
   `;
