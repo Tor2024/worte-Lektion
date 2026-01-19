@@ -51,6 +51,9 @@ const renderPrompt = (input: GenerateClozeInput) => {
     3. The word MUST be used in a context that requires specific grammar:
        - If Noun: Ensure the article or adjective ending proves the case (e.g. "Ich sehe den ___").
        - If Verb: Use a conjugated form in **Präsens**. Focus on testing correct person/number conjugation (e.g., ich, du, wir).
+       - **SEPARABLE VERBS (trennbare Verben)**: If the word has a separable prefix (e.g., einziehen, einkaufen, ankommen):
+         - **OPTION A (Preferred)**: Use a sentence structure where the word remains WHOLE (e.g., with "müssen", "können", "wollen"). Example: "Wir wollen завтра ___ (einziehen)."
+         - **OPTION B**: If you separate it, the prefix MUST be placed at the very end of the sentence. In 'grammarExplanation', explicitly mention that the prefix moved to the end.
     
     3. **Ambiguity Handling**:
        - If multiple answers are valid (e.g. "einen" OR "den"), list BOTH in 'acceptedAnswers'.
