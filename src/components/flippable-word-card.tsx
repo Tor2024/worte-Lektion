@@ -9,8 +9,10 @@ import { SpeakButton } from '@/components/speak-button';
 import { formatGermanWord } from '@/lib/german-utils';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { RotateCcw, Volume2 } from 'lucide-react';
-import { Button } from '@/components/ui/button'; // Added import for Button
+import { RotateCcw, Volume2, Clock, BrainCircuit, ShieldAlert } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useStudyQueue } from '@/hooks/use-study-queue';
+import { formatRelativeTime } from '@/lib/utils';
 
 interface FlippableWordCardProps {
     userWord: UserVocabularyWord;
@@ -24,9 +26,28 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
     const [isRefreshing, setIsRefreshing] = useState(false); // Added isRefreshing state
     const word = userWord.word;
 
+    const { queue } = useStudyQueue();
+
+    // Find SRS state for this word
+    const studyItem = queue.find(item => item.id === word.german);
+
+    const getStatusConfig = () => {
+        if (!studyItem) return { label: 'Новое', color: 'bg-slate-500/10 text-slate-600 border-slate-200' };
+
+        switch (studyItem.status) {
+            case 'new': return { label: 'Новое', color: 'bg-slate-500/10 text-slate-600 border-slate-200', icon: <Clock className="h-3 w-3" /> };
+            case 'learning': return { label: 'Изучаю', color: 'bg-blue-500/10 text-blue-600 border-blue-200', icon: <BrainCircuit className="h-3 w-3" /> };
+            case 'review': return { label: 'Повторение', color: 'bg-purple-500/10 text-purple-600 border-purple-200', icon: <RotateCcw className="h-3 w-3" /> };
+            case 'graduated': return { label: 'Выучено', color: 'bg-green-500/10 text-green-600 border-green-200', icon: <ShieldAlert className="h-3 w-3" /> };
+            case 'leech': return { label: 'Сложное', color: 'bg-red-500/10 text-red-600 border-red-500/50 animate-pulse', icon: <ShieldAlert className="h-3 w-3" /> };
+            default: return { label: studyItem.status, color: 'bg-slate-500/10 text-slate-600' };
+        }
+    };
+
+    const status = getStatusConfig();
+
     // Determine Card Base Color and Style
     let cardStyle = "border-2 border-primary/20 bg-background hover:border-primary/50";
-    let badgeVariant: "outline" | "default" | "secondary" | "destructive" = "outline";
 
     if (word.type === 'noun') {
         if ((word as any).article === 'der') {
@@ -100,6 +121,22 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
             // DE Front
             return (
                 <div className="flex flex-col items-center w-full h-full relative">
+                    {/* SRS Status Badge */}
+                    <div className="absolute top-2 right-2 flex flex-col items-end gap-1 z-20">
+                        <Badge
+                            variant="outline"
+                            className={cn("flex items-center gap-1.5 px-2 py-0.5 text-[10px] h-6 font-bold uppercase tracking-tight", status.color)}
+                        >
+                            {status.icon}
+                            {status.label}
+                        </Badge>
+                        {studyItem && studyItem.status !== 'new' && (
+                            <div className="text-[9px] font-mono text-muted-foreground bg-background/80 px-1 rounded shadow-sm">
+                                {formatRelativeTime(studyItem.nextReviewNum)}
+                            </div>
+                        )}
+                    </div>
+
                     {/* Top: Meta Badge */}
                     <Badge variant="outline" className="opacity-40 text-[10px] uppercase tracking-widest mb-4">
                         {word.type}

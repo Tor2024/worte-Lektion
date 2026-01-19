@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { BookOpen, ArrowRight, BrainCircuit, Siren } from 'lucide-react';
+import { BookOpen, ArrowRight, BrainCircuit, Siren, GraduationCap } from 'lucide-react';
 import Image from 'next/image';
 import {
   getLevelImage,
@@ -155,6 +155,44 @@ export default function DashboardPage() {
         <GlobalVocabularyTrainer words={allLearnedWords} />
 
         <DailySessionWidget />
+
+        {/* B2 EXAM PREP WIDGET */}
+        <Card className="flex flex-col bg-gradient-to-br from-amber-500/10 via-transparent to-transparent border-amber-500/20 shadow-xl relative overflow-hidden group h-full">
+          <div className="absolute top-0 right-0 p-8 opacity-5">
+            <GraduationCap className="h-32 w-32" />
+          </div>
+          <CardHeader className="relative z-10">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-amber-500/10 rounded-lg">
+                <GraduationCap className="h-6 w-6 text-amber-500" />
+              </div>
+              <span className="text-xs font-bold uppercase tracking-widest text-amber-500">Экзамен B2 / B2 Beruf</span>
+            </div>
+            <CardTitle className="text-3xl font-headline font-bold">Тексты B2</CardTitle>
+            <CardDescription className="text-base">
+              Тексты для заучивания с озвучкой и выделением предложений.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex-grow flex flex-col justify-center relative z-10 py-6">
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-sm">
+                <ArrowRight className="h-4 w-4 text-amber-500" />
+                <span>Идеально для устной части (Sprechen)</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <ArrowRight className="h-4 w-4 text-amber-500" />
+                <span>Синхронная озвучка и текст</span>
+              </div>
+            </div>
+          </CardContent>
+          <CardFooter className="relative z-10 pb-8">
+            <Button asChild size="lg" className="w-full h-14 text-lg bg-amber-600 hover:bg-amber-700 shadow-xl shadow-amber-500/20 hover:scale-[1.02] transition-transform">
+              <Link href="/exam-texts">
+                Перейти к текстам <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
+            </Button>
+          </CardFooter>
+        </Card>
       </div>
 
       <h2 className="text-3xl font-bold font-headline mb-6 text-center">Уровни обучения</h2>
