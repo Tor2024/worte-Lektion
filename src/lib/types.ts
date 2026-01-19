@@ -163,3 +163,12 @@ export const INITIAL_SM2_STATE: SM2State = {
   easeFactor: 2.5,
   nextReviewDate: null,
 };
+
+export interface ExamText {
+  id: string;
+  title: string;
+  description: string;
+  content: string;
+  level: 'B1' | 'B2' | 'C1';
+  isCustom?: boolean;
+}
