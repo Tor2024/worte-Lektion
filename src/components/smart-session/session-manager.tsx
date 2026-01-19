@@ -22,9 +22,13 @@ export function SmartSessionManager() {
     const [sessionQueue, setSessionQueue] = useState<StudyQueueItem[]>([]);
     const [sessionState, setSessionState] = useState<SessionState>('loading');
 
+    // Batch Management
+    const BATCH_SIZE = 5;
+    const [currentBatchIndex, setCurrentBatchIndex] = useState(0);
+
     // Phase Management
     const [currentPhase, setCurrentPhase] = useState<GlobalPhase>('priming');
-    const [phaseIndex, setPhaseIndex] = useState(0); // Index within the current phase
+    const [phaseIndex, setPhaseIndex] = useState(0); // Index within the current batch
 
     // Drill State (Phase 2)
     const [recognitionHits, setRecognitionHits] = useState<Record<string, number>>({});
@@ -38,24 +42,33 @@ export function SmartSessionManager() {
         setSessionState(items.length > 0 ? 'intro' : 'summary');
     }, [getDailySession]);
 
-    // Derived: Current item based on phaseIndex
+    // Derived: Current batch words
+    const currentBatchWords = useMemo(() => {
+        const start = currentBatchIndex * BATCH_SIZE;
+        return sessionQueue.slice(start, start + BATCH_SIZE);
+    }, [sessionQueue, currentBatchIndex]);
+
+    const totalBatches = Math.ceil(sessionQueue.length / BATCH_SIZE);
+
+    // Derived: Current item based on phaseIndex within current batch
     const currentItem = useMemo(() => {
         if (currentPhase === 'recognition') {
             // In recognition, we filter for words that haven't reached 2 hits yet
-            const pendingWords = sessionQueue.filter(w => (recognitionHits[w.id] || 0) < 2);
+            const pendingWords = currentBatchWords.filter(w => (recognitionHits[w.id] || 0) < 2);
+            if (pendingWords.length === 0) return null;
             return pendingWords[phaseIndex % pendingWords.length];
         }
-        return sessionQueue[phaseIndex];
-    }, [sessionQueue, phaseIndex, currentPhase, recognitionHits]);
+        return currentBatchWords[phaseIndex];
+    }, [currentBatchWords, phaseIndex, currentPhase, recognitionHits]);
 
     const handleNext = (result: 'success' | 'fail') => {
         if (!currentItem) return;
 
         if (currentPhase === 'priming') {
-            if (phaseIndex < sessionQueue.length - 1) {
+            if (phaseIndex < currentBatchWords.length - 1) {
                 setPhaseIndex(i => i + 1);
             } else {
-                // Move to Recognition
+                // Move to Recognition for this batch
                 setCurrentPhase('recognition');
                 setPhaseIndex(0);
             }
@@ -65,8 +78,8 @@ export function SmartSessionManager() {
                 const newHits = (recognitionHits[currentItem.id] || 0) + 1;
                 setRecognitionHits(prev => ({ ...prev, [currentItem.id]: newHits }));
 
-                // Check if all words reached 2 hits
-                const allDone = sessionQueue.every(w => {
+                // Check if all words in current batch reached 2 hits
+                const allDone = currentBatchWords.every(w => {
                     const hits = w.id === currentItem.id ? newHits : (recognitionHits[w.id] || 0);
                     return hits >= 2;
                 });
@@ -75,7 +88,7 @@ export function SmartSessionManager() {
                     setCurrentPhase('production');
                     setPhaseIndex(0);
                 } else {
-                    // Move to next pending word
+                    // Move to next pending word in batch
                     setPhaseIndex(i => i + 1);
                 }
             } else {
@@ -87,19 +100,26 @@ export function SmartSessionManager() {
         }
         else if (currentPhase === 'production') {
             const finalResult = result === 'fail' ? 'fail' : (results[currentItem.id] === 'fail' ? 'fail' : 'success');
-            setResults(prev => ({ ...prev, [currentItem.id]: finalResult }));
+            const updatedResults: Record<string, 'success' | 'fail'> = { ...results, [currentItem.id]: finalResult };
+            setResults(updatedResults);
 
-            if (phaseIndex < sessionQueue.length - 1) {
+            if (phaseIndex < currentBatchWords.length - 1) {
                 setPhaseIndex(i => i + 1);
             } else {
-                // End Session: Sync results back to queue
-                // Create a complete results map for the update
-                const finalResultsMap = { ...results, [currentItem.id]: finalResult };
-                sessionQueue.forEach(item => {
-                    const res = (finalResultsMap[item.id] || 'success') as 'success' | 'fail';
-                    updateItemStatus(item.id, res);
-                });
-                setSessionState('summary');
+                // Production finished for this batch
+                if (currentBatchIndex < totalBatches - 1) {
+                    // Move to next batch, start with priming
+                    setCurrentBatchIndex(i => i + 1);
+                    setCurrentPhase('priming');
+                    setPhaseIndex(0);
+                } else {
+                    // End Session: Sync results back to queue
+                    sessionQueue.forEach(item => {
+                        const res = (updatedResults[item.id] || 'success') as 'success' | 'fail';
+                        updateItemStatus(item.id, res);
+                    });
+                    setSessionState('summary');
+                }
             }
         }
     };
@@ -116,8 +136,8 @@ export function SmartSessionManager() {
                 <h1 className="text-4xl font-black tracking-tighter">ПАКЕТНЫЙ РЕЖИМ</h1>
                 <p className="text-muted-foreground text-lg leading-relaxed">
                     Подготовлено <strong>{sessionQueue.length}</strong> объектов.
-                    <br />Слова будут усвоены через 3 фазы:
-                    <span className="block mt-2 font-mono text-sm">ЗНАКОМСТВО → ДРИЛЛ (x2) → КОНТЕКСТ</span>
+                    <br />Разбито на <strong>{totalBatches} этапа</strong> по {BATCH_SIZE} слов.
+                    <br /><span className="block mt-2 font-mono text-sm">ЗНАКОМСТВО → ДРИЛЛ (x2) → КОНТЕКСТ</span>
                 </p>
                 <Button size="lg" className="w-full text-xl h-16 shadow-xl hover:scale-[1.02] transition-transform" onClick={() => setSessionState('active')}>
                     Начать Сессию
@@ -164,28 +184,37 @@ export function SmartSessionManager() {
         }
     };
 
-    const progressValue = currentPhase === 'priming'
-        ? (phaseIndex / sessionQueue.length) * 33
+    const progressValue = ((currentBatchIndex * 3 + (currentPhase === 'priming' ? 0 : currentPhase === 'recognition' ? 1 : 2)) / (totalBatches * 3)) * 100;
+
+    // Phase relative progress
+    const phaseProgressValue = currentPhase === 'priming'
+        ? (phaseIndex / currentBatchWords.length) * 100
         : currentPhase === 'recognition'
-            ? 33 + (Object.values(recognitionHits).reduce((a, b) => a + Math.min(b, 2), 0) / (sessionQueue.length * 2)) * 33
-            : 66 + (phaseIndex / sessionQueue.length) * 34;
+            ? (currentBatchWords.filter(w => (recognitionHits[w.id] || 0) >= 2).length / currentBatchWords.length) * 100
+            : (phaseIndex / currentBatchWords.length) * 100;
 
     return (
         <div className="max-w-2xl mx-auto p-4 space-y-8">
             <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-primary font-bold">
-                        {getPhaseIcon()}
-                        {getPhaseTitle()}
+                    <div className="flex flex-col">
+                        <div className="flex items-center gap-2 text-primary font-bold">
+                            {getPhaseIcon()}
+                            {getPhaseTitle()}
+                        </div>
+                        <div className="text-[10px] text-muted-foreground font-mono uppercase tracking-tighter">
+                            Этап {currentBatchIndex + 1} из {totalBatches}
+                        </div>
                     </div>
                     <Badge variant="outline" className="font-mono">
                         {currentPhase === 'recognition'
-                            ? `${sessionQueue.filter(w => (recognitionHits[w.id] || 0) >= 2).length} / ${sessionQueue.length} ГОТОВО`
-                            : `${phaseIndex + 1} / ${sessionQueue.length}`
+                            ? `${currentBatchWords.filter(w => (recognitionHits[w.id] || 0) >= 2).length} / ${currentBatchWords.length} ГОТОВО`
+                            : `${phaseIndex + 1} / ${currentBatchWords.length}`
                         }
                     </Badge>
                 </div>
-                <Progress value={progressValue} className="h-3 shadow-inner" />
+                <Progress value={progressValue} className="h-2 shadow-inner" />
+                <Progress value={phaseProgressValue} className="h-1 bg-primary/10" />
             </div>
 
             <div className="min-h-[500px] flex flex-col justify-center">
