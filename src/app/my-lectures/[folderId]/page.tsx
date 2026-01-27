@@ -123,31 +123,35 @@ export default function FolderDetailsPage({ params }: { params: Promise<{ folder
         }
     };
 
-    const handleBatchRefresh = async () => {
-        if (!confirm(`Обновить все слова (${folder.words.length}) с помощью AI? Это займет некоторое время.`)) return;
-
-        setIsBatchRefreshing(true);
-        const total = folder.words.length;
-        let count = 0;
-
-        try {
-            for (const word of folder.words) {
-                count++;
-                setRefreshProgress(`${count} / ${total}`);
-
-                try {
-                    await handleRefreshWord(word);
-                } catch (err) {
-                    console.error(`Failed to refresh word ${word.word.german}`, err);
-                }
-
-                // Add delay to be gentle on rate limits (1.5s)
-                await new Promise(resolve => setTimeout(resolve, 1500));
-            }
-        } finally {
+    // Queue-based batch processing to prevent timeouts and data loss
+    const processBatchQueue = async (wordsToProcess: UserVocabularyWord[], index: number) => {
+        if (index >= wordsToProcess.length) {
             setIsBatchRefreshing(false);
             setRefreshProgress('');
+            return;
         }
+
+        const word = wordsToProcess[index];
+        setRefreshProgress(`${index + 1} / ${wordsToProcess.length}`);
+
+        try {
+            await handleRefreshWord(word);
+        } catch (err) {
+            console.error(`Failed to refresh word ${word.word.german}`, err);
+        }
+
+        // Small delay to prevent rate limits
+        setTimeout(() => {
+            processBatchQueue(wordsToProcess, index + 1);
+        }, 1000);
+    };
+
+    const handleBatchRefresh = async () => {
+        if (!confirm(`Обновить все слова (${folder.words.length}) с помощью AI? \n\nЭто запустит процесс обновления НОВЫМИ настройками (только 1 значение для B2 Beruf). \n\nПроцесс займет время. Не закрывайте вкладку.`)) return;
+
+        setIsBatchRefreshing(true);
+        // Start processing from 0
+        processBatchQueue(folder.words, 0);
     };
 
     return (

@@ -10,6 +10,7 @@ const GenerateClozeInputSchema = z.object({
     german: z.string(),
     russian: z.string(),
     type: z.string(),
+    storyContext: z.string().optional().describe('The previous sentences of the story in the current batch.'),
 });
 
 type GenerateClozeInput = z.infer<typeof GenerateClozeInputSchema>;
@@ -29,11 +30,12 @@ const GenerateClozeOutputSchema = z.object({
 export type GenerateClozeOutput = z.infer<typeof GenerateClozeOutputSchema>;
 
 // Wrapper function to match the previous API signature
-export async function generateClozeWithAI(word: VocabularyWord): Promise<GenerateClozeOutput> {
+export async function generateClozeWithAI(word: VocabularyWord, storyContext?: string): Promise<GenerateClozeOutput> {
     const input: GenerateClozeInput = {
         german: word.german,
         russian: word.russian,
         type: word.type,
+        storyContext,
     };
     return generateClozeFlow(input);
 }
@@ -45,9 +47,18 @@ const renderPrompt = (input: GenerateClozeInput) => {
     Word: "${input.german}" (${input.russian})
     Type: ${input.type}
 
+    ${input.storyContext ? `
+    **STORY CONTEXT**: 
+    The current learning session is building a coherent story. Here are the previous sentences:
+    "${input.storyContext}"
+    
+    **YOUR TASK**: 
+    Continue this story logically using the new word "${input.german}". Ensure the transition is smooth and the narrative remains professional or interesting (suitable for B2 level).
+    ` : 'Create a simple, daily usage sentence for this word.'}
+
     Rules:
-    1. The sentence should be A1-A2 level (simple, daily usage).
-    2. **STRICT TENSE RULE**: All verbs MUST be in **Präsens** (Present Tense). DO NOT use Perfekt, Partizip II, Präteritum or any other tenses.
+    1. The sentence should be A1-B2 level (adjust based on word complexity).
+    2. **STRICT TENSE RULE**: All verbs MUST be in **Präsens** (Present Tense) unless the context strictly requires another tense for a coherent story (but prefer Präsens). 
     3. The word MUST be used in a context that requires specific grammar:
        - If Noun: Ensure the article or adjective ending proves the case (e.g. "Ich sehe den ___").
        - If Verb: Use a conjugated form in **Präsens**. Focus on testing correct person/number conjugation (e.g., ich, du, wir).

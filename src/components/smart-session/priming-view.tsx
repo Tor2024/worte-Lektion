@@ -22,8 +22,70 @@ export function PrimingView({ item, onNext }: PrimingViewProps) {
     const { speak } = useSpeech();
 
     useEffect(() => {
-        speak(formatGermanWord(word));
-    }, [speak, word]);
+        // Stop any previous speech
+        window.speechSynthesis.cancel();
+
+        const playAudioFlow = async () => {
+            const synth = window.speechSynthesis;
+
+            // Helper to create utterance
+            const speakText = (text: string, lang: string, rate: number = 0.9): Promise<void> => {
+                return new Promise((resolve) => {
+                    // Strip HTML
+                    const cleanText = text.replace(/<[^>]*>/g, '');
+                    if (!cleanText.trim()) {
+                        resolve();
+                        return;
+                    }
+
+                    const u = new SpeechSynthesisUtterance(cleanText);
+                    u.lang = lang;
+                    u.rate = rate;
+
+                    // Quick voice selection
+                    const voices = synth.getVoices();
+                    const targetVoice = voices.find(v => v.lang.startsWith(lang.split('-')[0]) && (v.name.includes('Google') || v.name.includes('Premium')));
+                    if (targetVoice) u.voice = targetVoice;
+
+                    u.onend = () => resolve();
+                    u.onerror = () => resolve(); // robust handling
+
+                    synth.speak(u);
+                });
+            };
+
+            const pause = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+            // 1. German Word
+            await speakText(formatGermanWord(word), 'de-DE', 0.8);
+            await pause(300);
+
+            // 2. Russian Translation
+            await speakText(word.russian, 'ru-RU', 1.0);
+            await pause(400);
+
+            // 3. German Example
+            if ('example' in word && word.example) {
+                await speakText(word.example, 'de-DE', 0.85);
+                await pause(400);
+            }
+
+            // 4. Russian Example Meaning
+            if ('exampleMeaning' in word && (word as any).exampleMeaning) {
+                await speakText((word as any).exampleMeaning, 'ru-RU', 1.0);
+            }
+        };
+
+        // Small timeout to allow voices to load if first time
+        const timer = setTimeout(() => {
+            playAudioFlow();
+        }, 500);
+
+        return () => {
+            clearTimeout(timer);
+            window.speechSynthesis.cancel();
+        };
+    }, [word]);
 
     return (
         <motion.div
@@ -101,6 +163,36 @@ export function PrimingView({ item, onNext }: PrimingViewProps) {
                             </div>
                         </div>
                     )}
+
+                    {/* Semantic Bridge: Synonyms & Collocations */}
+                    <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                        {(word as any).synonyms && (word as any).synonyms.length > 0 && (
+                            <div className="p-4 bg-blue-50/50 rounded-xl border border-blue-100 text-left">
+                                <h4 className="text-[10px] font-bold uppercase tracking-widest text-blue-400 mb-2">Синонимы</h4>
+                                <div className="space-y-1">
+                                    {(word as any).synonyms.map((s: any, i: number) => (
+                                        <div key={i} className="text-sm">
+                                            <span className="font-bold text-blue-600">{s.word}</span>
+                                            <span className="text-muted-foreground ml-2">— {s.translation}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                        {(word as any).collocations && (word as any).collocations.length > 0 && (
+                            <div className="p-4 bg-purple-50/50 rounded-xl border border-purple-100 text-left">
+                                <h4 className="text-[10px] font-bold uppercase tracking-widest text-purple-400 mb-2">Коллокации</h4>
+                                <div className="space-y-1">
+                                    {(word as any).collocations.map((c: any, i: number) => (
+                                        <div key={i} className="text-sm">
+                                            <span className="font-bold text-purple-600">{c.phrase}</span>
+                                            <span className="text-muted-foreground ml-2">— {c.translation}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </CardContent>
             </Card>
 

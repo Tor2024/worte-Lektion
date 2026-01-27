@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { useExamTexts } from '@/hooks/use-exam-texts';
 import { translateExamText } from '@/ai/flows/translate-exam-text';
+import { translateSentenceWords } from '@/ai/flows/translate-sentence-words';
 import { useToast } from '@/hooks/use-toast';
 
 export default function ExamTextReaderPage({ params }: { params: Promise<{ topicId: string }> }) {
@@ -22,6 +23,10 @@ export default function ExamTextReaderPage({ params }: { params: Promise<{ topic
     const [currentSentenceIndex, setCurrentSentenceIndex] = useState<number | null>(null);
     const [translation, setTranslation] = useState<string | null>(null);
     const [isTranslating, setIsTranslating] = useState(false);
+
+    // New state for word-by-word translation
+    const [sentenceTranslations, setSentenceTranslations] = useState<Record<number, { original: string, translation: string }[]>>({});
+    const [isLoadingWords, setIsLoadingWords] = useState<number | null>(null);
 
     const synthesisRef = useRef<SpeechSynthesis | null>(null);
     const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
@@ -85,6 +90,27 @@ export default function ExamTextReaderPage({ params }: { params: Promise<{ topic
 
         utteranceRef.current = utterance;
         synthesisRef.current?.speak(utterance);
+
+        // Fetch word translations if not already cached
+        if (!sentenceTranslations[index] && isLoadingWords !== index) {
+            fetchWordTranslations(index, sentences[index]);
+        }
+    };
+
+    const fetchWordTranslations = async (index: number, sentence: string) => {
+        setIsLoadingWords(index);
+        try {
+            const result = await translateSentenceWords({ sentence });
+            setSentenceTranslations(prev => ({
+                ...prev,
+                [index]: result.words
+            }));
+        } catch (error) {
+            console.error('Word translation error:', error);
+            // Silent error or toast?
+        } finally {
+            setIsLoadingWords(null);
+        }
     };
 
     const stopText = () => {
@@ -203,6 +229,43 @@ export default function ExamTextReaderPage({ params }: { params: Promise<{ topic
                             {translation}
                         </div>
                     </motion.div>
+                )}
+                {/* Word-by-Word Analysis Section */}
+                {currentSentenceIndex !== null && (
+                    <div className="mt-6 w-full">
+                        <div className="p-6 bg-card rounded-xl border shadow-sm">
+                            <h3 className="text-lg font-bold mb-4 font-headline flex items-center gap-2">
+                                <Sparkles className="h-5 w-5 text-amber-500" />
+                                Разбор слов (в контексте)
+                            </h3>
+
+                            {isLoadingWords === currentSentenceIndex ? (
+                                <div className="flex items-center gap-2 text-muted-foreground p-4 bg-muted/30 rounded-lg animate-pulse">
+                                    <Loader2 className="h-4 w-4 animate-spin" /> Анализируем структуру предложения...
+                                </div>
+                            ) : sentenceTranslations[currentSentenceIndex] ? (
+                                <div className="flex flex-wrap gap-2">
+                                    {sentenceTranslations[currentSentenceIndex].map((item, idx) => (
+                                        <div
+                                            key={idx}
+                                            className="flex flex-col bg-muted/30 border rounded-md overflow-hidden hover:border-primary/50 transition-colors"
+                                        >
+                                            <div className="px-2 py-1 text-base font-medium text-foreground border-b border-border/50">
+                                                {item.original}
+                                            </div>
+                                            <div className="px-2 py-1 text-xs text-muted-foreground bg-background">
+                                                {item.translation}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-muted-foreground text-sm italic">
+                                    Нажмите на предложение, чтобы увидеть перевод слов.
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 )}
             </div>
 

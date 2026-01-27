@@ -36,6 +36,9 @@ export function SmartSessionManager() {
     // Score/Results
     const [results, setResults] = useState<Record<string, 'success' | 'fail'>>({});
 
+    // Narrative Anchoring: Story for each batch
+    const [batchStories, setBatchStories] = useState<Record<number, string>>({});
+
     useEffect(() => {
         const items = getDailySession(20);
         setSessionQueue(items);
@@ -122,6 +125,13 @@ export function SmartSessionManager() {
                 }
             }
         }
+    };
+
+    const updateBatchStory = (newSentence: string) => {
+        setBatchStories(prev => ({
+            ...prev,
+            [currentBatchIndex]: (prev[currentBatchIndex] ? prev[currentBatchIndex] + " " : "") + newSentence
+        }));
     };
 
     if (sessionState === 'loading') return <div className="p-10 text-center animate-pulse text-primary font-bold">Синхронизация нейро-слоев...</div>;
@@ -240,7 +250,13 @@ export function SmartSessionManager() {
                             </div>
                         )}
                         {currentPhase === 'production' && (
-                            <ProductionView key={currentItem.id} item={currentItem} onResult={handleNext} />
+                            <ProductionView
+                                key={currentItem.id}
+                                item={currentItem}
+                                storyContext={batchStories[currentBatchIndex] || ""}
+                                onStoryUpdate={updateBatchStory}
+                                onResult={handleNext}
+                            />
                         )}
                     </>
                 )}

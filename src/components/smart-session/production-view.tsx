@@ -14,10 +14,12 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface ProductionViewProps {
     item: StudyQueueItem;
+    storyContext?: string;
+    onStoryUpdate?: (sentence: string) => void;
     onResult: (result: 'success' | 'fail') => void;
 }
 
-export function ProductionView({ item, onResult }: ProductionViewProps) {
+export function ProductionView({ item, storyContext, onStoryUpdate, onResult }: ProductionViewProps) {
     const { word } = item;
     const [isLoading, setIsLoading] = useState(true);
     const [clozeData, setClozeData] = useState<GenerateClozeOutput | null>(null);
@@ -31,12 +33,14 @@ export function ProductionView({ item, onResult }: ProductionViewProps) {
         let mounted = true;
         const fetchContext = async () => {
             setIsLoading(true);
-            // This is a server action call, make sure it's exposed or wrapped
-            // For now, assuming generateClozeWithAI is a server action usable here
-            const data = await generateClozeWithAI(word);
+            const data = await generateClozeWithAI(word, storyContext);
             if (mounted) {
                 setClozeData(data);
                 setIsLoading(false);
+                // Also update the global story context with the new sentence
+                if (onStoryUpdate) {
+                    onStoryUpdate(data.sentenceWithBlank.replace('___', data.missingWord));
+                }
             }
         };
         fetchContext();
@@ -141,6 +145,14 @@ export function ProductionView({ item, onResult }: ProductionViewProps) {
                                 <Send className="h-5 w-5" />
                             </Button>
                         </form>
+                    )}
+
+                    {/* Story Context Visualization */}
+                    {storyContext && (
+                        <div className="mt-6 p-4 bg-muted/30 rounded-lg text-xs text-muted-foreground italic text-left w-full border border-dashed">
+                            <span className="font-bold uppercase tracking-widest text-[10px] block mb-1 opacity-50">Контекст истории ({word.german}):</span>
+                            &ldquo;...{storyContext}&rdquo;
+                        </div>
                     )}
 
                 </CardContent>

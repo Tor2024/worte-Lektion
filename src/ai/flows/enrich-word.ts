@@ -60,6 +60,10 @@ const EnrichedWordSchema = z.object({
         word: z.string(),
         translation: z.string().describe('Russian translation of the synonym')
     })).optional().describe('List of 1-2 antonyms with translations (if applicable).'),
+    collocations: z.array(z.object({
+        phrase: z.string().describe('A common fixed phrase or Nomen-Verb-Verbindung (e.g. "eine Rolle spielen").'),
+        translation: z.string().describe('Russian translation of the phrase.')
+    })).optional().describe('List of 2-3 common collocations or fixed phrases.'),
     governance: z.array(GovernanceSchema).optional().describe('List of normative prepositions and cases for verbs and adjectives.'),
 });
 
@@ -75,6 +79,9 @@ const renderPrompt = (input: WordEnrichmentInput) => {
   Instructions:
   1. Identify the word type.
   2. Provide the Russian translation.
+     - **CRITICAL**: Provide ONLY the single most common usage/meaning of the word for **B2 Beruf** (Business/Professional German).
+     - **DO NOT** provide a list of meanings separated by commas (e.g. "term, concept, definition"). Just pick the best one (e.g. "понятие").
+     - If the word is strictly technical or business-related, prioritize that meaning.
   3. If it is a **Verb** or **Adjective**:
      - **CRITICAL: GOVERNANCE (Reksion)**:
        - Determine the normative German prepositions and cases required by this word.

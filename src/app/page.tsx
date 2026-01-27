@@ -24,6 +24,8 @@ import { GlobalVocabularyTrainer } from '@/components/global-vocabulary-trainer'
 import type { VocabularyWord } from '@/lib/types';
 import { commonWords } from '@/lib/common-words';
 import { useStudyQueue } from '@/hooks/use-study-queue';
+import { useUnifiedSRS } from '@/hooks/use-unified-srs';
+import { NeuralMap } from '@/components/neural-map';
 
 function DailySessionWidget() {
   const { totalDue, totalNew, totalLeeches, isLoading } = useStudyQueue();
@@ -151,6 +153,15 @@ export default function DashboardPage() {
         </p>
       </header>
 
+      {/* NEURAL MAP VISUALIZATION */}
+      <section className="mb-12">
+        <div className="flex items-center gap-2 mb-4">
+          <BrainCircuit className="h-5 w-5 text-primary" />
+          <h2 className="text-xl font-bold font-headline uppercase tracking-tight">Карта нейронных связей</h2>
+        </div>
+        <NeuralMapWrapper />
+      </section>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16 items-stretch">
         <GlobalVocabularyTrainer words={allLearnedWords} />
 
@@ -243,4 +254,12 @@ export default function DashboardPage() {
       </div>
     </div>
   );
+}
+
+function NeuralMapWrapper() {
+  const { allWords, isLoading } = useUnifiedSRS();
+
+  if (isLoading) return <div className="h-[400px] w-full bg-slate-900 animate-pulse rounded-3xl" />;
+
+  return <NeuralMap words={allWords} limit={60} />;
 }
