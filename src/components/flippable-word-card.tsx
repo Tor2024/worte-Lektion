@@ -9,7 +9,7 @@ import { SpeakButton } from '@/components/speak-button';
 import { formatGermanWord } from '@/lib/german-utils';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { RotateCcw, Volume2, Clock, BrainCircuit, ShieldAlert } from 'lucide-react';
+import { RotateCcw, Volume2, Clock, BrainCircuit, ShieldAlert, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useStudyQueue } from '@/hooks/use-study-queue';
 import { formatRelativeTime } from '@/lib/utils';
@@ -133,6 +133,12 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                         {studyItem && studyItem.status !== 'new' && (
                             <div className="text-[9px] font-mono text-muted-foreground bg-background/80 px-1 rounded shadow-sm">
                                 {formatRelativeTime(studyItem.nextReviewNum)}
+                            </div>
+                        )}
+                        {userWord.needsUpdate && (
+                            <div className="flex items-center gap-1 bg-red-500/10 text-red-600 border border-red-200 px-2 py-0.5 rounded-full text-[10px] font-black animate-bounce shadow-sm">
+                                <HelpCircle className="h-3 w-3" />
+                                ?
                             </div>
                         )}
                     </div>

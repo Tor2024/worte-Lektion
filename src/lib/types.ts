@@ -109,6 +109,7 @@ export interface UserVocabularyWord {
   antonyms?: Synonym[];
   addedAt: number;
   deepDiveStage?: number; // 0=None, 1=Podcast, 2=Collocation, 3=Synonym, 4=Interview
+  needsUpdate?: boolean;
 }
 
 export interface CustomFolder {

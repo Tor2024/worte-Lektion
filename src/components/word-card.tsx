@@ -5,7 +5,7 @@ import type { VocabularyWord } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useState, useEffect } from 'react';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, HelpCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SpeakButton } from '@/components/speak-button';
 import { formatGermanWord } from '@/lib/german-utils';
@@ -118,7 +118,14 @@ export function WordCard({ word }: { word: VocabularyWord }) {
               <p className="text-2xl font-bold">{getGermanDisplay()}</p>
               <SpeakButton text={getGermanDisplay()} size="sm" variant="secondary" className="w-fit h-7 px-2" showText />
             </div>
-            <Badge variant="secondary">{getGermanType(word.type)}</Badge>
+            <div className="flex flex-col items-end gap-2">
+              <Badge variant="secondary">{getGermanType(word.type)}</Badge>
+              {(word as any).needsUpdate && (
+                <div className="bg-red-500 text-white p-1 rounded-full animate-pulse shadow-lg" title="Требуется обновление">
+                  <HelpCircle className="h-4 w-4" />
+                </div>
+              )}
+            </div>
           </div>
           <Separator className="my-3" />
           <div className="text-sm space-y-1">
