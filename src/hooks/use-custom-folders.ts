@@ -26,14 +26,14 @@ export function useCustomFolders() {
             createdAt: f.createdAt,
             updatedAt: f.createdAt, // folders table doesn't have updatedAt yet, using createdAt
             words: (f.words || []).map(w => {
-                if (!w.details || !w.details.german) return null;
+                const details = w.details || { german: '?', russian: '?', type: 'other' };
                 return {
                     id: w._id,
-                    word: w.details,
+                    word: details,
                     sm2State: w.sm2State || {},
                     addedAt: w.addedAt || Date.now()
                 };
-            }).filter(Boolean) as UserVocabularyWord[]
+            }) as UserVocabularyWord[]
         }));
     }, [cloudFoldersRaw]);
 

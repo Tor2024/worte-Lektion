@@ -35,18 +35,19 @@ export function useStudyQueue() {
             const existingIds = new Set(newQueue.map(item => item.id));
 
             folders.forEach(folder => {
-                folder.words.forEach(userWord => {
-                    // Use german word as unique ID
-                    const wordId = userWord.word.german;
+                const folderWords = folder.words || [];
+                folderWords.forEach(userWord => {
+                    // Use german word as unique ID, or fallback to word ID if german is missing
+                    const german = userWord?.word?.german;
+                    const wordId = german || userWord.id || `unknown-${Math.random()}`;
 
                     if (!existingIds.has(wordId)) {
-                        // New word found! Add to queue
                         newQueue.push({
                             id: wordId,
-                            word: userWord.word,
+                            word: userWord.word || { german: '?', russian: '?', type: 'other' },
                             status: 'new',
                             currentStage: 'priming',
-                            nextReviewNum: Date.now(), // Due immediately
+                            nextReviewNum: Date.now(),
                             tags: [folder.id],
                             consecutiveMistakes: 0
                         });
@@ -91,8 +92,10 @@ export function useStudyQueue() {
 
         // 2. Sort by Level Priority, then word type (verbs higher), then just mix
         const sortedItems = [...actionableItems].sort((a, b) => {
-            const priorityA = (a.word.level ? LEVEL_PRIORITY[a.word.level as keyof typeof LEVEL_PRIORITY] : 0) + (a.word.type === 'verb' ? 5 : 0);
-            const priorityB = (b.word.level ? LEVEL_PRIORITY[b.word.level as keyof typeof LEVEL_PRIORITY] : 0) + (b.word.type === 'verb' ? 5 : 0);
+            const wordA = a.word || {};
+            const wordB = b.word || {};
+            const priorityA = (wordA.level ? LEVEL_PRIORITY[wordA.level as keyof typeof LEVEL_PRIORITY] : 0) + (wordA.type === 'verb' ? 5 : 0);
+            const priorityB = (wordB.level ? LEVEL_PRIORITY[wordB.level as keyof typeof LEVEL_PRIORITY] : 0) + (wordB.type === 'verb' ? 5 : 0);
 
             if (priorityA !== priorityB) return priorityB - priorityA;
             return 0.5 - Math.random();
