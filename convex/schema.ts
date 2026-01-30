@@ -25,7 +25,8 @@ export default defineSchema({
         userId: v.string(),
         name: v.string(),
         createdAt: v.number(),
-    }).index("by_user", ["userId"]),
+    }).index("by_user", ["userId"])
+        .index("by_user_name", ["userId", "name"]),
 
     // Слова в папках
     words: defineTable({
@@ -37,5 +38,6 @@ export default defineSchema({
         details: v.any(), // Полный объект VocabularyWord
         sm2State: v.any(), // Текущее состояние SM2
         addedAt: v.number(),
-    }).index("by_folder", ["folderId"]),
+    }).index("by_folder", ["folderId"])
+        .index("by_folder_german", ["folderId", "german"]),
 });

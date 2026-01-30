@@ -58,8 +58,9 @@ export const migrateFromLocalStorage = mutation({
             for (const folder of folders) {
                 const existingFolder = await ctx.db
                     .query("folders")
-                    .withIndex("by_user", (q) => q.eq("userId", args.userId))
-                    .filter((q) => q.eq(q.field("name"), folder.name))
+                    .withIndex("by_user_name", (q) =>
+                        q.eq("userId", args.userId).eq("name", folder.name || "Unnamed Folder")
+                    )
                     .unique();
 
                 let folderId;
@@ -75,14 +76,14 @@ export const migrateFromLocalStorage = mutation({
 
                 const folderWords = Array.isArray(folder.words) ? folder.words : [];
                 for (const word of folderWords) {
-                    // Safety check for word data structure
                     const wordData = word.word || word;
                     if (!wordData?.german) continue;
 
                     const existingWord = await ctx.db
                         .query("words")
-                        .withIndex("by_folder", (q) => q.eq("folderId", folderId))
-                        .filter((q) => q.eq(q.field("german"), wordData.german))
+                        .withIndex("by_folder_german", (q) =>
+                            q.eq("folderId", folderId).eq("german", wordData.german)
+                        )
                         .unique();
 
                     if (!existingWord) {
