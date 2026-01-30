@@ -8,8 +8,10 @@
  * @module
  */
 
+import type * as folders from "../folders.js";
 import type * as migration from "../migration.js";
 import type * as progress from "../progress.js";
+import type * as srs from "../srs.js";
 
 import type {
   ApiFromModules,
@@ -18,8 +20,10 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  folders: typeof folders;
   migration: typeof migration;
   progress: typeof progress;
+  srs: typeof srs;
 }>;
 
 /**

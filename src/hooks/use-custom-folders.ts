@@ -1,99 +1,115 @@
-'use client';
-
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { CustomFolder, UserVocabularyWord } from '@/lib/types';
-import { v4 as uuidv4 } from 'uuid';
 import { storage } from '@/lib/storage';
+import { useQuery, useMutation } from 'convex/react';
+import { api } from '../../convex/_generated/api';
+import { Id } from '../../convex/_generated/dataModel';
 
 export function useCustomFolders() {
-    const [folders, setFolders] = useState<CustomFolder[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const [localFolders, setLocalFolders] = useState<CustomFolder[]>(storage.getCustomFolders());
+    const userId = "anonymous";
 
-    // Initial load from localStorage
+    // 1. Convex Hooks
+    const cloudFoldersRaw = useQuery(api.folders.getFolders, { userId });
+    const createFolderMutation = useMutation(api.folders.createFolder);
+    const deleteFolderMutation = useMutation(api.folders.deleteFolder);
+    const addWordMutation = useMutation(api.folders.addWord);
+    const updateWordMutation = useMutation(api.folders.updateWord);
+    const deleteWordMutation = useMutation(api.folders.deleteWord);
+
+    // 2. Map Cloud data to internal types
+    const cloudFolders = useMemo(() => {
+        if (!cloudFoldersRaw) return null;
+        return cloudFoldersRaw.map(f => ({
+            id: f._id, // Use Convex ID as primary ID
+            name: f.name,
+            createdAt: f.createdAt,
+            updatedAt: f.createdAt, // folders table doesn't have updatedAt yet, using createdAt
+            words: f.words.map(w => ({
+                ...w.details,
+                id: w._id,
+                sm2State: w.sm2State,
+                addedAt: w.addedAt
+            })) as UserVocabularyWord[]
+        }));
+    }, [cloudFoldersRaw]);
+
+    // 3. Sync Cloud -> Local
     useEffect(() => {
-        setFolders(storage.getCustomFolders());
-        setIsLoading(false);
-    }, []);
-
-    const saveFolders = useCallback((newFolders: CustomFolder[]) => {
-        setFolders(newFolders);
-        storage.setCustomFolders(newFolders);
-    }, []);
+        if (cloudFolders) {
+            // Very basic check for differences to avoid infinite loops or unnecessary writes
+            const isDifferent = JSON.stringify(cloudFolders) !== JSON.stringify(localFolders);
+            if (isDifferent) {
+                setLocalFolders(cloudFolders);
+                storage.setCustomFolders(cloudFolders);
+            }
+        }
+    }, [cloudFolders]);
 
     const createFolder = useCallback(async (name: string) => {
-        const id = uuidv4();
-        const newFolder: CustomFolder = {
-            id,
-            name,
-            words: [],
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
-        };
-        // Optimistic update
-        const currentFolders = storage.getCustomFolders();
-        const newFolders = [...currentFolders, newFolder];
-        saveFolders(newFolders);
-        return id;
-    }, [saveFolders]);
+        try {
+            const newFolderId = await createFolderMutation({ userId, name });
+            // The query will eventually update the state, but we could optimistic-update here if needed.
+            return newFolderId;
+        } catch (error) {
+            console.error("Failed to create folder in cloud:", error);
+            throw error;
+        }
+    }, [createFolderMutation]);
 
     const deleteFolder = useCallback(async (id: string) => {
-        const currentFolders = storage.getCustomFolders();
-        const newFolders = currentFolders.filter(f => f.id !== id);
-        saveFolders(newFolders);
-    }, [saveFolders]);
+        try {
+            await deleteFolderMutation({ folderId: id as Id<"folders"> });
+        } catch (error) {
+            console.error("Failed to delete folder from cloud:", error);
+        }
+    }, [deleteFolderMutation]);
 
     const getFolder = useCallback((id: string) => {
-        return folders.find(f => f.id === id);
-    }, [folders]);
+        return localFolders.find(f => f.id === id);
+    }, [localFolders]);
 
     const addWordToFolder = useCallback(async (folderId: string, userWord: UserVocabularyWord) => {
-        const currentFolders = storage.getCustomFolders();
-        const newFolders = currentFolders.map(f => {
-            if (f.id === folderId) {
-                return {
-                    ...f,
-                    words: [userWord, ...f.words],
-                    updatedAt: Date.now()
-                };
-            }
-            return f;
-        });
-        saveFolders(newFolders);
-    }, [saveFolders]);
+        try {
+            await addWordMutation({
+                folderId: folderId as Id<"folders">,
+                userId,
+                german: userWord.word.german,
+                russian: userWord.word.russian,
+                type: userWord.word.type,
+                details: userWord.word,
+                sm2State: userWord.sm2State,
+            });
+        } catch (error) {
+            console.error("Failed to add word to cloud:", error);
+        }
+    }, [addWordMutation]);
 
     const updateWordInFolder = useCallback(async (folderId: string, updatedWord: UserVocabularyWord) => {
-        const currentFolders = storage.getCustomFolders();
-        const newFolders = currentFolders.map(f => {
-            if (f.id === folderId) {
-                return {
-                    ...f,
-                    words: f.words.map(w => w.id === updatedWord.id ? updatedWord : w),
-                    updatedAt: Date.now()
-                };
-            }
-            return f;
-        });
-        saveFolders(newFolders);
-    }, [saveFolders]);
+        try {
+            await updateWordMutation({
+                wordId: updatedWord.id as Id<"words">,
+                german: updatedWord.word.german,
+                russian: updatedWord.word.russian,
+                sm2State: updatedWord.sm2State,
+                details: updatedWord.word
+            });
+        } catch (error) {
+            console.error("Failed to update word in cloud:", error);
+        }
+    }, [updateWordMutation]);
 
     const removeWordFromFolder = useCallback(async (folderId: string, wordId: string) => {
-        const currentFolders = storage.getCustomFolders();
-        const newFolders = currentFolders.map(f => {
-            if (f.id === folderId) {
-                return {
-                    ...f,
-                    words: f.words.filter(w => w.id !== wordId),
-                    updatedAt: Date.now()
-                };
-            }
-            return f;
-        });
-        saveFolders(newFolders);
-    }, [saveFolders]);
+        try {
+            await deleteWordMutation({ wordId: wordId as Id<"words"> });
+        } catch (error) {
+            console.error("Failed to delete word from cloud:", error);
+        }
+    }, [deleteWordMutation]);
 
     return {
-        folders,
-        isLoading,
+        folders: localFolders,
+        isLoading: cloudFoldersRaw === undefined,
         createFolder,
         deleteFolder,
         getFolder,

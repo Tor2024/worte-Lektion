@@ -26,7 +26,6 @@ import { commonWords } from '@/lib/common-words';
 import { useStudyQueue } from '@/hooks/use-study-queue';
 import { useUnifiedSRS } from '@/hooks/use-unified-srs';
 import { NeuralMap } from '@/components/neural-map';
-import { ConvexMigration } from '@/components/convex-migration';
 
 function DailySessionWidget() {
   const { totalDue, totalNew, totalLeeches, isLoading } = useStudyQueue();
@@ -153,8 +152,6 @@ export default function DashboardPage() {
           Ваш персональный путь к овладению немецким языком
         </p>
       </header>
-
-      <ConvexMigration />
 
       {/* NEURAL MAP VISUALIZATION */}
       <section className="mb-12">
