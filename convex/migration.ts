@@ -1,4 +1,4 @@
-import { v } from "convex/values";
+import { v, ConvexError } from "convex/values";
 import { mutation } from "./_generated/server";
 
 export const migrateFromLocalStorage = mutation({
@@ -10,11 +10,16 @@ export const migrateFromLocalStorage = mutation({
     },
     handler: async (ctx, args) => {
         try {
-            // Helper to sanitize SM2 state for Convex (removes nulls)
+            // Helper to sanitize SM2 state for Convex (removes nulls and extra fields)
             const sanitizeSM2 = (state: any) => {
-                const s = { ...state };
-                if (s.nextReviewDate === null) delete s.nextReviewDate;
-                return s;
+                if (!state || typeof state !== 'object') return null;
+                return {
+                    interval: typeof state.interval === 'number' ? state.interval : 0,
+                    repetitions: typeof state.repetitions === 'number' ? state.repetitions : 0,
+                    easeFactor: typeof state.easeFactor === 'number' ? state.easeFactor : 2.5,
+                    nextReviewDate: typeof state.nextReviewDate === 'number' ? state.nextReviewDate : undefined,
+                    step: typeof state.step === 'number' ? state.step : undefined,
+                };
             };
 
             // 1. Migrate Progress
@@ -25,7 +30,7 @@ export const migrateFromLocalStorage = mutation({
                     .withIndex("by_user_topic", (q) => q.eq("userId", args.userId).eq("topicId", topicId))
                     .unique();
                 if (!existing) {
-                    await ctx.db.insert("user_progress", { userId: args.userId, topicId, proficiency });
+                    await ctx.db.insert("user_progress", { userId: args.userId, topicId, proficiency: proficiency || 0 });
                 }
             }
 
@@ -37,16 +42,20 @@ export const migrateFromLocalStorage = mutation({
                     .withIndex("by_user_word", (q) => q.eq("userId", args.userId).eq("wordId", wordId))
                     .unique();
                 if (!existing) {
-                    await ctx.db.insert("srs_data", {
-                        userId: args.userId,
-                        wordId,
-                        ...sanitizeSM2(state)
-                    });
+                    const cleanState = sanitizeSM2(state);
+                    if (cleanState) {
+                        await ctx.db.insert("srs_data", {
+                            userId: args.userId,
+                            wordId,
+                            ...cleanState
+                        });
+                    }
                 }
             }
 
             // 3. Migrate Folders & Words
-            for (const folder of args.folders as any[]) {
+            const folders = Array.isArray(args.folders) ? args.folders : [];
+            for (const folder of folders) {
                 const existingFolder = await ctx.db
                     .query("folders")
                     .withIndex("by_user", (q) => q.eq("userId", args.userId))
@@ -57,29 +66,34 @@ export const migrateFromLocalStorage = mutation({
                 if (!existingFolder) {
                     folderId = await ctx.db.insert("folders", {
                         userId: args.userId,
-                        name: folder.name,
+                        name: folder.name || "Unnamed Folder",
                         createdAt: folder.createdAt || Date.now(),
                     });
                 } else {
                     folderId = existingFolder._id;
                 }
 
-                for (const word of folder.words) {
+                const folderWords = Array.isArray(folder.words) ? folder.words : [];
+                for (const word of folderWords) {
+                    // Safety check for word data structure
+                    const wordData = word.word || word;
+                    if (!wordData?.german) continue;
+
                     const existingWord = await ctx.db
                         .query("words")
                         .withIndex("by_folder", (q) => q.eq("folderId", folderId))
-                        .filter((q) => q.eq(q.field("german"), word.word.german))
+                        .filter((q) => q.eq(q.field("german"), wordData.german))
                         .unique();
 
                     if (!existingWord) {
                         await ctx.db.insert("words", {
                             folderId,
                             userId: args.userId,
-                            german: word.german || word.word.german,
-                            russian: word.russian || word.word.russian,
-                            type: word.type || word.word.type,
-                            details: word.word,
-                            sm2State: sanitizeSM2(word.sm2State),
+                            german: wordData.german,
+                            russian: wordData.russian || "",
+                            type: wordData.type || "other",
+                            details: wordData,
+                            sm2State: sanitizeSM2(word.sm2State) || {},
                             addedAt: word.addedAt || Date.now(),
                         });
                     }
@@ -88,8 +102,9 @@ export const migrateFromLocalStorage = mutation({
 
             return { success: true };
         } catch (error: any) {
-            console.error("Migration error:", error);
-            throw new Error(`Migration failed: ${error.message}`);
+            console.error("Migration error details:", error);
+            // Using ConvexError allows the client to see the actual error message
+            throw new ConvexError(`Data Migration Failed: ${error.message}`);
         }
     },
 });
