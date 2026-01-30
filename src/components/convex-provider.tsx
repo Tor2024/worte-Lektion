@@ -11,11 +11,6 @@ export function ConvexClientProvider({ children }: { children: ReactNode }) {
     }, []);
 
     if (!convex) {
-        // В режиме билда (SSR) или если переменная не задана, просто рендерим детей.
-        // Это предотвращает ошибку "No address provided to ConvexReactClient".
-        if (typeof window !== "undefined" && !convexUrl) {
-            console.warn("Convex: NEXT_PUBLIC_CONVEX_URL is not defined.");
-        }
         return <>{children}</>;
     }
 

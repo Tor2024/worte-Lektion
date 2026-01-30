@@ -26,8 +26,8 @@ export function useCustomFolders() {
             createdAt: f.createdAt,
             updatedAt: f.createdAt, // folders table doesn't have updatedAt yet, using createdAt
             words: f.words.map(w => ({
-                ...w.details,
                 id: w._id,
+                word: w.details, // Fix: Nest details under 'word'
                 sm2State: w.sm2State,
                 addedAt: w.addedAt
             })) as UserVocabularyWord[]
