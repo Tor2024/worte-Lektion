@@ -49,7 +49,7 @@ export function useUnifiedSRS() {
             });
         });
 
-        return words;
+        return words.filter(w => w.word && w.word.german);
     }, [progress, folders, srsMap]);
 
     const dueWords = useMemo(() => {

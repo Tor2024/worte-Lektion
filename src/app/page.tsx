@@ -107,7 +107,7 @@ export default function DashboardPage() {
           if (progress[topic.id] > 0) {
             topic.vocabulary.forEach(theme => {
               theme.words.forEach(word => {
-                if (!seenWords.has(word.german)) {
+                if (word && word.german && !seenWords.has(word.german)) {
                   wordsFromTopics.push(word);
                   seenWords.add(word.german);
                 }

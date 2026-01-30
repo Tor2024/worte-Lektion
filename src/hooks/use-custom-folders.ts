@@ -25,12 +25,15 @@ export function useCustomFolders() {
             name: f.name,
             createdAt: f.createdAt,
             updatedAt: f.createdAt, // folders table doesn't have updatedAt yet, using createdAt
-            words: f.words.map(w => ({
-                id: w._id,
-                word: w.details, // Fix: Nest details under 'word'
-                sm2State: w.sm2State,
-                addedAt: w.addedAt
-            })) as UserVocabularyWord[]
+            words: (f.words || []).map(w => {
+                if (!w.details || !w.details.german) return null;
+                return {
+                    id: w._id,
+                    word: w.details,
+                    sm2State: w.sm2State || {},
+                    addedAt: w.addedAt || Date.now()
+                };
+            }).filter(Boolean) as UserVocabularyWord[]
         }));
     }, [cloudFoldersRaw]);
 
