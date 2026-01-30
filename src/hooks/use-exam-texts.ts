@@ -1,7 +1,9 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useQuery, useMutation } from 'convex/react';
+import { api } from '../../convex/_generated/api';
 import { ExamText } from '@/lib/types';
 
 const BUILT_IN_TEXTS: ExamText[] = [
@@ -18,52 +20,98 @@ Das Bewerbungsgespräch kann entweder persönlich или online stattfinden. Dab
 ];
 
 export function useExamTexts() {
-    const [customTexts, setCustomTexts] = useState<ExamText[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const userId = "anonymous";
+    const [localCustomTexts, setLocalCustomTexts] = useState<ExamText[]>([]);
 
+    // 1. Convex Hooks
+    const cloudTextsRaw = useQuery(api.examTexts.getExamTexts, { userId });
+    const addTextMutation = useMutation(api.examTexts.addExamText);
+    const removeTextMutation = useMutation(api.examTexts.deleteExamText);
+
+    // 2. Load from localStorage as initial fallback
     useEffect(() => {
         const saved = localStorage.getItem('custom_exam_texts');
         if (saved) {
             try {
-                setCustomTexts(JSON.parse(saved));
+                setLocalCustomTexts(JSON.parse(saved));
             } catch (e) {
                 console.error('Failed to parse custom texts', e);
             }
         }
-        setIsLoading(false);
     }, []);
 
-    const saveTexts = (texts: ExamText[]) => {
-        setCustomTexts(texts);
-        localStorage.setItem('custom_exam_texts', JSON.stringify(texts));
-    };
+    // 3. Map Cloud Data
+    const customTexts = useMemo(() => {
+        if (!cloudTextsRaw) return localCustomTexts;
+        return cloudTextsRaw.map((t: any) => ({
+            id: t._id,
+            title: t.title,
+            description: t.description,
+            level: t.level,
+            content: t.content,
+            isCustom: t.isCustom,
+            createdAt: t.createdAt
+        })) as ExamText[];
+    }, [cloudTextsRaw, localCustomTexts]);
 
-    const addCustomText = (text: Omit<ExamText, 'id' | 'isCustom'>) => {
-        const newText: ExamText = {
-            ...text,
-            id: `custom-${Date.now()}`,
-            isCustom: true
-        };
-        saveTexts([...customTexts, newText]);
+    // 4. Sync Cloud -> Local
+    useEffect(() => {
+        if (cloudTextsRaw) {
+            const mapped = cloudTextsRaw.map((t: any) => ({
+                id: t._id,
+                title: t.title,
+                description: t.description,
+                level: t.level,
+                content: t.content,
+                isCustom: t.isCustom,
+                createdAt: t.createdAt
+            }));
+            localStorage.setItem('custom_exam_texts', JSON.stringify(mapped));
+        }
+    }, [cloudTextsRaw]);
+
+    const addCustomText = useCallback(async (text: Omit<ExamText, 'id' | 'isCustom'>) => {
+        // Optimistic update
+        const tempId = `temp-${Date.now()}`;
+        const newText: ExamText = { ...text, id: tempId, isCustom: true };
+        setLocalCustomTexts(prev => [...prev, newText]);
+
+        try {
+            await addTextMutation({
+                userId,
+                title: text.title,
+                description: text.description || "",
+                level: text.level || "B2",
+                content: text.content || "",
+                isCustom: true,
+            });
+        } catch (e) {
+            console.error("Failed to add exam text to cloud:", e);
+        }
         return newText;
-    };
+    }, [addTextMutation, userId]);
 
-    const removeCustomText = (id: string) => {
-        saveTexts(customTexts.filter(t => t.id !== id));
-    };
+    const removeCustomText = useCallback(async (id: string) => {
+        // Optimistic update
+        setLocalCustomTexts(prev => prev.filter(t => t.id !== id));
 
-    const getExamText = (id: string): ExamText | undefined => {
-        // Check built-in first
+        try {
+            await removeTextMutation({ id: id as any }); // Convex IDs are used here
+        } catch (e) {
+            console.error("Failed to remove exam text from cloud:", e);
+        }
+    }, [removeTextMutation]);
+
+    const getExamText = useCallback((id: string): ExamText | undefined => {
         const builtIn = BUILT_IN_TEXTS.find(t => t.id === id);
         if (builtIn) return builtIn;
-        // Then check custom
         return customTexts.find(t => t.id === id);
-    }
+    }, [customTexts]);
 
     return {
         allTexts: [...BUILT_IN_TEXTS, ...customTexts],
         customTexts,
-        isLoading,
+        isLoading: cloudTextsRaw === undefined,
         addCustomText,
         removeCustomText,
         getExamText
