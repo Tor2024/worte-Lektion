@@ -107,12 +107,15 @@ export function PrimingView({ item, onNext }: PrimingViewProps) {
                 <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-purple-500" />
                 <CardContent className="p-10 flex flex-col items-center text-center space-y-6">
 
-                    <div className="space-y-2">
+                    <div className="space-y-4">
                         <div className="text-6xl font-black text-primary tracking-tight">
                             {formatGermanWord(word)}
                         </div>
-                        <div className="text-2xl text-muted-foreground font-serif italic">
-                            {word.russian}
+                        <div className="flex flex-col items-center gap-1">
+                            <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">B2 Beruf Focus</div>
+                            <div className="text-3xl text-foreground font-black italic">
+                                {word.russian}
+                            </div>
                         </div>
                     </div>
 

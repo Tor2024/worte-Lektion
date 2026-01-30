@@ -105,7 +105,10 @@ export default function FolderDetailsPage({ params }: { params: Promise<{ folder
     const handleRefreshWord = async (userWord: UserVocabularyWord) => {
         try {
             const german = userWord.word.german;
-            const enriched = await enrichWord({ word: german, context: folder?.name });
+            const enriched = await enrichWord({
+                word: german,
+                context: `Focus on B2 Beruf primary meaning. Folder: ${folder?.name}`
+            });
 
             const updatedWord: UserVocabularyWord = {
                 ...userWord,
@@ -113,12 +116,16 @@ export default function FolderDetailsPage({ params }: { params: Promise<{ folder
                 synonyms: enriched.synonyms,
                 antonyms: enriched.antonyms,
                 context: enriched.example,
-                contextTranslation: enriched.exampleMeaning
+                contextTranslation: enriched.exampleMeaning,
+                needsUpdate: false // Clear the flag
             };
 
             updateWordInFolder(folderId, updatedWord);
-        } catch (e) {
+        } catch (e: any) {
             console.error("Refresh failed", e);
+            if (e.message?.includes('429') || e.message?.includes('quota')) {
+                throw new Error("AI_LIMIT");
+            }
             throw e;
         }
     };
@@ -136,22 +143,38 @@ export default function FolderDetailsPage({ params }: { params: Promise<{ folder
 
         try {
             await handleRefreshWord(word);
-        } catch (err) {
-            console.error(`Failed to refresh word ${word.word.german}`, err);
-        }
 
-        // Small delay to prevent rate limits
-        setTimeout(() => {
-            processBatchQueue(wordsToProcess, index + 1);
-        }, 1000);
+            // Small delay to prevent rate limits
+            setTimeout(() => {
+                processBatchQueue(wordsToProcess, index + 1);
+            }, 1000);
+        } catch (err: any) {
+            if (err.message === "AI_LIMIT") {
+                setError("Лимит AI исчерпан. Обновление приостановлено.");
+                setIsBatchRefreshing(false);
+                setRefreshProgress('');
+            } else {
+                console.error(`Failed to refresh word ${word.word.german}`, err);
+                // Continue with next word on non-limit errors
+                processBatchQueue(wordsToProcess, index + 1);
+            }
+        }
     };
 
     const handleBatchRefresh = async () => {
-        if (!confirm(`Обновить все слова (${folder.words.length}) с помощью AI? \n\nЭто запустит процесс обновления НОВЫМИ настройками (только 1 значение для B2 Beruf). \n\nПроцесс займет время. Не закрывайте вкладку.`)) return;
+        // SMART FILTER: Only update those that need it
+        const pendingWords = folder.words.filter(w => w.needsUpdate || !w.word.allTranslations);
+
+        if (pendingWords.length === 0) {
+            alert("Все слова в этой папке уже актуальны и имеют B2 Beruf фокус.");
+            return;
+        }
+
+        if (!confirm(`Обновить ${pendingWords.length} слов, требующих внимания, с помощью AI? \n\nЭто добавит B2 Beruf фокус и расширенный контекст. \n\nПроцесс займет время. Не закрывайте вкладку.`)) return;
 
         setIsBatchRefreshing(true);
-        // Start processing from 0
-        processBatchQueue(folder.words, 0);
+        setError(null);
+        processBatchQueue(pendingWords, 0);
     };
 
     return (

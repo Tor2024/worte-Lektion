@@ -21,7 +21,8 @@ const GovernanceSchema = z.object({
 
 const EnrichedWordSchema = z.object({
     german: z.string().describe('The canonical German form. For nouns, the noun itself. For verbs, the infinitive OR the fixed phrase if provided (e.g. "es geht um...").'),
-    russian: z.string().describe('Russian translation.'),
+    russian: z.string().describe('The single most common B2 Beruf translation.'),
+    allTranslations: z.string().optional().describe('All valid Russian translations for context, separated by semicolons.'),
     type: WordTypeSchema,
     // Verb specifics
     conjugation: z.string().optional().describe('For verbs: 3rd person singular Present (e.g. "er läuft" or "es geht").'),
@@ -78,10 +79,11 @@ const renderPrompt = (input: WordEnrichmentInput) => {
 
   Instructions:
   1. Identify the word type.
-  2. Provide the Russian translation.
-     - **CRITICAL**: Provide ONLY the single most common usage/meaning of the word for **B2 Beruf** (Business/Professional German).
-     - **DO NOT** provide a list of meanings separated by commas (e.g. "term, concept, definition"). Just pick the best one (e.g. "понятие").
-     - If the word is strictly technical or business-related, prioritize that meaning.
+  2. Provide translations:
+     - **russian**: Provide THE SINGLE MOST COMMON technical or business meaning used in **B2 Beruf** (Professional German) in Russia/Ukraine.
+     - **DO NOT** provide a list. If "sterben" is the word, use "умирать". If "bleiben" is the word, use "оставаться".
+     - **allTranslations**: Provide all other valid meanings separated by semicolons (e.g. "оставаться; пребывать; задерживаться").
+     - **CRITICAL**: DO NOT put lists in the 'russian' field. Put only the one best B2 Beruf meaning there.
   3. If it is a **Verb** or **Adjective**:
      - **CRITICAL: GOVERNANCE (Reksion)**:
        - Determine the normative German prepositions and cases required by this word.

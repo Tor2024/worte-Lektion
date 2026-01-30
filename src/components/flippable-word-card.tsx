@@ -278,6 +278,13 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                             </div>
                         </div>
                     )}
+
+                    {/* All Translations (Context) - NEW */}
+                    <div className="mt-auto pt-4 w-full text-center border-t border-primary/5">
+                        <p className="text-xl font-medium text-foreground/80 font-headline italic">
+                            {word.allTranslations || word.russian}
+                        </p>
+                    </div>
                 </div>
             );
         }
@@ -366,7 +373,8 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
             // RU Back
             return (
                 <div className="space-y-1 flex flex-col items-center">
-                    <h4 className="text-xl font-bold text-primary mb-1">{word.russian}</h4>
+                    <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2">B2 Beruf Focus</div>
+                    <h4 className="text-3xl font-black text-primary mb-1">{word.russian}</h4>
                     {userWord.context && (
                         <div
                             className="text-sm text-muted-foreground italic text-center max-w-full break-words whitespace-normal prose prose-slate dark:prose-invert"

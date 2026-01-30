@@ -131,6 +131,12 @@ export function WordCard({ word }: { word: VocabularyWord }) {
           <div className="text-sm space-y-1">
             {renderDetails()}
           </div>
+          {/* All Translations (Context) - NEW */}
+          <div className="mt-4 pt-3 border-t border-primary/10">
+            <p className="text-lg font-medium text-foreground/70 italic leading-snug">
+              {word.allTranslations || word.russian}
+            </p>
+          </div>
         </div>
         <div className="mt-2 flex items-center justify-end gap-1 text-xs text-muted-foreground">
           <RefreshCw className="h-3 w-3" />
@@ -145,7 +151,8 @@ export function WordCard({ word }: { word: VocabularyWord }) {
         <div className="flex-1">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-2xl font-bold flex items-center gap-2">
+              <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">B2 Beruf Focus</div>
+              <p className="text-3xl font-black text-primary leading-none">
                 {word.russian}
               </p>
               <div className="flex items-center gap-2">
