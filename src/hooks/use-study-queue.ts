@@ -51,12 +51,15 @@ export function useStudyQueue() {
                 const wordId = german || userWord.id || `unknown-${Math.random()}`;
 
                 if (!existingIds.has(wordId)) {
+                    const sm2 = userWord.sm2State || {};
+                    const hasHistory = (sm2.repetitions || 0) > 0;
+
                     newItems.push({
                         id: wordId,
                         word: userWord.word || { german: '?', russian: '?', type: 'other' },
-                        status: 'new',
+                        status: hasHistory ? (sm2.interval > 7 ? 'review' : 'learning') : 'new',
                         currentStage: 'priming',
-                        nextReviewNum: Date.now(),
+                        nextReviewNum: sm2.nextReviewDate || Date.now(),
                         tags: [folder.id],
                         consecutiveMistakes: 0
                     });
