@@ -26,14 +26,26 @@ export function useCustomFolders() {
             createdAt: f.createdAt,
             updatedAt: f.createdAt, // folders table doesn't have updatedAt yet, using createdAt
             words: (f.words || []).map(w => {
-                const hasDetails = w.details && w.details.german && w.details.german !== '?';
-                const details = hasDetails ? w.details : { german: '?', russian: '?', type: 'other' };
+                const details = w.details || { german: '?', russian: '?', type: 'other' };
+
+                // Stricter Criteria for "Quality" word
+                const hasCleanTranslation = details.russian && !details.russian.includes(',') && !details.russian.includes(';');
+                const hasBasicInfo = details.german && details.german !== '?';
+
+                // Advanced info (new blocks like synonyms/antonyms often indicate recent AI enrichment)
+                const hasMeta = (w as any).synonyms?.length > 0 || details.governance?.length > 0;
+
+                // If it's a verb, it MUST have tenses and conjugations to be "ready"
+                const verbReady = details.type === 'verb' ? (!!details.verbTenses && !!details.conjugations) : true;
+
+                const isModern = hasCleanTranslation && hasBasicInfo && verbReady;
+
                 return {
                     id: w._id,
                     word: details,
                     sm2State: w.sm2State || {},
                     addedAt: w.addedAt || Date.now(),
-                    needsUpdate: !hasDetails // Add flag for UI
+                    needsUpdate: !isModern // Flag if it's missing the "B2 Beruf" quality
                 };
             }) as (UserVocabularyWord & { needsUpdate?: boolean })[]
         }));
