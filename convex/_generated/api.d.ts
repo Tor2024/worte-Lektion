@@ -8,10 +8,13 @@
  * @module
  */
 
+import type * as examTexts from "../examTexts.js";
 import type * as folders from "../folders.js";
+import type * as knownWords from "../knownWords.js";
 import type * as migration from "../migration.js";
 import type * as progress from "../progress.js";
 import type * as srs from "../srs.js";
+import type * as studyQueue from "../studyQueue.js";
 
 import type {
   ApiFromModules,
@@ -20,10 +23,13 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  examTexts: typeof examTexts;
   folders: typeof folders;
+  knownWords: typeof knownWords;
   migration: typeof migration;
   progress: typeof progress;
   srs: typeof srs;
+  studyQueue: typeof studyQueue;
 }>;
 
 /**
