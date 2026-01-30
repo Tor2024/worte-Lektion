@@ -7,6 +7,9 @@ export const migrateFromLocalStorage = mutation({
         progress: v.array(v.object({ topicId: v.string(), proficiency: v.number() })),
         srs: v.array(v.object({ wordId: v.string(), state: v.any() })),
         folders: v.any(),
+        examTexts: v.optional(v.array(v.any())),
+        knownWords: v.optional(v.array(v.string())),
+        studyQueue: v.optional(v.array(v.any())),
     },
     handler: async (ctx, args) => {
         try {
@@ -98,6 +101,60 @@ export const migrateFromLocalStorage = mutation({
                             addedAt: word.addedAt || Date.now(),
                         });
                     }
+                }
+            }
+
+            // 4. Migrate Exam Texts
+            const examTexts = Array.isArray(args.examTexts) ? args.examTexts : [];
+            for (const text of examTexts) {
+                const existing = await ctx.db
+                    .query("exam_texts")
+                    .withIndex("by_user", (q) => q.eq("userId", args.userId))
+                    .collect();
+
+                // Simple search by title to avoid duplicates
+                if (!existing.some(e => e.title === text.title)) {
+                    await ctx.db.insert("exam_texts", {
+                        userId: args.userId,
+                        title: text.title,
+                        description: text.description || "",
+                        level: text.level || "B2",
+                        content: text.content || "",
+                        isCustom: true,
+                        createdAt: text.createdAt || Date.now(),
+                    });
+                }
+            }
+
+            // 5. Migrate Known Words
+            const knownWords = Array.isArray(args.knownWords) ? args.knownWords : [];
+            for (const word of knownWords) {
+                const existing = await ctx.db
+                    .query("known_words")
+                    .withIndex("by_user_word", (q) => q.eq("userId", args.userId).eq("word", word))
+                    .unique();
+                if (!existing) {
+                    await ctx.db.insert("known_words", { userId: args.userId, word, addedAt: Date.now() });
+                }
+            }
+
+            // 6. Migrate Study Queue
+            const studyQueue = Array.isArray(args.studyQueue) ? args.studyQueue : [];
+            for (const item of studyQueue) {
+                const existing = await ctx.db
+                    .query("study_queue")
+                    .withIndex("by_user_item", (q) => q.eq("userId", args.userId).eq("itemId", item.id))
+                    .unique();
+                if (!existing) {
+                    await ctx.db.insert("study_queue", {
+                        userId: args.userId,
+                        itemId: item.id,
+                        status: item.status,
+                        currentStage: item.currentStage || "priming",
+                        nextReviewNum: item.nextReviewNum || Date.now(),
+                        lastUpdated: Date.now(),
+                        details: item,
+                    });
                 }
             }
 

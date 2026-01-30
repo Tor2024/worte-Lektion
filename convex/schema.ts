@@ -40,4 +40,35 @@ export default defineSchema({
         addedAt: v.number(),
     }).index("by_folder", ["folderId"])
         .index("by_folder_german", ["folderId", "german"]),
+
+    // Тексты для экзаменов
+    exam_texts: defineTable({
+        userId: v.string(),
+        title: v.string(),
+        description: v.string(),
+        level: v.string(),
+        content: v.string(),
+        isCustom: v.boolean(),
+        createdAt: v.number(),
+    }).index("by_user", ["userId"]),
+
+    // Список известных слов
+    known_words: defineTable({
+        userId: v.string(),
+        word: v.string(),
+        addedAt: v.number(),
+    }).index("by_user", ["userId"])
+        .index("by_user_word", ["userId", "word"]),
+
+    // Очередь изучения (Study Queue)
+    study_queue: defineTable({
+        userId: v.string(),
+        itemId: v.string(), // ID элемента (обычно немецкое слово)
+        status: v.string(), // "new", "learning", "review", etc.
+        currentStage: v.string(),
+        nextReviewNum: v.number(),
+        lastUpdated: v.number(),
+        details: v.any(), // StudyQueueItem data
+    }).index("by_user", ["userId"])
+        .index("by_user_item", ["userId", "itemId"]),
 });

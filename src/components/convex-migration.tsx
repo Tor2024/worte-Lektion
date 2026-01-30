@@ -14,7 +14,7 @@ export function ConvexMigration() {
     const migrate = useMutation(api.migration.migrateFromLocalStorage);
 
     // Key to track migration status in localStorage itself
-    const MIGRATION_KEY = "convex-migration-v1-status";
+    const MIGRATION_KEY = "convex-migration-v2-status";
 
     useEffect(() => {
         if (typeof window !== "undefined") {
@@ -29,6 +29,15 @@ export function ConvexMigration() {
             const progressRaw = storage.getProgress();
             const srsRaw = storage.getSRS();
             const folders = storage.getCustomFolders();
+
+            // NEW: Collect remaining chunks
+            const customTextsRaw = window.localStorage.getItem('custom_exam_texts');
+            const examTexts = customTextsRaw ? JSON.parse(customTextsRaw) : [];
+
+            const knownWordsRaw = window.localStorage.getItem('knownWords');
+            const knownWords = knownWordsRaw ? JSON.parse(knownWordsRaw) : [];
+
+            const studyQueue = storage.getStudyQueue();
 
             // Transform records with potential non-ASCII keys (German words) into arrays
             const progress = Object.entries(progressRaw).map(([topicId, proficiency]) => ({
@@ -46,6 +55,9 @@ export function ConvexMigration() {
                 progress,
                 srs,
                 folders,
+                examTexts,
+                knownWords,
+                studyQueue,
             });
 
             window.localStorage.setItem(MIGRATION_KEY, "completed");

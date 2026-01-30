@@ -1,75 +1,91 @@
 
-'use client';
-
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { storage } from '@/lib/storage';
 import { StudyQueueItem, VocabularyWord } from '@/lib/types';
 import { useCustomFolders } from './use-custom-folders';
+import { useQuery, useMutation } from 'convex/react';
+import { api } from '../../convex/_generated/api';
 
 export function useStudyQueue() {
-    const [queue, setQueue] = useState<StudyQueueItem[]>([]);
+    const userId = "anonymous";
+    const [localQueue, setLocalQueue] = useState<StudyQueueItem[]>([]);
     const { folders } = useCustomFolders();
-    const [isLoading, setIsLoading] = useState(true);
 
-    // Load initial queue
+    // 1. Convex Hooks
+    const cloudQueueRaw = useQuery(api.studyQueue.getStudyQueue, { userId });
+    const setQueueMutation = useMutation(api.studyQueue.setStudyQueue);
+    const updateStatusMutation = useMutation(api.studyQueue.updateItemStatus);
+
+    // 2. Load initial queue from localStorage
     useEffect(() => {
         const savedQueue = storage.getStudyQueue();
-        setQueue(savedQueue);
-        setIsLoading(false);
+        setLocalQueue(savedQueue);
     }, []);
 
-    // Save changes
+    // 3. Map Cloud Data
+    const queue = useMemo(() => {
+        if (!cloudQueueRaw) return localQueue;
+        return cloudQueueRaw.map((item: any) => item.details as StudyQueueItem);
+    }, [cloudQueueRaw, localQueue]);
+
+    // 4. Sync Cloud -> Local
     useEffect(() => {
-        if (!isLoading) {
-            storage.setStudyQueue(queue);
+        if (cloudQueueRaw) {
+            const mapped = cloudQueueRaw.map((item: any) => item.details as StudyQueueItem);
+            storage.setStudyQueue(mapped);
         }
-    }, [queue, isLoading]);
+    }, [cloudQueueRaw]);
 
     // Sync with folders: Add new words to queue if not present
-    const syncWithFolders = useCallback(() => {
+    const syncWithFolders = useCallback(async () => {
         if (folders.length === 0) return;
 
-        setQueue(currentQueue => {
-            const newQueue = [...currentQueue];
-            let hasChanges = false;
-            const existingIds = new Set(newQueue.map(item => item.id));
+        const newItems: StudyQueueItem[] = [];
+        const existingIds = new Set(queue.map((item: StudyQueueItem) => item.id));
+        let hasChanges = false;
 
-            folders.forEach(folder => {
-                const folderWords = folder.words || [];
-                folderWords.forEach(userWord => {
-                    // Use german word as unique ID, or fallback to word ID if german is missing
-                    const german = userWord?.word?.german;
-                    const wordId = german || userWord.id || `unknown-${Math.random()}`;
+        folders.forEach(folder => {
+            const folderWords = folder.words || [];
+            folderWords.forEach(userWord => {
+                const german = userWord?.word?.german;
+                const wordId = german || userWord.id || `unknown-${Math.random()}`;
 
-                    if (!existingIds.has(wordId)) {
-                        newQueue.push({
-                            id: wordId,
-                            word: userWord.word || { german: '?', russian: '?', type: 'other' },
-                            status: 'new',
-                            currentStage: 'priming',
-                            nextReviewNum: Date.now(),
-                            tags: [folder.id],
-                            consecutiveMistakes: 0
-                        });
-                        existingIds.add(wordId);
-                        hasChanges = true;
-                    }
-                });
+                if (!existingIds.has(wordId)) {
+                    newItems.push({
+                        id: wordId,
+                        word: userWord.word || { german: '?', russian: '?', type: 'other' },
+                        status: 'new',
+                        currentStage: 'priming',
+                        nextReviewNum: Date.now(),
+                        tags: [folder.id],
+                        consecutiveMistakes: 0
+                    });
+                    hasChanges = true;
+                }
             });
-
-            return hasChanges ? newQueue : currentQueue;
         });
-    }, [folders]);
 
-    // Auto-sync periodically or on mount
+        if (hasChanges) {
+            const updatedQueue = [...queue, ...newItems];
+            setLocalQueue(updatedQueue);
+            storage.setStudyQueue(updatedQueue);
+            // Upload to cloud
+            try {
+                await setQueueMutation({ userId, items: updatedQueue });
+            } catch (e) {
+                console.error("Cloud queue sync failed", e);
+            }
+        }
+    }, [folders, queue, setQueueMutation]);
+
+    // Auto-sync
     useEffect(() => {
-        if (!isLoading && folders.length > 0) {
+        if (cloudQueueRaw !== undefined && folders.length > 0) {
             syncWithFolders();
         }
-    }, [folders, isLoading, syncWithFolders]);
+    }, [folders, cloudQueueRaw, syncWithFolders]);
 
 
-    // THE CORE ALGORITHM: Generator for Daily Session
     const getDailySession = useCallback((limit: number = 20) => {
         if (queue.length === 0) return [];
 
@@ -84,13 +100,11 @@ export function useStudyQueue() {
 
         const now = Date.now();
 
-        // 1. All actionable items (Due or New)
-        const actionableItems = queue.filter(item =>
+        const actionableItems = queue.filter((item: StudyQueueItem) =>
             item.status === 'new' ||
             ((item.status === 'review' || item.status === 'leech') && item.nextReviewNum <= now)
         );
 
-        // 2. Sort by Level Priority, then word type (verbs higher), then just mix
         const sortedItems = [...actionableItems].sort((a, b) => {
             const wordA = a.word || {};
             const wordB = b.word || {};
@@ -104,54 +118,62 @@ export function useStudyQueue() {
         return sortedItems.slice(0, limit);
     }, [queue]);
 
-    const updateItemStatus = useCallback((wordId: string, result: 'success' | 'fail') => {
-        setQueue(prev => prev.map(item => {
-            if (item.id !== wordId) return item;
+    const updateItemStatus = useCallback(async (wordId: string, result: 'success' | 'fail') => {
+        const item = queue.find(i => i.id === wordId);
+        if (!item) return;
 
-            // Logic for status transition
-            let newStatus = item.status;
-            let newMistakes = item.consecutiveMistakes;
-            let nextDate = item.nextReviewNum;
+        let newStatus = item.status;
+        let newMistakes = item.consecutiveMistakes;
+        let nextDate = item.nextReviewNum;
 
-            if (result === 'fail') {
-                newMistakes++;
-                // If failed > 3 times, mark as leech
-                if (newMistakes >= 3) newStatus = 'leech';
-                else newStatus = 'learning'; // Reset to learning
+        if (result === 'fail') {
+            newMistakes++;
+            if (newMistakes >= 3) newStatus = 'leech';
+            else newStatus = 'learning';
+            nextDate = Date.now() + (1000 * 60 * 60 * 24);
+        } else {
+            newMistakes = 0;
+            if (item.status === 'new') newStatus = 'learning';
+            else if (item.status === 'learning') newStatus = 'review';
 
-                nextDate = Date.now() + (1000 * 60 * 60 * 24); // Review tomorrow
+            if (newStatus === 'review') {
+                nextDate = Date.now() + (1000 * 60 * 60 * 24 * 3);
             } else {
-                newMistakes = 0;
-                // Graduation logic
-                if (item.status === 'new') newStatus = 'learning';
-                else if (item.status === 'learning') newStatus = 'review';
-
-                // Simple Interval increase (placeholder for full SM2)
-                // If it's already review, push it out further
-                if (newStatus === 'review') {
-                    nextDate = Date.now() + (1000 * 60 * 60 * 24 * 3); // +3 days base
-                } else {
-                    nextDate = Date.now() + (1000 * 60 * 60 * 24); // +1 day
-                }
+                nextDate = Date.now() + (1000 * 60 * 60 * 24);
             }
+        }
 
-            return {
-                ...item,
+        const updatedItem = {
+            ...item,
+            status: newStatus,
+            consecutiveMistakes: newMistakes,
+            nextReviewNum: nextDate
+        };
+
+        // UI Optimistic update
+        setLocalQueue(prev => prev.map((i: StudyQueueItem) => i.id === wordId ? updatedItem : i));
+
+        try {
+            await updateStatusMutation({
+                userId,
+                itemId: wordId,
                 status: newStatus,
-                consecutiveMistakes: newMistakes,
-                nextReviewNum: nextDate
-            };
-        }));
-    }, []);
+                nextReviewNum: nextDate,
+                details: updatedItem
+            });
+        } catch (e) {
+            console.error("Failed to update item status in cloud", e);
+        }
+    }, [queue, updateStatusMutation]);
 
     return {
         queue,
-        isLoading,
+        isLoading: cloudQueueRaw === undefined,
         getDailySession,
         updateItemStatus,
         syncWithFolders,
-        totalDue: queue.filter(i => i.nextReviewNum <= Date.now() && i.status !== 'new').length,
-        totalNew: queue.filter(i => i.status === 'new').length,
-        totalLeeches: queue.filter(i => i.status === 'leech').length
+        totalDue: queue.filter((i: StudyQueueItem) => i.nextReviewNum <= Date.now() && i.status !== 'new').length,
+        totalNew: queue.filter((i: StudyQueueItem) => i.status === 'new').length,
+        totalLeeches: queue.filter((i: StudyQueueItem) => i.status === 'leech').length
     };
 }
