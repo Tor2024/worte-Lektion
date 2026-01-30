@@ -106,22 +106,24 @@ export const migrateFromLocalStorage = mutation({
 
             // 4. Migrate Exam Texts
             const examTexts = Array.isArray(args.examTexts) ? args.examTexts : [];
+            const existingTexts = await ctx.db
+                .query("exam_texts")
+                .withIndex("by_user", (q) => q.eq("userId", args.userId))
+                .collect();
+
             for (const text of examTexts) {
-                const existing = await ctx.db
-                    .query("exam_texts")
-                    .withIndex("by_user", (q) => q.eq("userId", args.userId))
-                    .collect();
+                if (!text || !text.title) continue;
 
                 // Simple search by title to avoid duplicates
-                if (!existing.some(e => e.title === text.title)) {
+                if (!existingTexts.some(e => e.title === text.title)) {
                     await ctx.db.insert("exam_texts", {
                         userId: args.userId,
-                        title: text.title,
-                        description: text.description || "",
-                        level: text.level || "B2",
-                        content: text.content || "",
+                        title: String(text.title),
+                        description: String(text.description || ""),
+                        level: String(text.level || "B2"),
+                        content: String(text.content || ""),
                         isCustom: true,
-                        createdAt: text.createdAt || Date.now(),
+                        createdAt: typeof text.createdAt === 'number' ? text.createdAt : Date.now(),
                     });
                 }
             }
@@ -129,6 +131,8 @@ export const migrateFromLocalStorage = mutation({
             // 5. Migrate Known Words
             const knownWords = Array.isArray(args.knownWords) ? args.knownWords : [];
             for (const word of knownWords) {
+                if (!word || typeof word !== 'string') continue;
+
                 const existing = await ctx.db
                     .query("known_words")
                     .withIndex("by_user_word", (q) => q.eq("userId", args.userId).eq("word", word))
@@ -141,17 +145,19 @@ export const migrateFromLocalStorage = mutation({
             // 6. Migrate Study Queue
             const studyQueue = Array.isArray(args.studyQueue) ? args.studyQueue : [];
             for (const item of studyQueue) {
+                if (!item || !item.id) continue;
+
                 const existing = await ctx.db
                     .query("study_queue")
-                    .withIndex("by_user_item", (q) => q.eq("userId", args.userId).eq("itemId", item.id))
+                    .withIndex("by_user_item", (q) => q.eq("userId", args.userId).eq("itemId", String(item.id)))
                     .unique();
                 if (!existing) {
                     await ctx.db.insert("study_queue", {
                         userId: args.userId,
-                        itemId: item.id,
-                        status: item.status,
-                        currentStage: item.currentStage || "priming",
-                        nextReviewNum: item.nextReviewNum || Date.now(),
+                        itemId: String(item.id),
+                        status: String(item.status || "new"),
+                        currentStage: String(item.currentStage || "priming"),
+                        nextReviewNum: typeof item.nextReviewNum === 'number' ? item.nextReviewNum : Date.now(),
                         lastUpdated: Date.now(),
                         details: item,
                     });
