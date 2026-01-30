@@ -26,12 +26,23 @@ export function ConvexMigration() {
     const handleMigration = async () => {
         setIsMigrating(true);
         try {
-            const progress = storage.getProgress();
-            const srs = storage.getSRS();
+            const progressRaw = storage.getProgress();
+            const srsRaw = storage.getSRS();
             const folders = storage.getCustomFolders();
 
+            // Transform records with potential non-ASCII keys (German words) into arrays
+            const progress = Object.entries(progressRaw).map(([topicId, proficiency]) => ({
+                topicId,
+                proficiency
+            }));
+
+            const srs = Object.entries(srsRaw).map(([wordId, state]) => ({
+                wordId,
+                state
+            }));
+
             await migrate({
-                userId: "anonymous", // For now, we use a default ID
+                userId: "anonymous",
                 progress,
                 srs,
                 folders,

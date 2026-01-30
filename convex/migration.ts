@@ -4,13 +4,14 @@ import { mutation } from "./_generated/server";
 export const migrateFromLocalStorage = mutation({
     args: {
         userId: v.string(),
-        progress: v.any(), // Record<string, number>
-        srs: v.any(),      // Record<string, sm2state>
-        folders: v.any(),  // CustomFolder[]
+        progress: v.array(v.object({ topicId: v.string(), proficiency: v.number() })),
+        srs: v.array(v.object({ wordId: v.string(), state: v.any() })),
+        folders: v.any(),
     },
     handler: async (ctx, args) => {
         // 1. Migrate Progress
-        for (const [topicId, proficiency] of Object.entries(args.progress as Record<string, number>)) {
+        for (const item of args.progress) {
+            const { topicId, proficiency } = item;
             const existing = await ctx.db
                 .query("user_progress")
                 .withIndex("by_user_topic", (q) => q.eq("userId", args.userId).eq("topicId", topicId))
@@ -21,7 +22,8 @@ export const migrateFromLocalStorage = mutation({
         }
 
         // 2. Migrate SRS
-        for (const [wordId, state] of Object.entries(args.srs as any)) {
+        for (const item of args.srs) {
+            const { wordId, state } = item;
             const existing = await ctx.db
                 .query("srs_data")
                 .withIndex("by_user_word", (q) => q.eq("userId", args.userId).eq("wordId", wordId))
