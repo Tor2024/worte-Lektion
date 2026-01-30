@@ -122,7 +122,7 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
             return (
                 <div className="flex flex-col items-center w-full h-full relative">
                     {/* SRS Status Badge */}
-                    <div className="absolute top-2 right-2 flex flex-col items-end gap-1 z-20">
+                    <div className="absolute top-2 right-12 flex flex-col items-end gap-1 z-20">
                         <Badge
                             variant="outline"
                             className={cn("flex items-center gap-1.5 px-2 py-0.5 text-[10px] h-6 font-bold uppercase tracking-tight", status.color)}
