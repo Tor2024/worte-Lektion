@@ -26,6 +26,7 @@ import { commonWords } from '@/lib/common-words';
 import { useStudyQueue } from '@/hooks/use-study-queue';
 import { useUnifiedSRS } from '@/hooks/use-unified-srs';
 import { NeuralMap } from '@/components/neural-map';
+import { ConvexMigration } from '@/components/convex-migration';
 
 function DailySessionWidget() {
   const { totalDue, totalNew, totalLeeches, isLoading } = useStudyQueue();
@@ -161,6 +162,8 @@ export default function DashboardPage() {
         </div>
         <NeuralMapWrapper />
       </section>
+
+      <ConvexMigration />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16 items-stretch">
         <GlobalVocabularyTrainer words={allLearnedWords} />
