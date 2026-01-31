@@ -309,13 +309,22 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
 
                     {/* Satzbau (Word Order) - Shown for ANY word that has the structure field (Conj, Prep, Adverbs) */}
                     {(word as any).structure && (
-                        <div className="w-full flex-grow flex flex-col items-center justify-center gap-6">
-                            <div className="p-6 bg-primary/5 rounded-3xl border-2 border-primary/10 text-center w-full shadow-inner">
-                                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] block mb-3">Satzbau (Структура предложения)</span>
-                                <div className="text-xl font-black text-primary tracking-tight">
+                        <div className="w-full flex-grow flex flex-col items-center justify-center gap-4">
+                            <div className="p-5 bg-primary/5 rounded-3xl border-2 border-primary/10 text-center w-full shadow-inner">
+                                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] block mb-2">Satzbau (Порядок слов)</span>
+                                <div className="text-xl font-black text-primary tracking-tight mb-3">
                                     {(word as any).structure}
                                 </div>
-                                <div className="text-[10px] text-muted-foreground mt-2 italic font-medium">Позиция глагола</div>
+
+                                {(word as any).structureExample && (
+                                    <div className="mt-2 p-3 bg-white/40 dark:bg-black/20 rounded-xl border border-primary/5">
+                                        <div
+                                            className="text-sm font-medium text-foreground/90 italic leading-relaxed max-w-none [&_b]:text-primary [&_b]:font-black [&_b]:not-italic [&_b]:px-0.5"
+                                            dangerouslySetInnerHTML={{ __html: (word as any).structureExample }}
+                                        />
+                                    </div>
+                                )}
+                                <div className="text-[10px] text-muted-foreground mt-2 italic font-medium opacity-60">Тут важно следить за глаголом</div>
                             </div>
                         </div>
                     )}

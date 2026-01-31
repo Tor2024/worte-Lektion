@@ -47,9 +47,14 @@ export function isWordStandardized(userWord: UserVocabularyWord): boolean {
     if (!word.allTranslations) return false;
 
     // 2. Synonyms check: mandatory for content words (noun, verb, adjective)
-    // UNLESS they have rich governance/meta data which already makes them high-quality
+    // UNLESS they have rich meta data (plural, comparative, governance)
     const needsSynonyms = ['noun', 'verb', 'adjective'].includes(word.type);
-    const hasRichMeta = (word.type === 'verb' || word.type === 'adjective') && (word as any).governance?.length > 0;
+
+    // Check for "Rich Meta" which makes a word high-quality even without synonyms
+    const hasRichMeta =
+        (word.type === 'verb' && ((word as any).governance?.length > 0)) ||
+        (word.type === 'noun' && !!(word as any).plural) ||
+        (word.type === 'adjective' && !!(word as any).comparative);
 
     if (needsSynonyms && !hasRichMeta && (!userWord.synonyms || userWord.synonyms.length === 0)) return false;
 
@@ -60,7 +65,10 @@ export function isWordStandardized(userWord: UserVocabularyWord): boolean {
 
     if (!hasExample) return false;
 
-    // 4. Type-specific checks
+    // 4. Word Order (Satzbau) check: if has structure, should ideally have structureExample
+    if ((word as any).structure && !(word as any).structureExample) return false;
+
+    // 5. Type-specific checks
     if (word.type === 'verb') {
         const hasGov = (word as any).governance?.length > 0;
         const hasConj = !!(word as any).conjugations;
