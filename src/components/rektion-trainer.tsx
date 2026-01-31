@@ -40,10 +40,18 @@ export function RektionTrainer({ words, onBack }: RektionTrainerProps) {
             (w.word.type === 'verb' || w.word.type === 'adjective') &&
             (w.word as any).governance &&
             (w.word as any).governance.length > 0 &&
-            (w.word as any).governance.some((g: Governance) => g.preposition && g.preposition !== 'ohne' && g.preposition.trim() !== '')
+            (w.word as any).governance.some((g: Governance) =>
+                g.preposition &&
+                g.preposition !== 'ohne' &&
+                g.preposition.trim() !== '' &&
+                !g.preposition.toLowerCase().includes('без предлога')
+            )
         );
 
-        if (actionableWords.length === 0) return;
+        if (actionableWords.length === 0) {
+            setQuestions([]); // Ensure questions are empty if no actionable words
+            return;
+        }
 
         const LEVEL_PRIORITY: Record<string, number> = {
             'Beruf': 10,
@@ -72,7 +80,12 @@ export function RektionTrainer({ words, onBack }: RektionTrainerProps) {
         const generatedQuestions: RektionQuestion[] = selectedWords.flatMap(userWord => {
             const wordData = userWord.word as any;
             return wordData.governance
-                .filter((gov: Governance) => gov.preposition && gov.preposition !== 'ohne' && gov.preposition.trim() !== '')
+                .filter((gov: Governance) =>
+                    gov.preposition &&
+                    gov.preposition !== 'ohne' &&
+                    gov.preposition.trim() !== '' &&
+                    !gov.preposition.toLowerCase().includes('без предлога')
+                )
                 .map((gov: Governance) => {
                     const correctAnswer = `${gov.preposition} + ${gov.case}`;
 
