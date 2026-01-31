@@ -103,22 +103,62 @@ export function useStudyQueue() {
 
         const now = Date.now();
 
+        // 1. Filter actionable items (due for review or entirely new)
         const actionableItems = queue.filter((item: StudyQueueItem) =>
             item.status === 'new' ||
             ((item.status === 'review' || item.status === 'leech') && item.nextReviewNum <= now)
         );
 
-        const sortedItems = [...actionableItems].sort((a, b) => {
-            const wordA = a.word || {};
-            const wordB = b.word || {};
-            const priorityA = (wordA.level ? LEVEL_PRIORITY[wordA.level as keyof typeof LEVEL_PRIORITY] : 0) + (wordA.type === 'verb' ? 5 : 0);
-            const priorityB = (wordB.level ? LEVEL_PRIORITY[wordB.level as keyof typeof LEVEL_PRIORITY] : 0) + (wordB.type === 'verb' ? 5 : 0);
-
-            if (priorityA !== priorityB) return priorityB - priorityA;
-            return 0.5 - Math.random();
+        // 2. Group items by level to preserve hierarchy
+        const levelGroups: Record<number, StudyQueueItem[]> = {};
+        actionableItems.forEach(item => {
+            const level = item.word?.level ? LEVEL_PRIORITY[item.word.level as keyof typeof LEVEL_PRIORITY] : 0;
+            if (!levelGroups[level]) levelGroups[level] = [];
+            levelGroups[level].push(item);
         });
 
-        return sortedItems.slice(0, limit);
+        const sortedLevels = Object.keys(levelGroups).map(Number).sort((a, b) => b - a);
+        const finalSelection: StudyQueueItem[] = [];
+
+        // 3. Within each level, interleave types to ensure variety
+        for (const level of sortedLevels) {
+            const itemsInLevel = levelGroups[level];
+            const typeGroups: Record<string, StudyQueueItem[]> = {};
+
+            itemsInLevel.forEach(item => {
+                const type = item.word?.type || 'other';
+                if (!typeGroups[type]) typeGroups[type] = [];
+                typeGroups[type].push(item);
+            });
+
+            // Randomize items within each type group
+            Object.values(typeGroups).forEach(group => group.sort(() => Math.random() - 0.5));
+
+            const types = Object.keys(typeGroups);
+            let hasItems = true;
+            let typeIdx = 0;
+            const groupIterators: Record<string, number> = {};
+            types.forEach(t => groupIterators[t] = 0);
+
+            // Interleave: take one of each type in a loop
+            while (hasItems) {
+                hasItems = false;
+                for (const type of types) {
+                    const idx = groupIterators[type];
+                    if (idx < typeGroups[type].length) {
+                        finalSelection.push(typeGroups[type][idx]);
+                        groupIterators[type]++;
+                        hasItems = true;
+                        if (finalSelection.length >= limit) break;
+                    }
+                }
+                if (finalSelection.length >= limit) break;
+            }
+
+            if (finalSelection.length >= limit) break;
+        }
+
+        return finalSelection;
     }, [queue]);
 
     const updateItemStatus = useCallback(async (wordId: string, result: 'success' | 'fail') => {

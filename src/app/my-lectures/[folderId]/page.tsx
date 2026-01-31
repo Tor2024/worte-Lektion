@@ -130,23 +130,49 @@ export default function FolderDetailsPage({ params }: { params: Promise<{ folder
         }
     };
 
+    const isWordStandardized = (userWord: UserVocabularyWord) => {
+        const word = userWord.word;
+        // Basic requirement for all
+        if (!word.allTranslations) return false;
+        if (!userWord.synonyms || userWord.synonyms.length === 0) return false;
+
+        if (word.type === 'verb') {
+            const hasGov = (word as any).governance?.length > 0;
+            const hasConj = !!(word as any).conjugations;
+            return hasGov && hasConj;
+        }
+        if (word.type === 'noun') {
+            return !!((word as any).plural && (word as any).article);
+        }
+        return true; // Other types are simpler
+    };
+
     // Queue-based batch processing to prevent timeouts and data loss
-    const processBatchQueue = async (wordsToProcess: UserVocabularyWord[], index: number) => {
+    const processBatchQueue = async (wordsToProcess: UserVocabularyWord[], index: number, skippedCount: number = 0) => {
         if (index >= wordsToProcess.length) {
             setIsBatchRefreshing(false);
             setRefreshProgress('');
+            if (skippedCount > 0) {
+                alert(`Обновление завершено. ${wordsToProcess.length - skippedCount} обновлено, ${skippedCount} пропущено.`);
+            }
             return;
         }
 
         const word = wordsToProcess[index];
-        setRefreshProgress(`${index + 1} / ${wordsToProcess.length}`);
+        setRefreshProgress(`${index + 1} / ${wordsToProcess.length} (Пропущено: ${skippedCount})`);
+
+        // SMART SKIP
+        if (isWordStandardized(word) && !word.needsUpdate) {
+            processBatchQueue(wordsToProcess, index + 1, skippedCount + 1);
+            return;
+        }
 
         try {
             await handleRefreshWord(word);
 
             // Small delay to prevent rate limits
             setTimeout(() => {
-                processBatchQueue(wordsToProcess, index + 1);
+                processBatchQueue(wordsToProcess, index + 1, skippedCount);
             }, 1000);
         } catch (err: any) {
             if (err.message === "AI_LIMIT") {
@@ -155,26 +181,26 @@ export default function FolderDetailsPage({ params }: { params: Promise<{ folder
                 setRefreshProgress('');
             } else {
                 console.error(`Failed to refresh word ${word.word.german}`, err);
-                // Continue with next word on non-limit errors
-                processBatchQueue(wordsToProcess, index + 1);
+                processBatchQueue(wordsToProcess, index + 1, skippedCount);
             }
         }
     };
 
     const handleBatchRefresh = async () => {
-        // SMART FILTER: Only update those that need it
-        const pendingWords = folder.words.filter(w => w.needsUpdate || !w.word.allTranslations);
+        // Only trigger for words that actually need it or aren't standardized
+        const allPending = folder.words;
+        const toProcess = allPending.filter(w => w.needsUpdate || !isWordStandardized(w));
 
-        if (pendingWords.length === 0) {
-            alert("Все слова в этой папке уже актуальны и имеют B2 Beruf фокус.");
+        if (toProcess.length === 0) {
+            alert("Все слова в этой папке уже соответствуют стандарту B2 Beruf.");
             return;
         }
 
-        if (!confirm(`Обновить ${pendingWords.length} слов, требующих внимания, с помощью AI? \n\nЭто добавит B2 Beruf фокус и расширенный контекст. \n\nПроцесс займет время. Не закрывайте вкладку.`)) return;
+        if (!confirm(`Обновить ${toProcess.length} слов, требующих внимания, с помощью AI? \n\nОстальные слова будут пропущены для экономии лимитов.`)) return;
 
         setIsBatchRefreshing(true);
         setError(null);
-        processBatchQueue(pendingWords, 0);
+        processBatchQueue(toProcess, 0, 0);
     };
 
     return (

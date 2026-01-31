@@ -7,12 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle2, XCircle, RotateCcw, ArrowRight, Star } from 'lucide-react';
+import { CheckCircle2, XCircle, RotateCcw, ArrowRight, Star, Eye, EyeOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface RektionQuestion {
     word: string;
+    russian: string;
     type: 'verb' | 'adjective';
     correctGovernance: Governance;
     options: string[]; // e.g. ["auf + Akkusativ", "an + Dativ", ...]
@@ -33,6 +34,7 @@ export function RektionTrainer({ words, onBack }: RektionTrainerProps) {
     const [selectedOption, setSelectedOption] = useState<string | null>(null);
     const [isAnswered, setIsAnswered] = useState(false);
     const [isFinished, setIsFinished] = useState(false);
+    const [showHint, setShowHint] = useState(false);
 
     // 1. Generate questions from words
     useEffect(() => {
@@ -103,6 +105,7 @@ export function RektionTrainer({ words, onBack }: RektionTrainerProps) {
 
                     return {
                         word: wordData.german,
+                        russian: wordData.russian,
                         type: wordData.type,
                         correctGovernance: gov,
                         options: [...Array.from(distractors), correctAnswer].sort(() => 0.5 - Math.random())
@@ -129,6 +132,7 @@ export function RektionTrainer({ words, onBack }: RektionTrainerProps) {
             setCurrentIndex(prev => prev + 1);
             setIsAnswered(false);
             setSelectedOption(null);
+            setShowHint(false);
         } else {
             setIsFinished(true);
         }
@@ -209,9 +213,32 @@ export function RektionTrainer({ words, onBack }: RektionTrainerProps) {
                             <div className="mb-2">
                                 <Badge className="uppercase tracking-widest text-[10px]">{currentQuestion.type}</Badge>
                             </div>
-                            <h2 className="text-5xl font-black font-headline tracking-tighter text-primary">
-                                {currentQuestion.word}
-                            </h2>
+                            <div className="relative inline-block">
+                                <h2 className="text-5xl font-black font-headline tracking-tighter text-primary">
+                                    {currentQuestion.word}
+                                </h2>
+                                <button
+                                    onClick={() => setShowHint(!showHint)}
+                                    className="absolute -right-12 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-muted transition-colors text-muted-foreground"
+                                    title="Показать перевод"
+                                >
+                                    {showHint ? <EyeOff className="h-6 w-6" /> : <Eye className="h-6 w-6" />}
+                                </button>
+                            </div>
+
+                            <AnimatePresence>
+                                {showHint && (
+                                    <motion.p
+                                        initial={{ opacity: 0, y: -10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -10 }}
+                                        className="text-xl font-medium text-blue-600 mt-2"
+                                    >
+                                        {currentQuestion.russian}
+                                    </motion.p>
+                                )}
+                            </AnimatePresence>
+
                             <p className="text-muted-foreground italic mt-2">
                                 Какое управление у этого слова?
                             </p>

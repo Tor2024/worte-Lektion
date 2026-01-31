@@ -9,7 +9,7 @@ import { SpeakButton } from '@/components/speak-button';
 import { formatGermanWord } from '@/lib/german-utils';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { RotateCcw, Volume2, Clock, BrainCircuit, ShieldAlert, HelpCircle } from 'lucide-react';
+import { RotateCcw, Volume2, Clock, BrainCircuit, ShieldAlert, HelpCircle, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useStudyQueue } from '@/hooks/use-study-queue';
 import { formatRelativeTime } from '@/lib/utils';
@@ -24,6 +24,26 @@ interface FlippableWordCardProps {
 export function FlippableWordCard({ userWord, className, reverse = false, onRefresh }: FlippableWordCardProps) {
     const [isFlipped, setIsFlipped] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false); // Added isRefreshing state
+
+    const isStandardized = (userWord: UserVocabularyWord) => {
+        const word = userWord.word;
+        if (!word.allTranslations) return false;
+        if (!userWord.synonyms || userWord.synonyms.length === 0) return false;
+
+        // Nouns use exampleSingular, others use example
+        const hasExample = word.type === 'noun' ? !!(word as any).exampleSingular : !!(word as any).example;
+        if (!hasExample) return false;
+
+        if (word.type === 'verb') {
+            return !!((word as any).governance?.length > 0 && (word as any).conjugations);
+        }
+        if (word.type === 'noun') {
+            return !!((word as any).plural && (word as any).article);
+        }
+        return true;
+    };
+
+    const standardsMet = isStandardized(userWord);
     const word = userWord.word;
 
     const { queue } = useStudyQueue();
@@ -135,12 +155,17 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                                 {formatRelativeTime(studyItem.nextReviewNum)}
                             </div>
                         )}
-                        {userWord.needsUpdate && (
+                        {userWord.needsUpdate && !standardsMet ? (
                             <div className="flex items-center gap-1 bg-red-500/10 text-red-600 border border-red-200 px-2 py-0.5 rounded-full text-[10px] font-black animate-bounce shadow-sm">
                                 <HelpCircle className="h-3 w-3" />
                                 ?
                             </div>
-                        )}
+                        ) : standardsMet ? (
+                            <div className="flex items-center gap-1 bg-green-500/10 text-green-600 border border-green-200 px-2 py-0.5 rounded-full text-[10px] font-black shadow-sm">
+                                <CheckCircle className="h-3 w-3" />
+                                OK
+                            </div>
+                        ) : null}
                     </div>
 
                     {/* Top: Meta Badge */}
