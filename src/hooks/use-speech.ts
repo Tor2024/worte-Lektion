@@ -79,7 +79,13 @@ export function useSpeech() {
 
             // If no gender match or no gender specified, prioritize Google/Premium high quality voices
             if (!targetVoice) {
-                targetVoice = langVoices.find(v => v.name.includes('Google') || v.name.includes('Premium')) || langVoices[0];
+                if (lang.startsWith('ru')) {
+                    // Specific priority for Russian to avoid "shaky" voices like Pavel
+                    const russianPriority = ['google', 'premium', 'irina', 'milena'];
+                    targetVoice = langVoices.find(v => russianPriority.some(p => v.name.toLowerCase().includes(p))) || langVoices[0];
+                } else {
+                    targetVoice = langVoices.find(v => v.name.includes('Google') || v.name.includes('Premium')) || langVoices[0];
+                }
             }
 
             if (targetVoice) {

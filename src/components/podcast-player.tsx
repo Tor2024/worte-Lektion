@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Play, Pause, SkipBack, SkipForward, Headphones } from 'lucide-react';
@@ -25,6 +25,7 @@ export function PodcastPlayer({ data }: PodcastPlayerProps) {
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentLineIndex, setCurrentLineIndex] = useState(0);
     const { speak, stop, isSpeaking } = useSpeech();
+    const wasSpeakingRef = useRef(false);
 
     const playLine = (index: number) => {
         if (index >= data.script.length) {
@@ -39,23 +40,31 @@ export function PodcastPlayer({ data }: PodcastPlayerProps) {
     };
 
     useEffect(() => {
-        if (isPlaying && !isSpeaking && currentLineIndex < data.script.length - 1) {
-            // Speech ended, move to next line after a small natural pause
-            const timer = setTimeout(() => {
-                const nextIndex = currentLineIndex + 1;
-                setCurrentLineIndex(nextIndex);
-                playLine(nextIndex);
-            }, 600);
-            return () => clearTimeout(timer);
-        } else if (isPlaying && !isSpeaking && currentLineIndex === data.script.length - 1) {
-            setIsPlaying(false);
+        if (isSpeaking) {
+            wasSpeakingRef.current = true;
         }
-    }, [isSpeaking, isPlaying]);
+
+        if (isPlaying && !isSpeaking && wasSpeakingRef.current) {
+            wasSpeakingRef.current = false;
+
+            if (currentLineIndex < data.script.length - 1) {
+                const timer = setTimeout(() => {
+                    const nextIndex = currentLineIndex + 1;
+                    setCurrentLineIndex(nextIndex);
+                    playLine(nextIndex);
+                }, 600);
+                return () => clearTimeout(timer);
+            } else {
+                setIsPlaying(false);
+            }
+        }
+    }, [isSpeaking, isPlaying, currentLineIndex]);
 
     const togglePlay = () => {
         if (isPlaying) {
             stop();
             setIsPlaying(false);
+            wasSpeakingRef.current = false;
         } else {
             setIsPlaying(true);
             playLine(currentLineIndex);
