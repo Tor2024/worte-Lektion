@@ -111,14 +111,32 @@ export default function FolderDetailsPage({ params }: { params: Promise<{ folder
                 context: `Focus on B2 Beruf primary meaning. Folder: ${folder?.name}`
             });
 
+            // Robust mapping of AI fields to our internal types
+            const baseWordData: any = {
+                ...enriched,
+                needsUpdate: false
+            };
+
+            // Fix field naming inconsistencies
+            if (enriched.type === 'noun') {
+                baseWordData.exampleSingular = enriched.example;
+                baseWordData.examplePlural = enriched.example; // Fallback
+            }
+
+            if (enriched.type === 'verb' && enriched.verbTenses) {
+                baseWordData.praeteritum = enriched.verbTenses.praeteritum;
+                baseWordData.futur1 = enriched.verbTenses.futur1;
+                baseWordData.futur2 = enriched.verbTenses.futur2;
+            }
+
             const updatedWord: UserVocabularyWord = {
                 ...userWord,
-                word: enriched as any,
-                synonyms: enriched.synonyms,
+                word: baseWordData as any,
+                synonyms: enriched.synonyms, // Ensure these are top-level too
                 antonyms: enriched.antonyms,
                 context: enriched.example,
                 contextTranslation: enriched.exampleMeaning,
-                needsUpdate: false // Clear the flag
+                needsUpdate: false
             };
 
             updateWordInFolder(folderId, updatedWord);

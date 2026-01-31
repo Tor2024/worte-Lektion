@@ -47,7 +47,8 @@ const EnrichedWordSchema = z.object({
     plural: z.string().optional().describe('For nouns: plural form.'),
     pluralArticle: z.string().optional().describe('For nouns: "die" or "-".'),
     // Adjective specifics
-    comparative: z.string().optional(),
+    comparative: z.string().optional().describe('For adjectives: comparative form (e.g. "stärker").'),
+    superlative: z.string().optional().describe('For adjectives: superlative form (e.g. "am stärksten").'),
     // Conjunction specifics
     structure: z.string().optional().describe('For conjunctions: Position of the verb (e.g. "Verb am Ende", "Verb an Position 2", "Inversion").'),
     // Common
@@ -102,8 +103,10 @@ const renderPrompt = (input: WordEnrichmentInput) => {
      - Provide article, plural form.
   6. If it is a **Conjunction**:
      - Indicate the verb position/structure.
-  7. Provide 2-3 **Synonyms** and 1-2 **Antonyms** with Russian translations.
-  8. Generate a default example sentence (main example) and its translation.
+  7. If it is an **Adjective**:
+     - Provide **comparative** and **superlative** forms.
+  8. Provide 2-3 **Synonyms** and 1-2 **Antonyms** with Russian translations. Ensure translations for synonyms are concise.
+  9. Generate a default example sentence (main example) and its translation.
 
   Return ONLY valid JSON matching the schema.`;
 };
