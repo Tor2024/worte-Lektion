@@ -67,6 +67,18 @@ export function isWordStandardized(userWord: UserVocabularyWord): boolean {
         return !!((word as any).plural && (word as any).article);
     }
 
-    // Adjectives, conjunctions etc are considered standardized if basic checks pass
+    if (word.type === 'adjective') {
+        return !!((word as any).comparative && (word as any).superlative);
+    }
+
+    if (word.type === 'preposition') {
+        return !!(word as any).case;
+    }
+
+    if (word.type === 'conjunction') {
+        return !!(word as any).structure;
+    }
+
+    // Adverbs and other types are considered standardized if basic checks pass
     return true;
 }
