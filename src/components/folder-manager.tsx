@@ -9,6 +9,7 @@ import { FolderPlus, Trash2, Folder, ChevronRight, Loader2, CheckCircle, AlertCi
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { UserVocabularyWord } from '@/lib/types';
+import { isWordStandardized } from '@/lib/german-utils';
 
 export function FolderManager() {
     const { folders, isLoading, createFolder, deleteFolder } = useCustomFolders();
@@ -25,23 +26,6 @@ export function FolderManager() {
         createFolder(newFolderName);
         setNewFolderName('');
         setIsCreating(false);
-    };
-
-    const isWordStandardized = (userWord: UserVocabularyWord) => {
-        const word = userWord.word;
-        if (!word.allTranslations) return false;
-        if (!userWord.synonyms || userWord.synonyms.length === 0) return false;
-
-        const hasExample = word.type === 'noun' ? !!(word as any).exampleSingular : !!(word as any).example;
-        if (!hasExample) return false;
-
-        if (word.type === 'verb') {
-            return !!((word as any).governance?.length > 0 && (word as any).conjugations);
-        }
-        if (word.type === 'noun') {
-            return !!((word as any).plural && (word as any).article);
-        }
-        return true;
     };
 
     const getFolderStatus = (folderWords: UserVocabularyWord[]) => {

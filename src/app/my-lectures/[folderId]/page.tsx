@@ -12,6 +12,7 @@ import { ArrowLeft, Plus, Loader2, Sparkles, AlertCircle, X, RotateCcw } from 'l
 import Link from 'next/link';
 import { enrichWord } from '@/ai/flows/enrich-word';
 import { UserVocabularyWord, INITIAL_SM2_STATE } from '@/lib/types';
+import { isWordStandardized } from '@/lib/german-utils';
 import { v4 as uuidv4 } from 'uuid';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { FlippableWordCard } from '@/components/flippable-word-card';
@@ -128,23 +129,6 @@ export default function FolderDetailsPage({ params }: { params: Promise<{ folder
             }
             throw e;
         }
-    };
-
-    const isWordStandardized = (userWord: UserVocabularyWord) => {
-        const word = userWord.word;
-        // Basic requirement for all
-        if (!word.allTranslations) return false;
-        if (!userWord.synonyms || userWord.synonyms.length === 0) return false;
-
-        if (word.type === 'verb') {
-            const hasGov = (word as any).governance?.length > 0;
-            const hasConj = !!(word as any).conjugations;
-            return hasGov && hasConj;
-        }
-        if (word.type === 'noun') {
-            return !!((word as any).plural && (word as any).article);
-        }
-        return true; // Other types are simpler
     };
 
     // Queue-based batch processing to prevent timeouts and data loss

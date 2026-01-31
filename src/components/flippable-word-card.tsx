@@ -6,7 +6,7 @@ import { UserVocabularyWord } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { SpeakButton } from '@/components/speak-button';
-import { formatGermanWord } from '@/lib/german-utils';
+import { formatGermanWord, isWordStandardized } from '@/lib/german-utils';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { RotateCcw, Volume2, Clock, BrainCircuit, ShieldAlert, HelpCircle, CheckCircle } from 'lucide-react';
@@ -25,25 +25,7 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
     const [isFlipped, setIsFlipped] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false); // Added isRefreshing state
 
-    const isStandardized = (userWord: UserVocabularyWord) => {
-        const word = userWord.word;
-        if (!word.allTranslations) return false;
-        if (!userWord.synonyms || userWord.synonyms.length === 0) return false;
-
-        // Nouns use exampleSingular, others use example
-        const hasExample = word.type === 'noun' ? !!(word as any).exampleSingular : !!(word as any).example;
-        if (!hasExample) return false;
-
-        if (word.type === 'verb') {
-            return !!((word as any).governance?.length > 0 && (word as any).conjugations);
-        }
-        if (word.type === 'noun') {
-            return !!((word as any).plural && (word as any).article);
-        }
-        return true;
-    };
-
-    const standardsMet = isStandardized(userWord);
+    const standardsMet = isWordStandardized(userWord);
     const word = userWord.word;
 
     const { queue } = useStudyQueue();
