@@ -23,36 +23,46 @@ export function PrimingView({ item, onNext }: PrimingViewProps) {
 
     useEffect(() => {
         if (!isLoaded) return;
+        let active = true;
 
         const playAudioFlow = async () => {
             const pause = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+            if (!active) return;
 
             // Small initial delay
             await pause(500);
+            if (!active) return;
 
             // 1. German Word
-            await speak(formatGermanWord(word), 'de-DE', 'male');
-            await pause(1200); // Precise silence after speech
+            await speak(formatGermanWord(word), 'de-DE');
+            if (!active) return;
+            await pause(1200);
+            if (!active) return;
 
             // 2. Russian Translation
-            await speak(word.russian, 'ru-RU', 'female');
-            await pause(1500); // Slightly longer after translation
+            await speak(word.russian, 'ru-RU');
+            if (!active) return;
+            await pause(1500);
+            if (!active) return;
 
             // 3. German Example
             if ('example' in word && word.example) {
-                await speak(word.example, 'de-DE', 'male');
+                await speak(word.example, 'de-DE');
+                if (!active) return;
                 await pause(1200);
             }
+            if (!active) return;
 
             // 4. Russian Example Meaning
             if ('exampleMeaning' in word && (word as any).exampleMeaning) {
-                await speak((word as any).exampleMeaning, 'ru-RU', 'female');
+                await speak((word as any).exampleMeaning, 'ru-RU');
             }
         };
 
         playAudioFlow();
 
         return () => {
+            active = false;
             stop();
         };
     }, [word, isLoaded, speak, stop]);

@@ -72,6 +72,7 @@ export function PodcastPlayer({ data }: PodcastPlayerProps) {
     };
 
     const skip = (direction: 'forward' | 'back') => {
+        wasSpeakingRef.current = false;
         stop();
 
         let newIndex = direction === 'forward' ? currentLineIndex + 1 : currentLineIndex - 1;
@@ -115,6 +116,7 @@ export function PodcastPlayer({ data }: PodcastPlayerProps) {
                     <div
                         key={idx}
                         onClick={() => {
+                            wasSpeakingRef.current = false;
                             stop();
                             setCurrentLineIndex(idx);
                             setIsPlaying(true);

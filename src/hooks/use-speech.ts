@@ -49,56 +49,54 @@ export function useSpeech() {
             // Voice Selection Logic
             const currentVoices = voicesRef.current;
             const langVoices = currentVoices.filter(v => v.lang.startsWith(lang.split('-')[0]));
+            let targetVoice: SpeechSynthesisVoice | undefined;
 
             if (langVoices.length > 0) {
-                let targetVoice: SpeechSynthesisVoice | undefined;
-
                 if (gender) {
-                    const maleKeywords = ['male', 'markus', 'stefan', 'paul', 'klaus', 'david', 'conrad', 'google deutsch'];
-                    const femaleKeywords = ['female', 'anna', 'katja', 'hedda', 'steffi', 'zira', 'amy', 'elke', 'google deutsch female'];
+                    const maleKeywords = ['male', 'markus', 'stefan', 'paul', 'klaus', 'david', 'conrad', 'microsoft stefan'];
+                    const femaleKeywords = ['female', 'anna', 'katja', 'hedda', 'steffi', 'zira', 'amy', 'elke', 'microsoft elena', 'microsoft irina'];
+                    const ruExcludes = ['pavel', 'yuri', 'alexander', 'desktop'];
 
                     if (gender === 'male') {
-                        // Try to find a male voice, explicitly avoiding ones with female indicators
                         targetVoice = langVoices.find(v => {
                             const name = v.name.toLowerCase();
-                            const isMaleName = maleKeywords.some(k => name.includes(k));
-                            const isFemaleName = femaleKeywords.some(k => name.includes(k));
-                            return isMaleName && !name.includes('female');
+                            const matchesMale = maleKeywords.some(k => name.includes(k));
+                            const isRuShaky = lang.startsWith('ru') && ruExcludes.some(e => name.includes(e));
+                            return matchesMale && !name.includes('female') && !isRuShaky;
                         });
 
-                        // Fallback for male: pick first voice that ISN'T in female list
                         if (!targetVoice) {
                             targetVoice = langVoices.find(v => !femaleKeywords.some(k => v.name.toLowerCase().includes(k)));
                         }
                     } else {
-                        // Try to find a female voice
-                        targetVoice = langVoices.find(v => {
-                            const name = v.name.toLowerCase();
-                            return femaleKeywords.some(k => name.includes(k));
-                        });
+                        targetVoice = langVoices.find(v => femaleKeywords.some(k => v.name.toLowerCase().includes(k)));
                     }
                 }
 
-                // If no gender match or no gender specified, prioritize Google/Premium high quality voices
+                // Fallback for Quality
                 if (!targetVoice) {
                     if (lang.startsWith('ru')) {
-                        // Specific priority for Russian to avoid "shaky" voices like Pavel or lower-quality ones
-                        // Avoid "Pavel", "Yuri", "Alexander" as they can be shaky / robotic on some systems. 
-                        // Prioritize Microsoft Elena/Irina, Google, or Premium voices.
-                        const russianPriority = ['microsoft elena', 'microsoft irina', 'google', 'premium', 'milena', 'katya', 'irina'];
-                        const excludes = ['pavel', 'yuri', 'alexander', 'desktop'];
+                        const ruPriority = ['microsoft elena', 'microsoft irina', 'google', 'premium', 'milena', 'katya', 'irina'];
+                        const ruExcludes = ['pavel', 'yuri', 'alexander', 'desktop'];
 
-                        targetVoice = langVoices.find(v =>
-                            russianPriority.some(p => v.name.toLowerCase().includes(p)) &&
-                            !excludes.some(e => v.name.toLowerCase().includes(e))
-                        );
+                        // Try priority first, avoiding excludes
+                        for (const p of ruPriority) {
+                            targetVoice = langVoices.find(v => v.name.toLowerCase().includes(p) && !ruExcludes.some(e => v.name.toLowerCase().includes(e)));
+                            if (targetVoice) break;
+                        }
 
+                        // Final fallback for Russian: any non-shaky voice
                         if (!targetVoice) {
-                            targetVoice = langVoices.find(v => !excludes.some(e => v.name.toLowerCase().includes(e))) || langVoices[0];
+                            targetVoice = langVoices.find(v => !ruExcludes.some(e => v.name.toLowerCase().includes(e)));
                         }
                     } else {
-                        targetVoice = langVoices.find(v => v.name.includes('Google') || v.name.includes('Premium')) || langVoices[0];
+                        targetVoice = langVoices.find(v => v.name.includes('Google') || v.name.includes('Premium'));
                     }
+                }
+
+                // Absolute last resort
+                if (!targetVoice) {
+                    targetVoice = langVoices[0];
                 }
 
                 if (targetVoice) {
