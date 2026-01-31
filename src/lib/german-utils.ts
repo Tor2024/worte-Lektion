@@ -46,8 +46,9 @@ export function isWordStandardized(userWord: UserVocabularyWord): boolean {
     // 1. Basic check: all words should have allTranslations if updated
     if (!word.allTranslations) return false;
 
-    // 2. Synonyms check: updated words should have synonyms
-    if (!userWord.synonyms || userWord.synonyms.length === 0) return false;
+    // 2. Synonyms check: only mandatory for content words (noun, verb, adjective)
+    const needsSynonyms = ['noun', 'verb', 'adjective'].includes(word.type);
+    if (needsSynonyms && (!userWord.synonyms || userWord.synonyms.length === 0)) return false;
 
     // 3. Example check: handle naming inconsistency (example vs exampleSingular)
     const hasExample = word.type === 'noun'
