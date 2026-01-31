@@ -19,73 +19,43 @@ interface PrimingViewProps {
 
 export function PrimingView({ item, onNext }: PrimingViewProps) {
     const { word } = item;
-    const { speak } = useSpeech();
+    const { speak, stop, isLoaded } = useSpeech();
 
     useEffect(() => {
-        // Stop any previous speech
-        window.speechSynthesis.cancel();
+        if (!isLoaded) return;
 
         const playAudioFlow = async () => {
-            const synth = window.speechSynthesis;
-
-            // Helper to create utterance
-            const speakText = (text: string, lang: string, rate: number = 0.9): Promise<void> => {
-                return new Promise((resolve) => {
-                    // Strip HTML
-                    const cleanText = text.replace(/<[^>]*>/g, '');
-                    if (!cleanText.trim()) {
-                        resolve();
-                        return;
-                    }
-
-                    const u = new SpeechSynthesisUtterance(cleanText);
-                    u.lang = lang;
-                    u.rate = rate;
-
-                    // Quick voice selection
-                    const voices = synth.getVoices();
-                    const targetVoice = voices.find(v => v.lang.startsWith(lang.split('-')[0]) && (v.name.includes('Google') || v.name.includes('Premium')));
-                    if (targetVoice) u.voice = targetVoice;
-
-                    u.onend = () => resolve();
-                    u.onerror = () => resolve(); // robust handling
-
-                    synth.speak(u);
-                });
-            };
-
             const pause = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-            // 1. German Word
-            await speakText(formatGermanWord(word), 'de-DE', 0.8);
+            // Small delay to ensure synthesis is ready
             await pause(300);
 
+            // 1. German Word
+            speak(formatGermanWord(word), 'de-DE', 'male');
+            await pause(1500); // Wait for speech approx
+
             // 2. Russian Translation
-            await speakText(word.russian, 'ru-RU', 1.0);
-            await pause(400);
+            speak(word.russian, 'ru-RU', 'female');
+            await pause(1500);
 
             // 3. German Example
             if ('example' in word && word.example) {
-                await speakText(word.example, 'de-DE', 0.85);
-                await pause(400);
+                speak(word.example, 'de-DE', 'male');
+                await pause(3000);
             }
 
             // 4. Russian Example Meaning
             if ('exampleMeaning' in word && (word as any).exampleMeaning) {
-                await speakText((word as any).exampleMeaning, 'ru-RU', 1.0);
+                speak((word as any).exampleMeaning, 'ru-RU', 'female');
             }
         };
 
-        // Small timeout to allow voices to load if first time
-        const timer = setTimeout(() => {
-            playAudioFlow();
-        }, 500);
+        playAudioFlow();
 
         return () => {
-            clearTimeout(timer);
-            window.speechSynthesis.cancel();
+            stop();
         };
-    }, [word]);
+    }, [word, isLoaded, speak, stop]);
 
     return (
         <motion.div

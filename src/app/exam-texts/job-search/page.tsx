@@ -1,13 +1,13 @@
-
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, Play, Pause, Square, Volume2, Headphones } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSpeech } from '@/hooks/use-speech';
 
 const EXAM_TEXT = `Heute wird Arbeit in der Ukraine hauptsächlich über Online-Plattformen gesucht. Besonders wichtig sind dabei spezialisierte Webseiten und berufliche soziale Netzwerk. Außerdem spielen persönliche Kontakte eine große Rolle, da Empfehlungen oft die Chancen auf eine Anstellung erhöhen. In großen Städten ist der Arbeitsmarkt besser entwickelt, deshalb gibt es dort mehr Möglichkeiten.
 Der erste Kontakt mit dem Arbeitgeber erfolgt per E-Mail oder Telefon. 
@@ -17,29 +17,15 @@ Das Bewerbungsgespräch kann entweder persönlich oder online stattfinden. Dabei
 export default function JobSearchTextPage() {
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentSentenceIndex, setCurrentSentenceIndex] = useState<number | null>(null);
-    const synthesisRef = useRef<SpeechSynthesis | null>(null);
-    const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+    const { speak, stop, isSpeaking } = useSpeech();
 
     // Split text into sentences for granular highlighting
     const sentences = EXAM_TEXT.split(/[.!?]+\s/).filter(s => s.trim().length > 0).map((s, i, arr) => {
         return i < arr.length - 1 ? s + '.' : s;
     });
 
-    useEffect(() => {
-        synthesisRef.current = window.speechSynthesis;
-        return () => {
-            if (synthesisRef.current) synthesisRef.current.cancel();
-        };
-    }, []);
-
     const playText = () => {
-        if (!synthesisRef.current) return;
-
-        synthesisRef.current.cancel();
         setIsPlaying(true);
-
-        // Create one continuous utterance but track boundaries if possible
-        // Alternatively, play sentence by sentence for better UI sync
         playSentence(0);
     };
 
@@ -51,33 +37,38 @@ export default function JobSearchTextPage() {
         }
 
         setCurrentSentenceIndex(index);
-        const utterance = new SpeechSynthesisUtterance(sentences[index]);
-        utterance.lang = 'de-DE';
-        utterance.rate = 0.9; // Slightly slower for learning
-
-        utterance.onend = () => {
-            if (isPlaying) {
-                playSentence(index + 1);
-            }
-        };
-
-        utteranceRef.current = utterance;
-        synthesisRef.current?.speak(utterance);
+        speak(sentences[index], 'de-DE');
     };
 
+    useEffect(() => {
+        if (isPlaying && !isSpeaking && currentSentenceIndex !== null) {
+            if (currentSentenceIndex < sentences.length - 1) {
+                const nextIndex = currentSentenceIndex + 1;
+                playSentence(nextIndex);
+            } else {
+                setIsPlaying(false);
+                setCurrentSentenceIndex(null);
+            }
+        }
+    }, [isSpeaking, isPlaying, currentSentenceIndex, sentences.length]);
+
     const stopText = () => {
-        synthesisRef.current?.cancel();
+        stop();
         setIsPlaying(false);
         setCurrentSentenceIndex(null);
     };
 
     const togglePause = () => {
-        if (synthesisRef.current?.paused) {
-            synthesisRef.current.resume();
-            setIsPlaying(true);
-        } else {
-            synthesisRef.current?.pause();
+        if (isPlaying) {
+            stop();
             setIsPlaying(false);
+        } else {
+            setIsPlaying(true);
+            if (currentSentenceIndex !== null) {
+                playSentence(currentSentenceIndex);
+            } else {
+                playText();
+            }
         }
     }
 
@@ -121,7 +112,7 @@ export default function JobSearchTextPage() {
                                     currentSentenceIndex === idx && "font-bold shadow-sm"
                                 )}
                                 onClick={() => {
-                                    synthesisRef.current?.cancel();
+                                    stop();
                                     setIsPlaying(true);
                                     playSentence(idx);
                                 }}
@@ -141,7 +132,7 @@ export default function JobSearchTextPage() {
                 ) : (
                     <>
                         <Button size="lg" variant="outline" className="h-16 w-16 rounded-full shadow-lg border-2" onClick={togglePause}>
-                            {synthesisRef.current?.paused ? <Play className="h-6 w-6" /> : <Pause className="h-6 w-6" />}
+                            {(isPlaying && isSpeaking) ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
                         </Button>
                         <Button size="lg" variant="destructive" className="h-16 w-16 rounded-full shadow-lg" onClick={stopText}>
                             <Square className="h-6 w-6" />

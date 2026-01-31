@@ -1,12 +1,12 @@
-
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Play, Pause, SkipBack, SkipForward, Headphones } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { cleanTextForSpeech } from '@/lib/german-utils';
+import { useSpeech } from '@/hooks/use-speech';
 
 export interface PodcastScript {
     title: string;
@@ -24,74 +24,37 @@ interface PodcastPlayerProps {
 export function PodcastPlayer({ data }: PodcastPlayerProps) {
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentLineIndex, setCurrentLineIndex] = useState(0);
-    const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
-
-    const synth = useRef<SpeechSynthesis | null>(null);
-    const uttr = useRef<SpeechSynthesisUtterance | null>(null);
-
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            synth.current = window.speechSynthesis;
-            const loadVoices = () => {
-                const vs = window.speechSynthesis.getVoices();
-                setVoices(vs.filter(v => v.lang.startsWith('de')));
-            };
-            window.speechSynthesis.onvoiceschanged = loadVoices;
-            loadVoices();
-        }
-        return () => {
-            if (synth.current) synth.current.cancel();
-        };
-    }, []);
+    const { speak, stop, isSpeaking } = useSpeech();
 
     const playLine = (index: number) => {
-        if (!synth.current || index >= data.script.length) {
+        if (index >= data.script.length) {
             setIsPlaying(false);
             return;
         }
 
         const line = data.script[index];
-        const utterance = new SpeechSynthesisUtterance(cleanTextForSpeech(line.text));
-        utterance.lang = 'de-DE';
+        const gender = line.speaker === 'Host' ? 'male' : 'female';
 
-        // Try to assign different voices
-        if (voices.length > 0) {
-            // Valid German voices
-            // Improved Voice Selection
-            // Host = Max (Male)
-            // Expert = Anna (Female)
-
-            const maleKeywords = ['Male', 'Markus', 'Stefan', 'Paul'];
-            const femaleKeywords = ['Female', 'Anna', 'Katja', 'Hedda', 'Steffi'];
-
-            const maleVoice = voices.find(v => maleKeywords.some(k => v.name.includes(k))) || voices.find(v => !v.name.includes('Google Deutsch')) || voices[1] || voices[0];
-            const femaleVoice = voices.find(v => femaleKeywords.some(k => v.name.includes(k))) || voices.find(v => v.name.includes('Google Deutsch')) || voices[0];
-
-            // If we ended up with the same voice, force a swap if possible
-            const finalMale = maleVoice;
-            const finalFemale = (femaleVoice === maleVoice && voices.length > 1) ? voices.find(v => v !== maleVoice) : femaleVoice;
-
-            utterance.voice = (line.speaker === 'Host' ? finalMale : finalFemale) || null;
-        }
-
-        utterance.onend = () => {
-            if (index < data.script.length - 1) {
-                setCurrentLineIndex(index + 1);
-                playLine(index + 1);
-            } else {
-                setIsPlaying(false);
-            }
-        };
-
-        uttr.current = utterance;
-        synth.current.speak(utterance);
+        speak(cleanTextForSpeech(line.text), 'de-DE', gender);
     };
 
-    const togglePlay = () => {
-        if (!synth.current) return;
+    useEffect(() => {
+        if (isPlaying && !isSpeaking && currentLineIndex < data.script.length - 1) {
+            // Speech ended, move to next line after a small natural pause
+            const timer = setTimeout(() => {
+                const nextIndex = currentLineIndex + 1;
+                setCurrentLineIndex(nextIndex);
+                playLine(nextIndex);
+            }, 600);
+            return () => clearTimeout(timer);
+        } else if (isPlaying && !isSpeaking && currentLineIndex === data.script.length - 1) {
+            setIsPlaying(false);
+        }
+    }, [isSpeaking, isPlaying]);
 
+    const togglePlay = () => {
         if (isPlaying) {
-            synth.current.cancel();
+            stop();
             setIsPlaying(false);
         } else {
             setIsPlaying(true);
@@ -100,8 +63,7 @@ export function PodcastPlayer({ data }: PodcastPlayerProps) {
     };
 
     const skip = (direction: 'forward' | 'back') => {
-        if (!synth.current) return;
-        synth.current.cancel();
+        stop();
 
         let newIndex = direction === 'forward' ? currentLineIndex + 1 : currentLineIndex - 1;
         if (newIndex < 0) newIndex = 0;
@@ -144,7 +106,7 @@ export function PodcastPlayer({ data }: PodcastPlayerProps) {
                     <div
                         key={idx}
                         onClick={() => {
-                            if (synth.current) synth.current.cancel();
+                            stop();
                             setCurrentLineIndex(idx);
                             setIsPlaying(true);
                             playLine(idx);

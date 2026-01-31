@@ -13,6 +13,8 @@ import { translateExamText } from '@/ai/flows/translate-exam-text';
 import { translateSentenceWords } from '@/ai/flows/translate-sentence-words';
 import { useToast } from '@/hooks/use-toast';
 
+import { useSpeech } from '@/hooks/use-speech';
+
 export default function ExamTextReaderPage({ params }: { params: Promise<{ topicId: string }> }) {
     const { topicId } = use(params);
     const { getExamText, isLoading: isHookLoading } = useExamTexts();
@@ -28,74 +30,46 @@ export default function ExamTextReaderPage({ params }: { params: Promise<{ topic
     const [sentenceTranslations, setSentenceTranslations] = useState<Record<number, { original: string, translation: string }[]>>({});
     const [isLoadingWords, setIsLoadingWords] = useState<number | null>(null);
 
-    const synthesisRef = useRef<SpeechSynthesis | null>(null);
-    const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+    const { speak, stop, isSpeaking } = useSpeech();
 
-    useEffect(() => {
-        synthesisRef.current = window.speechSynthesis;
-        return () => {
-            if (synthesisRef.current) synthesisRef.current.cancel();
-        };
-    }, []);
-
-    if (isHookLoading) {
-        return (
-            <div className="flex justify-center items-center min-h-[50vh]">
-                <Loader2 className="h-10 w-10 animate-spin text-primary" />
-            </div>
-        );
-    }
-
-    if (!examText) {
-        return (
-            <div className="container mx-auto py-12 text-center">
-                <h1 className="text-2xl font-bold mb-4">Текст не найден</h1>
-                <Button asChild>
-                    <Link href="/exam-texts">Вернуться к списку</Link>
-                </Button>
-            </div>
-        );
-    }
-
-    // Split text into sentences for granular highlighting
-    const sentences = examText.content.split(/[.!?]+\s/).filter(s => s.trim().length > 0).map((s, i, arr) => {
-        // Re-add the punctuation if it's not the last one
-        return i < arr.length - 1 ? s + (examText.content.match(/[.!?]/g)?.[i] || '.') : s;
-    });
+    const sentences = examText?.content
+        ? examText.content.split(/[.!?]+\s/).filter(s => s.trim().length > 0).map((s, i, arr) => {
+            return i < arr.length - 1 ? s + (examText.content.match(/[.!?]/g)?.[i] || '.') : s;
+        })
+        : [];
 
     const playText = () => {
-        if (!synthesisRef.current) return;
-        synthesisRef.current.cancel();
         setIsPlaying(true);
         playSentence(0);
     };
 
     const playSentence = (index: number) => {
-        if (index >= sentences.length) {
+        if (!sentences[index]) {
             setIsPlaying(false);
             setCurrentSentenceIndex(null);
             return;
         }
 
         setCurrentSentenceIndex(index);
-        const utterance = new SpeechSynthesisUtterance(sentences[index]);
-        utterance.lang = 'de-DE';
-        utterance.rate = 0.85;
-
-        utterance.onend = () => {
-            if (isPlaying) {
-                playSentence(index + 1);
-            }
-        };
-
-        utteranceRef.current = utterance;
-        synthesisRef.current?.speak(utterance);
+        speak(sentences[index], 'de-DE');
 
         // Fetch word translations if not already cached
         if (!sentenceTranslations[index] && isLoadingWords !== index) {
             fetchWordTranslations(index, sentences[index]);
         }
     };
+
+    useEffect(() => {
+        if (isPlaying && !isSpeaking && currentSentenceIndex !== null) {
+            if (currentSentenceIndex < sentences.length - 1) {
+                const nextIndex = currentSentenceIndex + 1;
+                playSentence(nextIndex);
+            } else {
+                setIsPlaying(false);
+                setCurrentSentenceIndex(null);
+            }
+        }
+    }, [isSpeaking, isPlaying]);
 
     const fetchWordTranslations = async (index: number, sentence: string) => {
         setIsLoadingWords(index);
@@ -107,29 +81,33 @@ export default function ExamTextReaderPage({ params }: { params: Promise<{ topic
             }));
         } catch (error) {
             console.error('Word translation error:', error);
-            // Silent error or toast?
         } finally {
             setIsLoadingWords(null);
         }
     };
 
     const stopText = () => {
-        synthesisRef.current?.cancel();
+        stop();
         setIsPlaying(false);
         setCurrentSentenceIndex(null);
     };
 
     const togglePause = () => {
-        if (synthesisRef.current?.paused) {
-            synthesisRef.current.resume();
-            setIsPlaying(true);
-        } else {
-            synthesisRef.current?.pause();
+        if (isPlaying) {
+            stop();
             setIsPlaying(false);
+        } else {
+            setIsPlaying(true);
+            if (currentSentenceIndex !== null) {
+                playSentence(currentSentenceIndex);
+            } else {
+                playText();
+            }
         }
     }
 
     const handleTranslate = async () => {
+        if (!examText) return;
         if (translation) {
             setTranslation(null);
             return;
@@ -150,6 +128,25 @@ export default function ExamTextReaderPage({ params }: { params: Promise<{ topic
             setIsTranslating(false);
         }
     };
+
+    if (isHookLoading) {
+        return (
+            <div className="flex justify-center items-center min-h-[50vh]">
+                <Loader2 className="h-10 w-10 animate-spin text-primary" />
+            </div>
+        );
+    }
+
+    if (!examText) {
+        return (
+            <div className="container mx-auto py-12 text-center">
+                <h1 className="text-2xl font-bold mb-4">Текст не найден</h1>
+                <Button asChild>
+                    <Link href="/exam-texts">Вернуться к списку</Link>
+                </Button>
+            </div>
+        );
+    }
 
     return (
         <div className="container mx-auto py-8 px-4 max-w-4xl">
@@ -204,7 +201,7 @@ export default function ExamTextReaderPage({ params }: { params: Promise<{ topic
                                         currentSentenceIndex === idx && "font-bold shadow-sm"
                                     )}
                                     onClick={() => {
-                                        synthesisRef.current?.cancel();
+                                        stop();
                                         setIsPlaying(true);
                                         playSentence(idx);
                                     }}
@@ -277,7 +274,7 @@ export default function ExamTextReaderPage({ params }: { params: Promise<{ topic
                 ) : (
                     <>
                         <Button size="lg" variant="outline" className="h-16 w-16 rounded-full shadow-lg border-2" onClick={togglePause}>
-                            {synthesisRef.current?.paused ? <Play className="h-6 w-6" /> : <Pause className="h-6 w-6" />}
+                            {isPlaying && isSpeaking ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
                         </Button>
                         <Button size="lg" variant="destructive" className="h-16 w-16 rounded-full shadow-lg" onClick={stopText}>
                             <Square className="h-6 w-6" />

@@ -5,8 +5,8 @@ import { StudyQueueItem } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { BrainCircuit, Loader2, Sparkles, Send, ArrowRight } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { BrainCircuit, Loader2, Sparkles, Send, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { generateClozeWithAI, type GenerateClozeOutput } from '@/ai/flows/generate-cloze';
 import { evaluateProductionWithAI, type EvaluateProductionOutput } from '@/ai/flows/evaluate-production';
@@ -27,6 +27,7 @@ export function ProductionView({ item, storyContext, onStoryUpdate, onResult }: 
     const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
     const [dynamicEvaluation, setDynamicEvaluation] = useState<EvaluateProductionOutput | null>(null);
     const [isEvaluating, setIsEvaluating] = useState(false);
+    const [showStoryContext, setShowStoryContext] = useState(false);
 
     // Fetch AI context on mount
     useEffect(() => {
@@ -149,9 +150,30 @@ export function ProductionView({ item, storyContext, onStoryUpdate, onResult }: 
 
                     {/* Story Context Visualization */}
                     {storyContext && (
-                        <div className="mt-6 p-4 bg-muted/30 rounded-lg text-xs text-muted-foreground italic text-left w-full border border-dashed">
-                            <span className="font-bold uppercase tracking-widest text-[10px] block mb-1 opacity-50">Контекст истории ({word.german}):</span>
-                            &ldquo;...{storyContext}&rdquo;
+                        <div className="w-full flex flex-col items-end gap-2">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 px-2 text-[10px] uppercase font-bold tracking-widest text-muted-foreground hover:text-primary gap-1"
+                                onClick={() => setShowStoryContext(!showStoryContext)}
+                            >
+                                {showStoryContext ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                                {showStoryContext ? 'Скрыть контекст' : 'Показать контекст истории'}
+                            </Button>
+
+                            <AnimatePresence>
+                                {showStoryContext && (
+                                    <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: 'auto' }}
+                                        exit={{ opacity: 0, height: 0 }}
+                                        className="p-4 bg-muted/30 rounded-lg text-xs text-muted-foreground italic text-left w-full border border-dashed overflow-hidden"
+                                    >
+                                        <span className="font-bold uppercase tracking-widest text-[10px] block mb-1 opacity-50">Контекст истории ({word.german}):</span>
+                                        &ldquo;...{storyContext}&rdquo;
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </div>
                     )}
 

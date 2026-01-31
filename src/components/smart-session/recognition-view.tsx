@@ -20,11 +20,13 @@ export function RecognitionView({ item, onResult }: RecognitionViewProps) {
     const { word } = item;
     const [selectedOption, setSelectedOption] = useState<string | null>(null);
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-    const { speak } = useSpeech();
+    const { speak, isLoaded } = useSpeech();
 
     useEffect(() => {
-        speak(formatGermanWord(word));
-    }, [speak, word]);
+        if (isLoaded) {
+            speak(formatGermanWord(word));
+        }
+    }, [speak, word, isLoaded]);
 
     const options = useMemo(() => {
         // Simple distractor logic: grab 3 random words from commonWords that are NOT the current word

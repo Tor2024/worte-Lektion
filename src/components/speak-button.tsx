@@ -1,6 +1,4 @@
-'use client';
-
-import { useSpeech } from '@/hooks/use-speech';
+import { useSpeech, VoiceGender } from '@/hooks/use-speech';
 import { Button } from '@/components/ui/button';
 import { Volume2, VolumeX, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -9,6 +7,7 @@ import { cleanTextForSpeech } from '@/lib/german-utils';
 interface SpeakButtonProps {
     text: string;
     lang?: string;
+    gender?: VoiceGender;
     className?: string;
     size?: 'sm' | 'default' | 'lg' | 'icon';
     variant?: 'ghost' | 'outline' | 'secondary' | 'default';
@@ -18,6 +17,7 @@ interface SpeakButtonProps {
 export function SpeakButton({
     text,
     lang = 'de-DE',
+    gender,
     className,
     size = 'icon',
     variant = 'ghost',
@@ -33,7 +33,7 @@ export function SpeakButton({
         } else {
             // Clean markdown bold/italic characters before speaking
             const cleanedText = cleanTextForSpeech(text);
-            speak(cleanedText, lang);
+            speak(cleanedText, lang, gender);
         }
     };
 
