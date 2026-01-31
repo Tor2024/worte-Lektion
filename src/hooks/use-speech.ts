@@ -50,13 +50,31 @@ export function useSpeech() {
             let targetVoice: SpeechSynthesisVoice | undefined;
 
             if (gender) {
-                const maleKeywords = ['male', 'markus', 'stefan', 'paul', 'klaus', 'david', 'google deutsch']; // Google Deutsch is often male-ish or neutral, but we'll refine
-                const femaleKeywords = ['female', 'anna', 'katja', 'hedda', 'steffi', 'zira', 'amy', 'google deutsch female'];
+                const maleKeywords = ['male', 'markus', 'stefan', 'paul', 'klaus', 'david', 'conrad', 'google deutsch'];
+                const femaleKeywords = ['female', 'anna', 'katja', 'hedda', 'steffi', 'zira', 'amy', 'elke', 'google deutsch female'];
 
-                const keywords = gender === 'male' ? maleKeywords : femaleKeywords;
+                if (gender === 'male') {
+                    // Try to find a male voice, explicitly avoiding ones with female indicators
+                    targetVoice = langVoices.find(v => {
+                        const name = v.name.toLowerCase();
+                        const isMaleName = maleKeywords.some(k => name.includes(k));
+                        const isFemaleName = femaleKeywords.some(k => name.includes(k));
+                        // Specifically for Google voices, "Google Deutsch" is usually male-ish, but if there's no better option, use it.
+                        // But avoid if it specifically says female.
+                        return isMaleName && !name.includes('female');
+                    });
 
-                // Try to find by name keywords
-                targetVoice = langVoices.find(v => keywords.some(k => v.name.toLowerCase().includes(k)));
+                    // Fallback for male: pick first voice that ISN'T in female list
+                    if (!targetVoice) {
+                        targetVoice = langVoices.find(v => !femaleKeywords.some(k => v.name.toLowerCase().includes(k)));
+                    }
+                } else {
+                    // Try to find a female voice
+                    targetVoice = langVoices.find(v => {
+                        const name = v.name.toLowerCase();
+                        return femaleKeywords.some(k => name.includes(k));
+                    });
+                }
             }
 
             // If no gender match or no gender specified, prioritize Google/Premium high quality voices
