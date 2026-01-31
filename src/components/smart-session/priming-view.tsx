@@ -27,26 +27,26 @@ export function PrimingView({ item, onNext }: PrimingViewProps) {
         const playAudioFlow = async () => {
             const pause = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-            // Small delay to ensure synthesis is ready
-            await pause(300);
+            // Small initial delay
+            await pause(500);
 
             // 1. German Word
-            speak(formatGermanWord(word), 'de-DE', 'male');
-            await pause(1500); // Wait for speech approx
+            await speak(formatGermanWord(word), 'de-DE', 'male');
+            await pause(1200); // Precise silence after speech
 
             // 2. Russian Translation
-            speak(word.russian, 'ru-RU', 'female');
-            await pause(1500);
+            await speak(word.russian, 'ru-RU', 'female');
+            await pause(1500); // Slightly longer after translation
 
             // 3. German Example
             if ('example' in word && word.example) {
-                speak(word.example, 'de-DE', 'male');
-                await pause(3000);
+                await speak(word.example, 'de-DE', 'male');
+                await pause(1200);
             }
 
             // 4. Russian Example Meaning
             if ('exampleMeaning' in word && (word as any).exampleMeaning) {
-                speak((word as any).exampleMeaning, 'ru-RU', 'female');
+                await speak((word as any).exampleMeaning, 'ru-RU', 'female');
             }
         };
 
