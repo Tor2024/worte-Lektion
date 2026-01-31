@@ -307,12 +307,13 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                         </div>
                     )}
 
-                    {word.type === 'conjunction' && (
+                    {/* Satzbau (Word Order) - Shown for ANY word that has the structure field (Conj, Prep, Adverbs) */}
+                    {(word as any).structure && (
                         <div className="w-full flex-grow flex flex-col items-center justify-center gap-6">
-                            <div className="p-6 bg-primary/5 rounded-3xl border-2 border-primary/10 text-center w-full">
-                                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] block mb-3">Satzbau (Структура союза)</span>
+                            <div className="p-6 bg-primary/5 rounded-3xl border-2 border-primary/10 text-center w-full shadow-inner">
+                                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] block mb-3">Satzbau (Структура предложения)</span>
                                 <div className="text-xl font-black text-primary tracking-tight">
-                                    {(word as any).structure || 'Стандартный'}
+                                    {(word as any).structure}
                                 </div>
                                 <div className="text-[10px] text-muted-foreground mt-2 italic font-medium">Позиция глагола</div>
                             </div>

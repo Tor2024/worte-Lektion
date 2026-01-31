@@ -49,8 +49,8 @@ const EnrichedWordSchema = z.object({
     // Adjective specifics
     comparative: z.string().optional().describe('For adjectives: comparative form (e.g. "stärker").'),
     superlative: z.string().optional().describe('For adjectives: superlative form (e.g. "am stärksten").'),
-    // Conjunction specifics
-    structure: z.string().optional().describe('For conjunctions: Position of the verb (e.g. "Verb am Ende", "Verb an Position 2", "Inversion").'),
+    // Conjunction & Structure specifics
+    structure: z.string().optional().describe('Verb position/sentence structure (e.g. "Verb am Ende", "Verb an Position 2", "Inversion"). Important for words like während, bevor, deshalb.'),
     // Common
     example: z.string().describe('A simple example sentence using the word in context.'),
     exampleMeaning: z.string().describe('Russian translation of the example sentence.'),
@@ -101,8 +101,8 @@ const renderPrompt = (input: WordEnrichmentInput) => {
      - Keep 'preposition' and 'case' at the top level for backward compatibility (fill them from the primary governance item), but prioritize the 'governance' array in the UI.
   5. If it is a **Noun**:
      - Provide article, plural form.
-  6. If it is a **Conjunction**:
-     - Indicate the verb position/structure.
+  6. If it is a **Conjunction** or a word affecting word order (like deshalb, während, trotzdem):
+     - Indicate the verb position/structure in the 'structure' field. Use clear terms like "Verb am Ende (Nebensatz)" or "Inversion (Verb an Pos. 2)".
   7. If it is an **Adjective**:
      - Provide **comparative** and **superlative** forms.
   8. Provide 2-3 **Synonyms** and 1-2 **Antonyms** with Russian translations. Ensure translations for synonyms are concise.

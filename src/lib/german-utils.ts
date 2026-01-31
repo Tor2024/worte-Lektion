@@ -46,14 +46,17 @@ export function isWordStandardized(userWord: UserVocabularyWord): boolean {
     // 1. Basic check: all words should have allTranslations if updated
     if (!word.allTranslations) return false;
 
-    // 2. Synonyms check: only mandatory for content words (noun, verb, adjective)
+    // 2. Synonyms check: mandatory for content words (noun, verb, adjective)
+    // UNLESS they have rich governance/meta data which already makes them high-quality
     const needsSynonyms = ['noun', 'verb', 'adjective'].includes(word.type);
-    if (needsSynonyms && (!userWord.synonyms || userWord.synonyms.length === 0)) return false;
+    const hasRichMeta = (word.type === 'verb' || word.type === 'adjective') && (word as any).governance?.length > 0;
 
-    // 3. Example check: handle naming inconsistency (example vs exampleSingular)
+    if (needsSynonyms && !hasRichMeta && (!userWord.synonyms || userWord.synonyms.length === 0)) return false;
+
+    // 3. Example check: handle naming inconsistency and fallback to context
     const hasExample = word.type === 'noun'
-        ? !!(word as any).exampleSingular || !!(word as any).example
-        : !!(word as any).example;
+        ? !!(word as any).exampleSingular || !!(word as any).example || !!userWord.context
+        : !!(word as any).example || !!userWord.context;
 
     if (!hasExample) return false;
 
@@ -61,7 +64,8 @@ export function isWordStandardized(userWord: UserVocabularyWord): boolean {
     if (word.type === 'verb') {
         const hasGov = (word as any).governance?.length > 0;
         const hasConj = !!(word as any).conjugations;
-        return hasGov && hasConj;
+        // For verbs, either governance + conjugations OR at least a simple conjugation + example
+        return hasConj && (hasGov || !!(word as any).conjugation);
     }
 
     if (word.type === 'noun') {
