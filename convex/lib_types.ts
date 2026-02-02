@@ -129,7 +129,6 @@ export interface VocabularyTheme {
 
 export interface Topic {
   id: string;
-  levelId?: string;
   title: string;
   explanation: string;
   exercises: Exercise[];

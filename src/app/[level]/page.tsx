@@ -1,7 +1,7 @@
 
 'use client';
 
-import { curriculum } from '@/lib/data';
+// import { curriculum } from '@/lib/data'; // NO LONGER USED
 import { notFound, useParams } from 'next/navigation';
 import {
   Accordion,
@@ -14,14 +14,34 @@ import { ArrowRight, BookText, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 import { useUserProgress } from '@/hooks/use-user-progress';
 import { cn } from '@/lib/utils';
+import { useQuery } from 'convex/react';
+import { api } from '../../../convex/_generated/api';
 
 
 export default function LevelPage() {
   const params = useParams<{ level: string }>();
-  const level = curriculum.levels.find((l) => l.id === params.level);
+  const levelId = params.level;
+
+  const level = useQuery(api.curriculum.getLevel, { levelId });
+  const topics = useQuery(api.curriculum.getTopics, { levelId });
+
   const { getTopicProficiency } = useUserProgress();
 
-  if (!level) {
+  if (level === undefined || topics === undefined) {
+    return (
+      <div className="container mx-auto py-8 space-y-8 animate-pulse">
+        <div className="h-8 bg-muted rounded w-1/4"></div>
+        <div className="h-12 bg-muted rounded w-1/2"></div>
+        <div className="space-y-4">
+          <div className="h-16 bg-muted rounded"></div>
+          <div className="h-16 bg-muted rounded"></div>
+          <div className="h-16 bg-muted rounded"></div>
+        </div>
+      </div>
+    )
+  }
+
+  if (level === null) {
     notFound();
   }
 
@@ -35,9 +55,9 @@ export default function LevelPage() {
         <p className="mt-2 text-lg text-muted-foreground">{level.description}</p>
       </div>
 
-      {level.topics.length > 0 ? (
+      {topics && topics.length > 0 ? (
         <Accordion type="single" collapsible className="w-full">
-          {level.topics.map((topic) => {
+          {topics.map((topic) => {
             const proficiency = getTopicProficiency(topic.id);
             const isCompleted = proficiency >= 100;
             return (

@@ -15,6 +15,10 @@ export const getFolders = query({
                     .query("words")
                     .withIndex("by_folder", (q) => q.eq("folderId", f._id))
                     .collect();
+
+                // Sort words by addedAt descending (newest first)
+                words.sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0));
+
                 return { ...f, words };
             })
         );

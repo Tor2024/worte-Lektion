@@ -1,5 +1,6 @@
 import { v, ConvexError } from "convex/values";
 import { mutation } from "./_generated/server";
+import { curriculum } from "./seed_data";
 
 export const migrateFromLocalStorage = mutation({
     args: {
@@ -167,4 +168,54 @@ export const migrateFromLocalStorage = mutation({
             throw new ConvexError(`Migration error: ${error.message}`);
         }
     },
+});
+
+export const seedCurriculum = mutation({
+    args: {},
+    handler: async (ctx) => {
+        // Helper to sanitize objects (remove undefined)
+        const sanitize = (obj: any): any => JSON.parse(JSON.stringify(obj, (k, v) => v === undefined ? null : v));
+
+        for (const level of curriculum.levels) {
+            const existingLevel = await ctx.db.query("curriculum_levels").withIndex("by_level_id", q => q.eq("id", level.id)).first();
+
+            if (existingLevel) {
+                await ctx.db.patch(existingLevel._id, {
+                    title: level.title,
+                    description: level.description,
+                    order: 0
+                });
+            } else {
+                await ctx.db.insert("curriculum_levels", {
+                    id: level.id,
+                    title: level.title,
+                    description: level.description,
+                    order: 0
+                });
+            }
+
+            for (const topic of level.topics) {
+                const existingTopic = await ctx.db.query("curriculum_topics")
+                    .withIndex("by_level_id", q => q.eq("levelId", level.id).eq("id", topic.id))
+                    .first();
+
+                const topicData = {
+                    levelId: level.id,
+                    id: topic.id,
+                    title: topic.title,
+                    explanation: topic.explanation,
+                    vocabulary: sanitize(topic.vocabulary),
+                    exercises: sanitize(topic.exercises),
+                    order: 0
+                };
+
+                if (existingTopic) {
+                    await ctx.db.patch(existingTopic._id, topicData);
+                } else {
+                    await ctx.db.insert("curriculum_topics", topicData);
+                }
+            }
+        }
+        return { success: true, message: "Curriculum seeded!" };
+    }
 });

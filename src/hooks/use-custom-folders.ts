@@ -4,6 +4,7 @@ import { storage } from '@/lib/storage';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { Id } from '../../convex/_generated/dataModel';
+import { isWordStandardized } from '@/lib/german-utils';
 
 export function useCustomFolders() {
     const [localFolders, setLocalFolders] = useState<CustomFolder[]>(storage.getCustomFolders());
@@ -28,24 +29,20 @@ export function useCustomFolders() {
             words: (f.words || []).map(w => {
                 const details = w.details || { german: '?', russian: '?', type: 'other' };
 
-                // Stricter Criteria for "Quality" word
-                const hasCleanTranslation = details.russian && !details.russian.includes(',') && !details.russian.includes(';');
-                const hasBasicInfo = details.german && details.german !== '?';
-
-                // Advanced info (new blocks like synonyms/antonyms often indicate recent AI enrichment)
-                const hasMeta = (w as any).synonyms?.length > 0 || details.governance?.length > 0;
-
-                // If it's a verb, it MUST have tenses and conjugations to be "ready"
-                const verbReady = details.type === 'verb' ? (!!details.verbTenses && !!details.conjugations) : true;
-
-                const isModern = hasCleanTranslation && hasBasicInfo && verbReady;
-
-                return {
+                const fullWordObject = {
                     id: w._id,
                     word: details,
                     sm2State: w.sm2State || {},
                     addedAt: w.addedAt || Date.now(),
-                    needsUpdate: !isModern // Flag if it's missing the "B2 Beruf" quality
+                    synonyms: (w as any).synonyms,
+                    antonyms: (w as any).antonyms,
+                    context: (w as any).context,
+                    contextTranslation: (w as any).contextTranslation
+                } as UserVocabularyWord;
+
+                return {
+                    ...fullWordObject,
+                    needsUpdate: !isWordStandardized(fullWordObject) // Use centralized logic
                 };
             }) as (UserVocabularyWord & { needsUpdate?: boolean })[]
         }));
@@ -53,7 +50,7 @@ export function useCustomFolders() {
 
     // 3. Sync Cloud -> Local
     useEffect(() => {
-        if (cloudFolders) {
+        if (cloudFolders && cloudFolders.length > 0) {
             // Very basic check for differences to avoid infinite loops or unnecessary writes
             const isDifferent = JSON.stringify(cloudFolders) !== JSON.stringify(localFolders);
             if (isDifferent) {
@@ -99,6 +96,7 @@ export function useCustomFolders() {
             });
         } catch (error) {
             console.error("Failed to add word to cloud:", error);
+            throw error; // Rethrow so component knows it failed
         }
     }, [addWordMutation]);
 

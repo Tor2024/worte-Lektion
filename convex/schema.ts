@@ -71,4 +71,23 @@ export default defineSchema({
         details: v.any(), // StudyQueueItem data
     }).index("by_user", ["userId"])
         .index("by_user_item", ["userId", "itemId"]),
+
+    // Curriculum Data (Migrated from data.ts)
+    curriculum_levels: defineTable({
+        id: v.string(), // e.g. "a1"
+        title: v.string(),
+        description: v.string(),
+        order: v.number(),
+    }).index("by_level_id", ["id"]),
+
+    curriculum_topics: defineTable({
+        levelId: v.string(), // e.g. "a1"
+        id: v.string(), // e.g. "begruessung"
+        title: v.string(),
+        explanation: v.string(), // HTML
+        vocabulary: v.any(), // Array of VocabularyTheme
+        exercises: v.any(), // Array of Exercise
+        order: v.number(),
+    }).index("by_level", ["levelId"])
+        .index("by_level_id", ["levelId", "id"]),
 });

@@ -10,8 +10,10 @@ import { Timer } from './timer';
 import { Button } from './ui/button';
 import { Loader2, Brain, RefreshCw, SkipForward } from 'lucide-react';
 import { Card, CardContent } from './ui/card';
-import { curriculum } from '@/lib/data';
+// import { curriculum } from '@/lib/data'; // NO LONGER USED
 import Link from 'next/link';
+import { useQuery } from 'convex/react';
+import { api } from '../../convex/_generated/api';
 
 type RepetitionState = {
   nextReviewDate: string | null;
@@ -25,6 +27,9 @@ export function SpacedRepetitionWrapper({ topic }: { topic: Topic }) {
   const [isReadyForReview, setIsReadyForReview] = useState(false);
   const [nextReviewDate, setNextReviewDate] = useState<Date | null>(null);
   const [lessonSummary, setLessonSummary] = useState<GenerateLessonSummaryOutput | null>(null);
+
+  // We need current level topics to find "next topic"
+  const currentLevelTopics = useQuery(api.curriculum.getTopics, topic.levelId ? { levelId: topic.levelId } : "skip");
 
   const getRepetitionState = useCallback((): RepetitionState => {
     try {
@@ -86,13 +91,16 @@ export function SpacedRepetitionWrapper({ topic }: { topic: Topic }) {
   }
 
   const getNextTopic = () => {
-    const currentLevel = curriculum.levels.find(level => level.topics.some(t => t.id === topic.id));
-    if (!currentLevel) return null;
+    if (!currentLevelTopics) return null;
 
-    const currentTopicIndex = currentLevel.topics.findIndex(t => t.id === topic.id);
-    if (currentTopicIndex > -1 && currentTopicIndex < currentLevel.topics.length - 1) {
-      const nextTopic = currentLevel.topics[currentTopicIndex + 1];
-      return `/${currentLevel.id}/${nextTopic.id}`;
+    // Sort topics by order just in case
+    const sortedTopics = [...currentLevelTopics].sort((a, b) => (a.order || 0) - (b.order || 0));
+
+    const currentTopicIndex = sortedTopics.findIndex(t => t.id === topic.id);
+
+    if (currentTopicIndex > -1 && currentTopicIndex < sortedTopics.length - 1) {
+      const nextTopic = sortedTopics[currentTopicIndex + 1];
+      return `/${topic.levelId}/${nextTopic.id}`;
     }
     return null;
   }

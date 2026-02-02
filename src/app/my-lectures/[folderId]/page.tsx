@@ -63,11 +63,16 @@ export default function FolderDetailsPage({ params }: { params: Promise<{ folder
                 antonyms: enriched.antonyms
             };
 
-            addWordToFolder(folderId, newWord);
+            await addWordToFolder(folderId, newWord);
             setNewWordInput('');
         } catch (err: any) {
             console.error("Failed to add word:", err);
-            setError("Не удалось добавить слово. Проверьте соединение или лимиты AI.");
+            // Check for known AI limits or standard 429 errors from Google GenAI
+            if (err.message?.includes('429') || err.message?.includes('quota') || err.message === 'AI_LIMIT') {
+                setError("Лимит AI исчерпан. Пожалуйста, подождите минуту перед добавлением новых слов.");
+            } else {
+                setError("Не удалось добавить слово. Проверьте соединение.");
+            }
         } finally {
             setIsAdding(false);
         }

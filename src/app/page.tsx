@@ -1,7 +1,7 @@
 
 'use client';
 
-import { curriculum } from '@/lib/data';
+//  // NO LONGER USED
 import Link from 'next/link';
 import {
   Card,
@@ -27,6 +27,8 @@ import { useStudyQueue } from '@/hooks/use-study-queue';
 import { useUnifiedSRS } from '@/hooks/use-unified-srs';
 import { NeuralMap } from '@/components/neural-map';
 import { ConvexMigration } from '@/components/convex-migration';
+import { useQuery } from 'convex/react';
+import { api } from '../../convex/_generated/api';
 
 function DailySessionWidget() {
   const { totalDue, totalNew, totalLeeches, isLoading } = useStudyQueue();
@@ -87,35 +89,39 @@ function DailySessionWidget() {
   );
 }
 
-
+// Helper component to separate data fetching logic
+// Helper component to separate data fetching logic
 export default function DashboardPage() {
   const { progress, getTopicProficiency } = useUserProgress();
   const [isClient, setIsClient] = useState(false);
   const [allLearnedWords, setAllLearnedWords] = useState<VocabularyWord[]>([]);
+
+  // Fetch data
+  const levels = useQuery(api.curriculum.getLevels);
+  const allTopics = useQuery(api.curriculum.getAllTopics);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
   useEffect(() => {
-    if (isClient) {
+    if (isClient && allTopics) {
       const wordsFromTopics: VocabularyWord[] = [];
       const seenWords = new Set<string>();
 
       // Add words from topics with progress
-      curriculum.levels.forEach(level => {
-        level.topics.forEach(topic => {
-          if (progress[topic.id] > 0) {
-            topic.vocabulary.forEach(theme => {
-              theme.words.forEach(word => {
-                if (word && word.german && !seenWords.has(word.german)) {
-                  wordsFromTopics.push(word);
-                  seenWords.add(word.german);
-                }
-              });
+      allTopics.forEach(topic => {
+        if (progress[topic.id] > 0) {
+          // Note: topic.vocabulary is typed as 'any' in schema but we know it matches VocabularyTheme[]
+          (topic.vocabulary as any[]).forEach(theme => {
+            theme.words.forEach((word: any) => {
+              if (word && word.german && !seenWords.has(word.german)) {
+                wordsFromTopics.push(word);
+                seenWords.add(word.german);
+              }
             });
-          }
-        });
+          });
+        }
       });
 
       // Add common words if they are not already in the list
@@ -128,20 +134,38 @@ export default function DashboardPage() {
 
       setAllLearnedWords(wordsFromTopics);
     }
-  }, [progress, isClient]);
+  }, [progress, isClient, allTopics]);
 
   const calculateLevelProgress = (levelId: string) => {
-    const level = curriculum.levels.find(l => l.id === levelId);
-    if (!level || level.topics.length === 0) {
+    if (!allTopics) return 0;
+
+    // Filter topics for this level
+    const levelTopics = allTopics.filter(t => t.levelId === levelId);
+
+    if (levelTopics.length === 0) {
       return 0;
     }
-    const totalProficiency = level.topics.reduce((sum, topic) => {
+    const totalProficiency = levelTopics.reduce((sum, topic) => {
       return sum + (getTopicProficiency(topic.id) || 0);
     }, 0);
-    return Math.round(totalProficiency / level.topics.length);
+    return Math.round(totalProficiency / levelTopics.length);
   };
 
-
+  if (levels === undefined || allTopics === undefined) {
+    // Loading state
+    return (
+      <div className="container mx-auto py-8">
+        <div className="space-y-8 animate-pulse">
+          <div className="h-12 bg-muted rounded w-1/2 mx-auto"></div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="h-64 bg-muted rounded-xl"></div>
+            <div className="h-64 bg-muted rounded-xl"></div>
+            <div className="h-64 bg-muted rounded-xl"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-8">
@@ -168,7 +192,28 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16 items-stretch">
         <GlobalVocabularyTrainer words={allLearnedWords} />
 
-        <DailySessionWidget />
+        <div className="flex flex-col gap-8">
+          <DailySessionWidget />
+
+          <Card className="flex flex-col border-primary/20 shadow-md relative overflow-hidden group">
+            <CardHeader>
+              <CardTitle className="text-xl font-headline font-bold flex items-center gap-2">
+                <BookOpen className="h-5 w-5 text-primary" />
+                Мои словари
+              </CardTitle>
+              <CardDescription>
+                Ваши личные папки и коллекции слов.
+              </CardDescription>
+            </CardHeader>
+            <CardFooter>
+              <Button asChild size="lg" variant="secondary" className="w-full">
+                <Link href="/my-lectures">
+                  Открыть словарь <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
 
         {/* B2 EXAM PREP WIDGET */}
         <Card className="flex flex-col bg-gradient-to-br from-amber-500/10 via-transparent to-transparent border-amber-500/20 shadow-xl relative overflow-hidden group h-full">
@@ -211,7 +256,7 @@ export default function DashboardPage() {
 
       <h2 className="text-3xl font-bold font-headline mb-6 text-center">Уровни обучения</h2>
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-        {curriculum.levels.map((level) => {
+        {levels.map((level) => {
           const levelImage = getLevelImage(level.id);
           const levelProgress = isClient ? calculateLevelProgress(level.id) : 0;
           return (
@@ -266,3 +311,4 @@ function NeuralMapWrapper() {
 
   return <NeuralMap words={allWords} limit={60} />;
 }
+

@@ -1,6 +1,8 @@
 
-import { curriculum } from '@/lib/data';
-import { notFound } from 'next/navigation';
+'use client';
+
+// import { curriculum } from '@/lib/data'; // NO LONGER USED
+import { notFound, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Book, Sparkles, Star } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,34 +10,40 @@ import { Separator } from '@/components/ui/separator';
 import { SpacedRepetitionWrapper } from '@/components/spaced-repetition-wrapper';
 import { TopicVocabulary } from '@/components/topic-vocabulary';
 import { AiTheoryExpander } from '@/components/ai-theory-expander';
+import { useQuery } from 'convex/react';
+import { api } from '../../../../convex/_generated/api';
 
-type TopicPageProps = {
-  params: Promise<{
-    level: string;
-    topic: string;
-  }>;
-};
+// No more generateStaticParams needed for dynamic client fetching
 
-export async function generateStaticParams() {
-  const paths: { level: string; topic: string }[] = [];
-  curriculum.levels.forEach(level => {
-    level.topics.forEach(topic => {
-      paths.push({ level: level.id, topic: topic.id });
-    });
-  });
-  return paths;
-}
+export default function TopicPage() {
+  const params = useParams<{ level: string; topic: string }>();
+  const levelId = params.level;
+  const topicId = params.topic;
 
-export default async function TopicPage({ params }: TopicPageProps) {
-  const { level: levelId, topic: topicId } = await params;
-  const level = curriculum.levels.find((l) => l.id === levelId);
-  const topic = level?.topics.find((t) => t.id === topicId);
+  // We need to fetch the level title (for breadcrumbs) and the topic data.
+  const level = useQuery(api.curriculum.getLevel, { levelId });
+  const topic = useQuery(api.curriculum.getTopic, { levelId, topicId });
+
+  if (level === undefined || topic === undefined) {
+    return (
+      <div className="container mx-auto max-w-4xl py-8 space-y-8 animate-pulse">
+        <div className="h-8 bg-muted rounded w-1/4"></div>
+        <div className="h-12 bg-muted rounded w-1/2"></div>
+        <div className="h-64 bg-muted rounded"></div>
+      </div>
+    );
+  }
 
   if (!level || !topic) {
     notFound();
   }
 
-  const allWords = topic.vocabulary.flatMap(v => v.words);
+  // Topic vocabulary in DB schema is an array of themes, just like before.
+  // But type safety might be tricky if schema says 'v.any()'. 
+  // Let's assume it matches the structure.
+
+  // flattened words for the vocabulary component
+  const allWords = (topic.vocabulary as any[]).flatMap(v => v.words);
 
 
   return (
@@ -103,7 +111,9 @@ export default async function TopicPage({ params }: TopicPageProps) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <SpacedRepetitionWrapper topic={topic} />
+            {/* SpacedRepetitionWrapper expects a 'topic' object. The DB object should be compatible if it has 'id', 'vocabulary' etc. */}
+            {/* We might need to cast if types don't align perfectly, but let's try. */}
+            <SpacedRepetitionWrapper topic={topic as any} />
           </CardContent>
         </Card>
       </div>

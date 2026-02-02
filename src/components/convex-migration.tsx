@@ -78,7 +78,7 @@ export function ConvexMigration() {
         }
     };
 
-    if (isCompleted) return null;
+    // if (isCompleted) return null;
 
     return (
         <div className="bg-indigo-600/10 border border-indigo-600/20 p-4 rounded-2xl mb-8 flex items-center justify-between">
