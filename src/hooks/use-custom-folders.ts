@@ -44,7 +44,9 @@ export function useCustomFolders() {
                     ...fullWordObject,
                     needsUpdate: !isWordStandardized(fullWordObject) // Use centralized logic
                 };
-            }) as (UserVocabularyWord & { needsUpdate?: boolean })[]
+            })
+                // Explicitly sort Newest First (descending addedAt)
+                .sort((a, b) => Math.floor(b.addedAt || 0) - Math.floor(a.addedAt || 0)) as (UserVocabularyWord & { needsUpdate?: boolean })[]
         }));
     }, [cloudFoldersRaw]);
 
