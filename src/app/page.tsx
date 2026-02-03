@@ -150,8 +150,7 @@ export default function DashboardPage() {
     return Math.round(totalProficiency / levelTopics.length);
   };
 
-  if (curriculumLoading || progressLoading) {
-    // Loading state
+  if (curriculumLoading || progressLoading || !isClient) {
     return (
       <div className="container mx-auto py-8">
         <div className="space-y-8 animate-pulse">

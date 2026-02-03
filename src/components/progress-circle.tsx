@@ -13,6 +13,11 @@ type ProgressCircleProps = {
 };
 
 export function ProgressCircle({ value }: ProgressCircleProps) {
+  const [mounted, setMounted] = (require('react')).useState(false);
+  (require('react')).useEffect(() => { setMounted(true) }, []);
+
+  if (!mounted) return <div className="h-28 w-28 rounded-full bg-muted animate-pulse" />;
+
   const data = [
     { name: 'Completed', value: value },
     { name: 'Remaining', value: 100 - value },
@@ -36,11 +41,11 @@ export function ProgressCircle({ value }: ProgressCircleProps) {
           >
             <Cell fill={COLORS.primary} />
             <Cell fill={COLORS.muted} />
-             <Label
-                value={`${value}%`}
-                position="center"
-                fill="hsl(var(--foreground))"
-                className="text-2xl font-bold font-headline"
+            <Label
+              value={`${value}%`}
+              position="center"
+              fill="hsl(var(--foreground))"
+              className="text-2xl font-bold font-headline"
             />
           </Pie>
         </PieChart>

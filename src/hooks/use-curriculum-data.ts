@@ -8,9 +8,11 @@ import { curriculum as staticCurriculum } from '@/lib/data';
 
 export function useCurriculumData() {
     const [syncEnabled, setSyncEnabled] = useState(false);
+    const [isInitialLoadDone, setIsInitialLoadDone] = useState(false);
 
     useEffect(() => {
         setSyncEnabled(storage.isCloudSyncEnabled());
+        setIsInitialLoadDone(true);
     }, []);
 
     const cloudLevels = useQuery(api.curriculum.getLevels, syncEnabled ? undefined : "skip");
@@ -24,16 +26,18 @@ export function useCurriculumData() {
     return {
         levels,
         allTopics,
-        isLoading: syncEnabled && (cloudLevels === undefined || cloudAllTopics === undefined),
+        isLoading: !isInitialLoadDone || (syncEnabled && (cloudLevels === undefined || cloudAllTopics === undefined)),
         syncEnabled
     };
 }
 
 export function useLevelData(levelId: string) {
     const [syncEnabled, setSyncEnabled] = useState(false);
+    const [isInitialLoadDone, setIsInitialLoadDone] = useState(false);
 
     useEffect(() => {
         setSyncEnabled(storage.isCloudSyncEnabled());
+        setIsInitialLoadDone(true);
     }, []);
 
     const cloudLevelResult = useQuery(api.curriculum.getLevel, syncEnabled ? { levelId } : "skip");
@@ -43,21 +47,25 @@ export function useLevelData(levelId: string) {
     const staticTopics = staticLevel?.topics || [];
 
     const level = syncEnabled && cloudLevelResult !== undefined ? cloudLevelResult : staticLevel;
-    const topics = syncEnabled && cloudTopicsResult !== undefined ? cloudTopicsResult : staticTopics;
+    const topics = syncEnabled && cloudTopicsResult !== undefined
+        ? cloudTopicsResult
+        : staticTopics.map(t => ({ ...t, levelId }));
 
     return {
         level,
         topics,
-        isLoading: syncEnabled && (cloudLevelResult === undefined || cloudTopicsResult === undefined),
+        isLoading: !isInitialLoadDone || (syncEnabled && (cloudLevelResult === undefined || cloudTopicsResult === undefined)),
         syncEnabled
     };
 }
 
 export function useTopicData(levelId: string, topicId: string) {
     const [syncEnabled, setSyncEnabled] = useState(false);
+    const [isInitialLoadDone, setIsInitialLoadDone] = useState(false);
 
     useEffect(() => {
         setSyncEnabled(storage.isCloudSyncEnabled());
+        setIsInitialLoadDone(true);
     }, []);
 
     const cloudLevelResult = useQuery(api.curriculum.getLevel, syncEnabled ? { levelId } : "skip");
@@ -67,12 +75,14 @@ export function useTopicData(levelId: string, topicId: string) {
     const staticTopic = staticLevel?.topics.find(t => t.id === topicId);
 
     const level = syncEnabled && cloudLevelResult !== undefined ? cloudLevelResult : staticLevel;
-    const topic = syncEnabled && cloudTopicResult !== undefined ? cloudTopicResult : staticTopic;
+    const topic = syncEnabled && cloudTopicResult !== undefined
+        ? cloudTopicResult
+        : (staticTopic ? { ...staticTopic, levelId } : undefined);
 
     return {
         level,
         topic,
-        isLoading: syncEnabled && (cloudLevelResult === undefined || cloudTopicResult === undefined),
+        isLoading: !isInitialLoadDone || (syncEnabled && (cloudLevelResult === undefined || cloudTopicResult === undefined)),
         syncEnabled
     };
 }

@@ -12,9 +12,13 @@ import { api } from '../../convex/_generated/api';
 import { useCurriculumData } from '@/hooks/use-curriculum-data';
 
 export function useUnifiedSRS() {
+    const [isInitialLoadDone, setIsInitialLoadDone] = (require('react')).useState(false);
+    (require('react')).useEffect(() => { setIsInitialLoadDone(true) }, []);
+
     const { progress } = useUserProgress();
     const { folders, updateWordInFolder } = useCustomFolders();
     const { srsMap, updateWordSRS, saveWordState, isLoading: isCurriculumLoading } = useCurriculumSRS();
+
 
     // Fetch all topics to gather words (safe fallback enabled)
     const { allTopics, isLoading: isTopicsLoading } = useCurriculumData();
@@ -86,7 +90,7 @@ export function useUnifiedSRS() {
     return {
         allWords,
         dueWords,
-        isLoading: isCurriculumLoading || isTopicsLoading,
+        isLoading: !isInitialLoadDone || isCurriculumLoading || isTopicsLoading,
         updateGlobalSRS
     };
 }
