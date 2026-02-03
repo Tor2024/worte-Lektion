@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { storage } from '@/lib/storage';
 
 export function useKnownWords() {
@@ -13,30 +13,32 @@ export function useKnownWords() {
   }, []);
 
   const addKnownWord = useCallback(async (word: string) => {
-    if (!localKnownWords.includes(word)) {
-      const nextWords = [...localKnownWords, word];
-      setLocalKnownWords(nextWords);
-      storage.setKnownWords(nextWords);
-    }
-  }, [localKnownWords]);
+    setLocalKnownWords(prev => {
+      if (prev.includes(word)) return prev;
+      const next = [...prev, word];
+      storage.setKnownWords(next);
+      return next;
+    });
+  }, []);
 
   const removeKnownWord = useCallback(async (word: string) => {
-    if (localKnownWords.includes(word)) {
-      const nextWords = localKnownWords.filter(w => w !== word);
-      setLocalKnownWords(nextWords);
-      storage.setKnownWords(nextWords);
-    }
-  }, [localKnownWords]);
+    setLocalKnownWords(prev => {
+      if (!prev.includes(word)) return prev;
+      const next = prev.filter(w => w !== word);
+      storage.setKnownWords(next);
+      return next;
+    });
+  }, []);
 
   const isKnown = useCallback((word: string) => {
     return localKnownWords.includes(word);
   }, [localKnownWords]);
 
-  return {
+  return useMemo(() => ({
     knownWords: localKnownWords,
     addKnownWord,
     removeKnownWord,
     isKnown,
     isLoading: !isInitialLoadDone
-  };
+  }), [localKnownWords, addKnownWord, removeKnownWord, isKnown, isInitialLoadDone]);
 }

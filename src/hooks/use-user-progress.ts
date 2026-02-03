@@ -1,15 +1,17 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { storage, ProgressData } from '@/lib/storage';
 
 // In-memory cache to sync across hook instances
 let progressState: ProgressData = storage.getProgress();
 const listeners = new Set<(progress: ProgressData) => void>();
 
-const emitChange = (newProgress: ProgressData) => {
+const emitChange = (newProgress: ProgressData, source: 'internal' | 'external') => {
     progressState = newProgress;
-    storage.setProgress(newProgress);
+    if (source === 'internal') {
+        storage.setProgress(newProgress);
+    }
     listeners.forEach(listener => listener(progressState));
 };
 
@@ -18,7 +20,9 @@ export function useUserProgress(initialTopicId?: string) {
     const [isInitialLoadDone, setIsInitialLoadDone] = useState(false);
 
     useEffect(() => {
-        setLocalProgress(storage.getProgress());
+        const initial = storage.getProgress();
+        setLocalProgress(initial);
+        progressState = initial;
         setIsInitialLoadDone(true);
     }, []);
 
@@ -27,8 +31,9 @@ export function useUserProgress(initialTopicId?: string) {
             if (event.key === 'userProgress' && event.newValue) {
                 try {
                     const newProgress = JSON.parse(event.newValue);
-                    progressState = newProgress;
-                    setLocalProgress(newProgress);
+                    if (JSON.stringify(newProgress) !== JSON.stringify(progressState)) {
+                        emitChange(newProgress, 'external');
+                    }
                 } catch (e) {
                     console.error("Failed to parse progress from storage", e);
                 }
@@ -36,7 +41,10 @@ export function useUserProgress(initialTopicId?: string) {
         };
 
         const handleInternalChange = (newProgress: ProgressData) => {
-            setLocalProgress(newProgress);
+            setLocalProgress(prev => {
+                if (JSON.stringify(prev) === JSON.stringify(newProgress)) return prev;
+                return newProgress;
+            });
         }
 
         listeners.add(handleInternalChange);
@@ -56,7 +64,7 @@ export function useUserProgress(initialTopicId?: string) {
 
         if (progressState[id] !== newProficiency) {
             const newProgress = { ...progressState, [id]: newProficiency };
-            emitChange(newProgress);
+            emitChange(newProgress, 'internal');
         }
     }, [initialTopicId]);
 
@@ -66,11 +74,11 @@ export function useUserProgress(initialTopicId?: string) {
 
     const proficiency = initialTopicId ? getTopicProficiency(initialTopicId) : 0;
 
-    return {
+    return useMemo(() => ({
         progress: localProgress,
         proficiency,
         setTopicProficiency,
         getTopicProficiency,
         isLoading: !isInitialLoadDone
-    };
+    }), [localProgress, proficiency, setTopicProficiency, getTopicProficiency, isInitialLoadDone]);
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { SM2State, INITIAL_SM2_STATE } from '@/lib/types';
 import { updateSM2State } from '@/lib/sm2';
 import { storage } from '@/lib/storage';
@@ -15,10 +15,12 @@ export function useCurriculumSRS() {
     }, []);
 
     const saveWordState = useCallback(async (germanWord: string, state: SM2State) => {
-        const newMap = { ...localSrsMap, [germanWord]: state };
-        setLocalSrsMap(newMap);
-        storage.setSRS(newMap);
-    }, [localSrsMap]);
+        setLocalSrsMap(prev => {
+            const next = { ...prev, [germanWord]: state };
+            storage.setSRS(next);
+            return next;
+        });
+    }, []);
 
     const getWordState = useCallback((germanWord: string): SM2State => {
         return localSrsMap[germanWord] || INITIAL_SM2_STATE;
@@ -31,11 +33,11 @@ export function useCurriculumSRS() {
         return nextState;
     }, [getWordState, saveWordState]);
 
-    return {
+    return useMemo(() => ({
         srsMap: localSrsMap,
         isLoading: !isInitialLoadDone,
         getWordState,
         updateWordSRS,
         saveWordState
-    };
+    }), [localSrsMap, isInitialLoadDone, getWordState, updateWordSRS, saveWordState]);
 }

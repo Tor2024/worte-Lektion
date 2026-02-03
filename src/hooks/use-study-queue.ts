@@ -10,13 +10,11 @@ export function useStudyQueue() {
     const [isInitialLoadDone, setIsInitialLoadDone] = useState(false);
     const { folders } = useCustomFolders();
 
-    // 1. Load initial queue from localStorage
     useEffect(() => {
         setLocalQueue(storage.getStudyQueue());
         setIsInitialLoadDone(true);
     }, []);
 
-    // Sync with folders: Add new words to queue if not present
     const syncWithFolders = useCallback(() => {
         if (!isInitialLoadDone) return;
         if (folders.length === 0) return;
@@ -57,7 +55,6 @@ export function useStudyQueue() {
         }
     }, [folders, isInitialLoadDone]);
 
-    // Auto-sync
     useEffect(() => {
         if (isInitialLoadDone && folders.length > 0) {
             syncWithFolders();
@@ -68,23 +65,15 @@ export function useStudyQueue() {
         if (localQueue.length === 0) return [];
 
         const LEVEL_PRIORITY: Record<string, number> = {
-            'Beruf': 100,
-            'B2': 90,
-            'B1': 80,
-            'A2': 70,
-            'A1': 60,
-            'A0': 50
+            'Beruf': 100, 'B2': 90, 'B1': 80, 'A2': 70, 'A1': 60, 'A0': 50
         };
 
         const now = Date.now();
-
-        // 1. Filter actionable items (due for review or entirely new)
         const actionableItems = localQueue.filter((item: StudyQueueItem) =>
             item.status === 'new' ||
             ((item.status === 'review' || item.status === 'leech') && item.nextReviewNum <= now)
         );
 
-        // 2. Group items by level to preserve hierarchy
         const levelGroups: Record<number, StudyQueueItem[]> = {};
         actionableItems.forEach((item: any) => {
             const level = item.word?.level ? LEVEL_PRIORITY[item.word.level as keyof typeof LEVEL_PRIORITY] : 0;
@@ -95,7 +84,6 @@ export function useStudyQueue() {
         const sortedLevels = Object.keys(levelGroups).map(Number).sort((a, b) => b - a);
         const finalSelection: StudyQueueItem[] = [];
 
-        // 3. Within each level, interleave types to ensure variety
         for (const level of sortedLevels) {
             const itemsInLevel = levelGroups[level];
             const typeGroups: Record<string, StudyQueueItem[]> = {};
@@ -107,7 +95,6 @@ export function useStudyQueue() {
             });
 
             Object.values(typeGroups).forEach((group: any) => group.sort(() => Math.random() - 0.5));
-
             const types = Object.keys(typeGroups);
             let hasItems = true;
             const groupIterators: Record<string, number> = {};
@@ -126,10 +113,8 @@ export function useStudyQueue() {
                 }
                 if (finalSelection.length >= limit) break;
             }
-
             if (finalSelection.length >= limit) break;
         }
-
         return finalSelection;
     }, [localQueue]);
 
@@ -143,41 +128,32 @@ export function useStudyQueue() {
 
         if (result === 'fail') {
             newMistakes++;
-            if (newMistakes >= 3) newStatus = 'leech';
-            else newStatus = 'learning';
+            newStatus = newMistakes >= 3 ? 'leech' : 'learning';
             nextDate = Date.now() + (1000 * 60 * 60 * 24);
         } else {
             newMistakes = 0;
             if (item.status === 'new') newStatus = 'learning';
             else if (item.status === 'learning') newStatus = 'review';
-
-            if (newStatus === 'review') {
-                nextDate = Date.now() + (1000 * 60 * 60 * 24 * 3);
-            } else {
-                nextDate = Date.now() + (1000 * 60 * 60 * 24);
-            }
+            nextDate = Date.now() + (1000 * 60 * 60 * 24 * (newStatus === 'review' ? 3 : 1));
         }
 
-        const updatedItem = {
-            ...item,
-            status: newStatus,
-            consecutiveMistakes: newMistakes,
-            nextReviewNum: nextDate
-        };
-
-        const nextQueue = localQueue.map((i: StudyQueueItem) => i.id === wordId ? updatedItem : i);
+        const nextQueue = localQueue.map((i: StudyQueueItem) => i.id === wordId ? { ...item, status: newStatus, consecutiveMistakes: newMistakes, nextReviewNum: nextDate } : i);
         setLocalQueue(nextQueue);
         storage.setStudyQueue(nextQueue);
     }, [localQueue]);
 
-    return {
+    const stats = useMemo(() => ({
+        totalDue: localQueue.filter((i: StudyQueueItem) => i.nextReviewNum <= Date.now() && i.status !== 'new').length,
+        totalNew: localQueue.filter((i: StudyQueueItem) => i.status === 'new').length,
+        totalLeeches: localQueue.filter((i: StudyQueueItem) => i.status === 'leech').length
+    }), [localQueue]);
+
+    return useMemo(() => ({
         queue: localQueue,
         isLoading: !isInitialLoadDone,
         getDailySession,
         updateItemStatus,
         syncWithFolders,
-        totalDue: localQueue.filter((i: StudyQueueItem) => i.nextReviewNum <= Date.now() && i.status !== 'new').length,
-        totalNew: localQueue.filter((i: StudyQueueItem) => i.status === 'new').length,
-        totalLeeches: localQueue.filter((i: StudyQueueItem) => i.status === 'leech').length
-    };
+        ...stats
+    }), [localQueue, isInitialLoadDone, getDailySession, updateItemStatus, syncWithFolders, stats]);
 }

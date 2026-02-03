@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { CustomFolder, UserVocabularyWord } from '@/lib/types';
 import { storage } from '@/lib/storage';
 
@@ -11,73 +11,84 @@ export function useCustomFolders() {
         setIsInitialLoadDone(true);
     }, []);
 
+    useEffect(() => {
+        const handleStorageChange = (event: StorageEvent) => {
+            if (event.key === 'deutsch-learning-custom-folders' && event.newValue) {
+                try {
+                    const next = JSON.parse(event.newValue);
+                    // Avoid identity change if values are same
+                    setLocalFolders(prev => {
+                        if (JSON.stringify(prev) === JSON.stringify(next)) return prev;
+                        return next;
+                    });
+                } catch (e) {
+                    console.error("Failed to sync folders from storage", e);
+                }
+            }
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
+    }, []);
+
     const createFolder = useCallback(async (name: string) => {
-        const newFolder: CustomFolder = {
+        const current = storage.getCustomFolders();
+        const nextFolders = [...current, {
             id: Math.random().toString(36).substr(2, 9),
             name,
             words: [],
             createdAt: Date.now(),
             updatedAt: Date.now()
-        };
-        const nextFolders = [...localFolders, newFolder];
+        }];
         setLocalFolders(nextFolders);
         storage.setCustomFolders(nextFolders);
-        return newFolder.id;
-    }, [localFolders]);
+        return nextFolders[nextFolders.length - 1].id;
+    }, []);
 
     const deleteFolder = useCallback(async (id: string) => {
-        const nextFolders = localFolders.filter(f => f.id !== id);
+        const nextFolders = storage.getCustomFolders().filter((f: any) => f.id !== id);
         setLocalFolders(nextFolders);
         storage.setCustomFolders(nextFolders);
-    }, [localFolders]);
+    }, []);
 
     const getFolder = useCallback((id: string) => {
         return localFolders.find(f => f.id === id);
     }, [localFolders]);
 
     const addWordToFolder = useCallback(async (folderId: string, userWord: UserVocabularyWord) => {
-        const nextFolders = localFolders.map(f => {
+        const nextFolders = storage.getCustomFolders().map((f: any) => {
             if (f.id === folderId) {
-                return {
-                    ...f,
-                    words: [userWord, ...f.words]
-                };
+                return { ...f, words: [userWord, ...f.words] };
             }
             return f;
         });
         setLocalFolders(nextFolders);
         storage.setCustomFolders(nextFolders);
-    }, [localFolders]);
+    }, []);
 
     const updateWordInFolder = useCallback(async (folderId: string, updatedWord: UserVocabularyWord) => {
-        const nextFolders = localFolders.map(f => {
+        const nextFolders = storage.getCustomFolders().map((f: any) => {
             if (f.id === folderId) {
-                return {
-                    ...f,
-                    words: f.words.map(w => w.id === updatedWord.id ? updatedWord : w)
-                };
+                return { ...f, words: f.words.map((w: any) => w.id === updatedWord.id ? updatedWord : w) };
             }
             return f;
         });
         setLocalFolders(nextFolders);
         storage.setCustomFolders(nextFolders);
-    }, [localFolders]);
+    }, []);
 
     const removeWordFromFolder = useCallback(async (folderId: string, wordId: string) => {
-        const nextFolders = localFolders.map(f => {
+        const nextFolders = storage.getCustomFolders().map((f: any) => {
             if (f.id === folderId) {
-                return {
-                    ...f,
-                    words: f.words.filter(w => w.id !== wordId)
-                };
+                return { ...f, words: f.words.filter((w: any) => w.id !== wordId) };
             }
             return f;
         });
         setLocalFolders(nextFolders);
         storage.setCustomFolders(nextFolders);
-    }, [localFolders]);
+    }, []);
 
-    return {
+    return useMemo(() => ({
         folders: localFolders,
         isLoading: !isInitialLoadDone,
         createFolder,
@@ -86,5 +97,5 @@ export function useCustomFolders() {
         addWordToFolder,
         updateWordInFolder,
         removeWordFromFolder
-    };
+    }), [localFolders, isInitialLoadDone, createFolder, deleteFolder, getFolder, addWordToFolder, updateWordInFolder, removeWordFromFolder]);
 }

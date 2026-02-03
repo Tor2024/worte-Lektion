@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { curriculum as staticCurriculum } from '@/lib/data';
 
 export function useCurriculumData() {
@@ -11,7 +11,9 @@ export function useCurriculumData() {
     }, []);
 
     const levels = staticCurriculum.levels;
-    const allTopics = staticCurriculum.levels.flatMap(l => l.topics.map(t => ({ ...t, levelId: l.id })));
+    const allTopics = useMemo(() => {
+        return staticCurriculum.levels.flatMap(l => l.topics.map(t => ({ ...t, levelId: l.id })));
+    }, []);
 
     return {
         levels,
@@ -28,12 +30,15 @@ export function useLevelData(levelId: string) {
         setIsInitialLoadDone(true);
     }, []);
 
-    const staticLevel = staticCurriculum.levels.find(l => l.id === levelId);
-    const staticTopics = staticLevel?.topics || [];
+    const staticLevel = useMemo(() => staticCurriculum.levels.find(l => l.id === levelId), [levelId]);
+    const staticTopics = useMemo(() => {
+        const topics = staticLevel?.topics || [];
+        return topics.map(t => ({ ...t, levelId }));
+    }, [staticLevel, levelId]);
 
     return {
         level: staticLevel,
-        topics: staticTopics.map(t => ({ ...t, levelId })),
+        topics: staticTopics,
         isLoading: !isInitialLoadDone,
         syncEnabled: false
     };
@@ -46,12 +51,15 @@ export function useTopicData(levelId: string, topicId: string) {
         setIsInitialLoadDone(true);
     }, []);
 
-    const staticLevel = staticCurriculum.levels.find(l => l.id === levelId);
-    const staticTopic = staticLevel?.topics.find(t => t.id === topicId);
+    const staticLevel = useMemo(() => staticCurriculum.levels.find(l => l.id === levelId), [levelId]);
+    const staticTopic = useMemo(() => {
+        const topic = staticLevel?.topics.find(t => t.id === topicId);
+        return topic ? { ...topic, levelId } : undefined;
+    }, [staticLevel, topicId, levelId]);
 
     return {
         level: staticLevel,
-        topic: staticTopic ? { ...staticTopic, levelId } : undefined,
+        topic: staticTopic,
         isLoading: !isInitialLoadDone,
         syncEnabled: false
     };
