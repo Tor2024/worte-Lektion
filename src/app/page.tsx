@@ -183,7 +183,7 @@ export default function DashboardPage() {
           <BrainCircuit className="h-5 w-5 text-primary" />
           <h2 className="text-xl font-bold font-headline uppercase tracking-tight">Карта нейронных связей</h2>
         </div>
-        <NeuralMapWrapper />
+        {isClient && <NeuralMapWrapper />}
       </section>
 
 

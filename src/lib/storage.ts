@@ -6,6 +6,8 @@ const KEYS = {
     SRS: 'deutsch-curriculum-srs-v1',
     CUSTOM_FOLDERS: 'deutsch-learning-custom-folders',
     STUDY_QUEUE: 'deutsch-learning-study-queue-v1',
+    KNOWN_WORDS: 'knownWords',
+    EXAM_TEXTS: 'custom_exam_texts',
 } as const;
 
 export type ProgressData = { [key: string]: number };
@@ -93,6 +95,42 @@ export const storage = {
             window.localStorage.setItem(KEYS.STUDY_QUEUE, JSON.stringify(data));
         } catch (e) {
             console.warn('LS Write Error (Queue)', e);
+        }
+    },
+    getKnownWords: (): string[] => {
+        if (typeof window === 'undefined') return [];
+        try {
+            const item = window.localStorage.getItem(KEYS.KNOWN_WORDS);
+            return item ? JSON.parse(item) : [];
+        } catch (e) {
+            console.warn('LS Read Error (KnownWords)', e);
+            return [];
+        }
+    },
+    setKnownWords: (words: string[]) => {
+        if (typeof window === 'undefined') return;
+        try {
+            window.localStorage.setItem(KEYS.KNOWN_WORDS, JSON.stringify(words));
+        } catch (e) {
+            console.warn('LS Write Error (KnownWords)', e);
+        }
+    },
+    getExamTexts: (): any[] => {
+        if (typeof window === 'undefined') return [];
+        try {
+            const item = window.localStorage.getItem(KEYS.EXAM_TEXTS);
+            return item ? JSON.parse(item) : [];
+        } catch (e) {
+            console.warn('LS Read Error (ExamTexts)', e);
+            return [];
+        }
+    },
+    setExamTexts: (texts: any[]) => {
+        if (typeof window === 'undefined') return;
+        try {
+            window.localStorage.setItem(KEYS.EXAM_TEXTS, JSON.stringify(texts));
+        } catch (e) {
+            console.warn('LS Write Error (ExamTexts)', e);
         }
     }
 };

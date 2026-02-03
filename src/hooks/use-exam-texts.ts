@@ -24,9 +24,12 @@ export function useExamTexts() {
     const userId = "anonymous";
     const [localCustomTexts, setLocalCustomTexts] = useState<ExamText[]>([]);
     const [syncEnabled, setSyncEnabled] = useState(false);
+    const [isInitialLoadDone, setIsInitialLoadDone] = useState(false);
 
     useEffect(() => {
+        setLocalCustomTexts(storage.getExamTexts());
         setSyncEnabled(storage.isCloudSyncEnabled());
+        setIsInitialLoadDone(true);
     }, []);
 
     // 1. Convex Hooks
@@ -37,17 +40,7 @@ export function useExamTexts() {
     const addTextMutation = useMutation(api.examTexts.addExamText);
     const removeTextMutation = useMutation(api.examTexts.deleteExamText);
 
-    // 2. Load from localStorage as initial fallback
-    useEffect(() => {
-        const saved = localStorage.getItem('custom_exam_texts');
-        if (saved) {
-            try {
-                setLocalCustomTexts(JSON.parse(saved));
-            } catch (e) {
-                console.error('Failed to parse custom texts', e);
-            }
-        }
-    }, []);
+
 
     // 3. Map Cloud Data
     const customTexts = useMemo(() => {
@@ -66,16 +59,7 @@ export function useExamTexts() {
     // 4. Sync Cloud -> Local
     useEffect(() => {
         if (cloudTextsRaw) {
-            const mapped = cloudTextsRaw.map((t: any) => ({
-                id: t._id,
-                title: t.title,
-                description: t.description,
-                level: t.level,
-                content: t.content,
-                isCustom: t.isCustom,
-                createdAt: t.createdAt
-            }));
-            localStorage.setItem('custom_exam_texts', JSON.stringify(mapped));
+            storage.setExamTexts(cloudTextsRaw);
         }
     }, [cloudTextsRaw]);
 
@@ -124,7 +108,7 @@ export function useExamTexts() {
     return {
         allTexts: [...BUILT_IN_TEXTS, ...customTexts],
         customTexts,
-        isLoading: syncEnabled && cloudTextsRaw === undefined,
+        isLoading: !isInitialLoadDone || (syncEnabled && cloudTextsRaw === undefined),
         addCustomText,
         removeCustomText,
         getExamText

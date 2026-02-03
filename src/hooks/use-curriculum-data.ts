@@ -19,7 +19,7 @@ export function useCurriculumData() {
     const levels = syncEnabled && cloudLevels !== undefined ? cloudLevels : staticCurriculum.levels;
     const allTopics = syncEnabled && cloudAllTopics !== undefined
         ? cloudAllTopics
-        : staticCurriculum.levels.flatMap(l => l.topics);
+        : staticCurriculum.levels.flatMap(l => l.topics.map(t => ({ ...t, levelId: l.id })));
 
     return {
         levels,

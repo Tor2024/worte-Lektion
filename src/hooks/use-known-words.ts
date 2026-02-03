@@ -9,9 +9,12 @@ export function useKnownWords() {
   const userId = "anonymous";
   const [localKnownWords, setLocalKnownWords] = useState<string[]>([]);
   const [syncEnabled, setSyncEnabled] = useState(false);
+  const [isInitialLoadDone, setIsInitialLoadDone] = useState(false);
 
   useEffect(() => {
+    setLocalKnownWords(storage.getKnownWords());
     setSyncEnabled(storage.isCloudSyncEnabled());
+    setIsInitialLoadDone(true);
   }, []);
 
   // 1. Convex Hooks
@@ -22,15 +25,7 @@ export function useKnownWords() {
   const addWordMutation = useMutation(api.knownWords.addKnownWord);
   const removeWordMutation = useMutation(api.knownWords.removeKnownWord);
 
-  // 2. Load from localStorage as initial fallback
-  useEffect(() => {
-    try {
-      const item = window.localStorage.getItem(KNOWN_WORDS_KEY);
-      if (item) setLocalKnownWords(JSON.parse(item));
-    } catch (e) {
-      console.error('Error reading known words from localStorage', e);
-    }
-  }, []);
+
 
   // 3. Map Cloud Data
   const knownWords = useMemo(() => {
@@ -40,7 +35,7 @@ export function useKnownWords() {
   // 4. Sync Cloud -> Local
   useEffect(() => {
     if (cloudWordsRaw) {
-      window.localStorage.setItem(KNOWN_WORDS_KEY, JSON.stringify(cloudWordsRaw));
+      storage.setKnownWords(cloudWordsRaw);
     }
   }, [cloudWordsRaw]);
 
@@ -80,6 +75,6 @@ export function useKnownWords() {
     addKnownWord,
     removeKnownWord,
     isKnown,
-    isLoading: syncEnabled && cloudWordsRaw === undefined
+    isLoading: !isInitialLoadDone || (syncEnabled && cloudWordsRaw === undefined)
   };
 }
