@@ -9,13 +9,15 @@ import { UserVocabularyWord, SM2State, INITIAL_SM2_STATE, VocabularyWord } from 
 import { useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 
+import { useCurriculumData } from '@/hooks/use-curriculum-data';
+
 export function useUnifiedSRS() {
     const { progress } = useUserProgress();
     const { folders, updateWordInFolder } = useCustomFolders();
     const { srsMap, updateWordSRS, saveWordState, isLoading: isCurriculumLoading } = useCurriculumSRS();
 
-    // Fetch all topics to gather words
-    const allTopics = useQuery(api.curriculum.getAllTopics);
+    // Fetch all topics to gather words (safe fallback enabled)
+    const { allTopics, isLoading: isTopicsLoading } = useCurriculumData();
 
     const allWords = useMemo(() => {
         if (!allTopics) return []; // Wait for data
@@ -24,10 +26,10 @@ export function useUnifiedSRS() {
         const seenCurriculum = new Set<string>();
 
         // 1. Gather words from Curriculum topics that have been started
-        allTopics.forEach(topic => {
+        allTopics.forEach((topic: any) => {
             if (progress[topic.id] > 0) {
                 // topic.vocabulary is typed as 'any' in schema, cast to array of themes
-                (topic.vocabulary as any[]).forEach(theme => {
+                (topic.vocabulary as any[]).forEach((theme: any) => {
                     theme.words.forEach((vocabWord: any) => {
                         if (vocabWord && vocabWord.german && !seenCurriculum.has(vocabWord.german)) {
                             const state = srsMap[vocabWord.german] || INITIAL_SM2_STATE;
@@ -84,7 +86,7 @@ export function useUnifiedSRS() {
     return {
         allWords,
         dueWords,
-        isLoading: isCurriculumLoading || allTopics === undefined,
+        isLoading: isCurriculumLoading || isTopicsLoading,
         updateGlobalSRS
     };
 }

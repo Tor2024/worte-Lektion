@@ -15,19 +15,16 @@ import Link from 'next/link';
 import { useUserProgress } from '@/hooks/use-user-progress';
 import { cn } from '@/lib/utils';
 import { useQuery } from 'convex/react';
-import { api } from '../../../convex/_generated/api';
-
+import { useLevelData } from '@/hooks/use-curriculum-data';
 
 export default function LevelPage() {
   const params = useParams<{ level: string }>();
   const levelId = params.level;
 
-  const level = useQuery(api.curriculum.getLevel, { levelId });
-  const topics = useQuery(api.curriculum.getTopics, { levelId });
-
+  const { level, topics, isLoading } = useLevelData(levelId);
   const { getTopicProficiency } = useUserProgress();
 
-  if (level === undefined || topics === undefined) {
+  if (isLoading) {
     return (
       <div className="container mx-auto py-8 space-y-8 animate-pulse">
         <div className="h-8 bg-muted rounded w-1/4"></div>
@@ -41,7 +38,7 @@ export default function LevelPage() {
     )
   }
 
-  if (level === null) {
+  if (!level) {
     notFound();
   }
 

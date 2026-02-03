@@ -16,12 +16,17 @@ export function ConvexMigration() {
     // Key to track migration status in localStorage itself
     const MIGRATION_KEY = "convex-migration-v2-status";
 
+    const [syncEnabled, setSyncEnabled] = useState(false);
+
     useEffect(() => {
         if (typeof window !== "undefined") {
+            setSyncEnabled(storage.isCloudSyncEnabled());
             const status = window.localStorage.getItem(MIGRATION_KEY);
             if (status === "completed") setIsCompleted(true);
         }
     }, []);
+
+    if (!syncEnabled) return null;
 
     const handleMigration = async () => {
         setIsMigrating(true);

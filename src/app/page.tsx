@@ -29,6 +29,9 @@ import { NeuralMap } from '@/components/neural-map';
 import { ConvexMigration } from '@/components/convex-migration';
 import { useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
+import { storage } from '@/lib/storage';
+import { curriculum as staticCurriculum } from '@/lib/data';
+import { useCurriculumData } from '@/hooks/use-curriculum-data';
 
 function DailySessionWidget() {
   const { totalDue, totalNew, totalLeeches, isLoading } = useStudyQueue();
@@ -93,12 +96,9 @@ function DailySessionWidget() {
 // Helper component to separate data fetching logic
 export default function DashboardPage() {
   const { progress, getTopicProficiency } = useUserProgress();
+  const { levels, allTopics, isLoading: curriculumLoading } = useCurriculumData();
   const [isClient, setIsClient] = useState(false);
   const [allLearnedWords, setAllLearnedWords] = useState<VocabularyWord[]>([]);
-
-  // Fetch data
-  const levels = useQuery(api.curriculum.getLevels);
-  const allTopics = useQuery(api.curriculum.getAllTopics);
 
   useEffect(() => {
     setIsClient(true);
@@ -110,10 +110,10 @@ export default function DashboardPage() {
       const seenWords = new Set<string>();
 
       // Add words from topics with progress
-      allTopics.forEach(topic => {
+      allTopics.forEach((topic: any) => {
         if (progress[topic.id] > 0) {
           // Note: topic.vocabulary is typed as 'any' in schema but we know it matches VocabularyTheme[]
-          (topic.vocabulary as any[]).forEach(theme => {
+          (topic.vocabulary as any[]).forEach((theme: any) => {
             theme.words.forEach((word: any) => {
               if (word && word.german && !seenWords.has(word.german)) {
                 wordsFromTopics.push(word);
@@ -140,18 +140,18 @@ export default function DashboardPage() {
     if (!allTopics) return 0;
 
     // Filter topics for this level
-    const levelTopics = allTopics.filter(t => t.levelId === levelId);
+    const levelTopics = allTopics.filter((t: any) => t.levelId === levelId);
 
     if (levelTopics.length === 0) {
       return 0;
     }
-    const totalProficiency = levelTopics.reduce((sum, topic) => {
+    const totalProficiency = levelTopics.reduce((sum: number, topic: any) => {
       return sum + (getTopicProficiency(topic.id) || 0);
     }, 0);
     return Math.round(totalProficiency / levelTopics.length);
   };
 
-  if (levels === undefined || allTopics === undefined) {
+  if (curriculumLoading) {
     // Loading state
     return (
       <div className="container mx-auto py-8">
@@ -256,7 +256,7 @@ export default function DashboardPage() {
 
       <h2 className="text-3xl font-bold font-headline mb-6 text-center">Уровни обучения</h2>
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-        {levels.map((level) => {
+        {levels.map((level: any) => {
           const levelImage = getLevelImage(level.id);
           const levelProgress = isClient ? calculateLevelProgress(level.id) : 0;
           return (

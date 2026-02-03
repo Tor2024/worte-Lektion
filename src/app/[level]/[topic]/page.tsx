@@ -8,23 +8,18 @@ import { Book, Sparkles, Star } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { SpacedRepetitionWrapper } from '@/components/spaced-repetition-wrapper';
+import { useTopicData } from '@/hooks/use-curriculum-data';
 import { TopicVocabulary } from '@/components/topic-vocabulary';
 import { AiTheoryExpander } from '@/components/ai-theory-expander';
-import { useQuery } from 'convex/react';
-import { api } from '../../../../convex/_generated/api';
-
-// No more generateStaticParams needed for dynamic client fetching
 
 export default function TopicPage() {
   const params = useParams<{ level: string; topic: string }>();
   const levelId = params.level;
   const topicId = params.topic;
 
-  // We need to fetch the level title (for breadcrumbs) and the topic data.
-  const level = useQuery(api.curriculum.getLevel, { levelId });
-  const topic = useQuery(api.curriculum.getTopic, { levelId, topicId });
+  const { level, topic, isLoading } = useTopicData(levelId, topicId);
 
-  if (level === undefined || topic === undefined) {
+  if (isLoading) {
     return (
       <div className="container mx-auto max-w-4xl py-8 space-y-8 animate-pulse">
         <div className="h-8 bg-muted rounded w-1/4"></div>

@@ -84,7 +84,7 @@ export function useCurriculumSRS() {
 
     return {
         srsMap: localSrsMap,
-        isLoading: cloudSrsRecords === undefined,
+        isLoading: syncEnabled && cloudSrsRecords === undefined,
         getWordState,
         updateWordSRS,
         saveWordState
