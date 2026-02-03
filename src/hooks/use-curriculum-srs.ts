@@ -11,10 +11,12 @@ import { api } from '../../convex/_generated/api';
 export function useCurriculumSRS() {
     const [localSrsMap, setLocalSrsMap] = useState<Record<string, SM2State>>({});
     const [syncEnabled, setSyncEnabled] = useState(false);
+    const [isInitialLoadDone, setIsInitialLoadDone] = useState(false);
 
     useEffect(() => {
         setLocalSrsMap(storage.getSRS());
         setSyncEnabled(storage.isCloudSyncEnabled());
+        setIsInitialLoadDone(true);
     }, []);
 
     const userId = "anonymous";
@@ -90,7 +92,7 @@ export function useCurriculumSRS() {
 
     return {
         srsMap: localSrsMap,
-        isLoading: syncEnabled && cloudSrsRecords === undefined,
+        isLoading: !isInitialLoadDone || (syncEnabled && cloudSrsRecords === undefined),
         getWordState,
         updateWordSRS,
         saveWordState

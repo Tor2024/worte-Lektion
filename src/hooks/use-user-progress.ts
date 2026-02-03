@@ -19,10 +19,12 @@ const emitChange = (newProgress: ProgressData) => {
 export function useUserProgress(initialTopicId?: string) {
     const [localProgress, setLocalProgress] = useState<ProgressData>({});
     const [syncEnabled, setSyncEnabled] = useState(false);
+    const [isInitialLoadDone, setIsInitialLoadDone] = useState(false);
 
     useEffect(() => {
         setLocalProgress(storage.getProgress());
         setSyncEnabled(storage.isCloudSyncEnabled());
+        setIsInitialLoadDone(true);
     }, []);
 
     const userId = "anonymous"; // Future-proof for auth
@@ -115,6 +117,12 @@ export function useUserProgress(initialTopicId?: string) {
 
     const proficiency = initialTopicId ? getTopicProficiency(initialTopicId) : 0;
 
-    return { progress: localProgress, proficiency, setTopicProficiency, getTopicProficiency };
+    return {
+        progress: localProgress,
+        proficiency,
+        setTopicProficiency,
+        getTopicProficiency,
+        isLoading: !isInitialLoadDone || (syncEnabled && cloudProgressRecords === undefined)
+    };
 }
 

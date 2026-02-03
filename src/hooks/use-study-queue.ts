@@ -9,9 +9,11 @@ import { api } from '../../convex/_generated/api';
 export function useStudyQueue() {
     const userId = "anonymous";
     const [syncEnabled, setSyncEnabled] = useState(false);
+    const [isInitialLoadDone, setIsInitialLoadDone] = useState(false);
 
     useEffect(() => {
         setSyncEnabled(storage.isCloudSyncEnabled());
+        setIsInitialLoadDone(true);
     }, []);
 
     const [localQueue, setLocalQueue] = useState<StudyQueueItem[]>([]);
@@ -227,7 +229,7 @@ export function useStudyQueue() {
 
     return {
         queue,
-        isLoading: cloudQueueRaw === undefined,
+        isLoading: !isInitialLoadDone || (syncEnabled && cloudQueueRaw === undefined),
         getDailySession,
         updateItemStatus,
         syncWithFolders,

@@ -94,7 +94,7 @@ function DailySessionWidget() {
 // Helper component to separate data fetching logic
 // Helper component to separate data fetching logic
 export default function DashboardPage() {
-  const { progress, getTopicProficiency } = useUserProgress();
+  const { progress, getTopicProficiency, isLoading: progressLoading } = useUserProgress();
   const { levels, allTopics, isLoading: curriculumLoading } = useCurriculumData();
   const [isClient, setIsClient] = useState(false);
   const [allLearnedWords, setAllLearnedWords] = useState<VocabularyWord[]>([]);
@@ -150,7 +150,7 @@ export default function DashboardPage() {
     return Math.round(totalProficiency / levelTopics.length);
   };
 
-  if (curriculumLoading) {
+  if (curriculumLoading || progressLoading) {
     // Loading state
     return (
       <div className="container mx-auto py-8">

@@ -24,8 +24,9 @@ import { Label } from "@/components/ui/label";
 
 export default function FolderDetailsPage({ params }: { params: Promise<{ folderId: string }> }) {
     const { folderId } = use(params);
-    const { getFolder, addWordToFolder, removeWordFromFolder, updateWordInFolder } = useCustomFolders();
+    const { getFolder, addWordToFolder, removeWordFromFolder, updateWordInFolder, isLoading } = useCustomFolders();
     const folder = getFolder(folderId);
+
     const router = useRouter();
 
     const [newWordInput, setNewWordInput] = useState('');
@@ -41,6 +42,14 @@ export default function FolderDetailsPage({ params }: { params: Promise<{ folder
     // Batch Refresh State
     const [isBatchRefreshing, setIsBatchRefreshing] = useState(false);
     const [refreshProgress, setRefreshProgress] = useState('');
+
+    if (isLoading) {
+        return (
+            <div className="flex justify-center items-center h-[60vh]">
+                <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            </div>
+        );
+    }
 
     const handleAddWord = async (e: React.FormEvent) => {
         e.preventDefault();

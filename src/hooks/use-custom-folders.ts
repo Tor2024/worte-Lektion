@@ -9,10 +9,12 @@ import { isWordStandardized } from '@/lib/german-utils';
 export function useCustomFolders() {
     const [localFolders, setLocalFolders] = useState<CustomFolder[]>([]);
     const [syncEnabled, setSyncEnabled] = useState(false);
+    const [isInitialLoadDone, setIsInitialLoadDone] = useState(false);
 
     useEffect(() => {
         setLocalFolders(storage.getCustomFolders());
         setSyncEnabled(storage.isCloudSyncEnabled());
+        setIsInitialLoadDone(true);
     }, []);
 
     const userId = "anonymous";
@@ -197,7 +199,7 @@ export function useCustomFolders() {
 
     return {
         folders: localFolders,
-        isLoading: cloudFoldersRaw === undefined,
+        isLoading: !isInitialLoadDone || (syncEnabled && cloudFoldersRaw === undefined),
         createFolder,
         deleteFolder,
         getFolder,
