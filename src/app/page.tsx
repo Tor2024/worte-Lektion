@@ -26,7 +26,6 @@ import { commonWords } from '@/lib/common-words';
 import { useStudyQueue } from '@/hooks/use-study-queue';
 import { useUnifiedSRS } from '@/hooks/use-unified-srs';
 import { NeuralMap } from '@/components/neural-map';
-import { ConvexMigration } from '@/components/convex-migration';
 import { useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { storage } from '@/lib/storage';
@@ -187,7 +186,6 @@ export default function DashboardPage() {
         <NeuralMapWrapper />
       </section>
 
-      <ConvexMigration />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16 items-stretch">
         <GlobalVocabularyTrainer words={allLearnedWords} />

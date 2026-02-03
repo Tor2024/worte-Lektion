@@ -9,8 +9,8 @@ export const supabase = createClient(
     supabaseAnonKey || 'placeholder'
 );
 
-// Helper to check if cloud sync is actually possible
-export const isCloudSyncEnabled = !!(supabaseUrl && supabaseAnonKey && supabaseUrl.startsWith('https://'));
+// Helper to check if cloud sync is actually possible - DISABLED BY USER REQUEST
+export const isCloudSyncEnabled = false;
 
 if (!isCloudSyncEnabled) {
     if (typeof window !== 'undefined') {
