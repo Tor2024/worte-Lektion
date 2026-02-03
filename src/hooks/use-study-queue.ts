@@ -8,7 +8,12 @@ import { api } from '../../convex/_generated/api';
 
 export function useStudyQueue() {
     const userId = "anonymous";
-    const syncEnabled = storage.isCloudSyncEnabled();
+    const [syncEnabled, setSyncEnabled] = useState(false);
+
+    useEffect(() => {
+        setSyncEnabled(storage.isCloudSyncEnabled());
+    }, []);
+
     const [localQueue, setLocalQueue] = useState<StudyQueueItem[]>([]);
     const { folders } = useCustomFolders();
 

@@ -5,6 +5,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { ExamText } from '@/lib/types';
+import { storage } from '@/lib/storage';
 
 const BUILT_IN_TEXTS: ExamText[] = [
     {
@@ -22,9 +23,17 @@ Das Bewerbungsgespräch kann entweder persönlich или online stattfinden. Dab
 export function useExamTexts() {
     const userId = "anonymous";
     const [localCustomTexts, setLocalCustomTexts] = useState<ExamText[]>([]);
+    const [syncEnabled, setSyncEnabled] = useState(false);
+
+    useEffect(() => {
+        setSyncEnabled(storage.isCloudSyncEnabled());
+    }, []);
 
     // 1. Convex Hooks
-    const cloudTextsRaw = useQuery(api.examTexts.getExamTexts, { userId });
+    const cloudTextsRaw = useQuery(
+        api.examTexts.getExamTexts,
+        syncEnabled ? { userId } : "skip"
+    );
     const addTextMutation = useMutation(api.examTexts.addExamText);
     const removeTextMutation = useMutation(api.examTexts.deleteExamText);
 
@@ -77,30 +86,34 @@ export function useExamTexts() {
         setLocalCustomTexts(prev => [...prev, newText]);
 
         try {
-            await addTextMutation({
-                userId,
-                title: text.title,
-                description: text.description || "",
-                level: text.level || "B2",
-                content: text.content || "",
-                isCustom: true,
-            });
+            if (syncEnabled) {
+                await addTextMutation({
+                    userId,
+                    title: text.title,
+                    description: text.description || "",
+                    level: text.level || "B2",
+                    content: text.content || "",
+                    isCustom: true,
+                });
+            }
         } catch (e) {
             console.error("Failed to add exam text to cloud:", e);
         }
         return newText;
-    }, [addTextMutation, userId]);
+    }, [addTextMutation, userId, syncEnabled]);
 
     const removeCustomText = useCallback(async (id: string) => {
         // Optimistic update
         setLocalCustomTexts(prev => prev.filter(t => t.id !== id));
 
         try {
-            await removeTextMutation({ id: id as any }); // Convex IDs are used here
+            if (syncEnabled) {
+                await removeTextMutation({ id: id as any }); // Convex IDs are used here
+            }
         } catch (e) {
             console.error("Failed to remove exam text from cloud:", e);
         }
-    }, [removeTextMutation]);
+    }, [removeTextMutation, syncEnabled]);
 
     const getExamText = useCallback((id: string): ExamText | undefined => {
         const builtIn = BUILT_IN_TEXTS.find(t => t.id === id);
@@ -111,7 +124,7 @@ export function useExamTexts() {
     return {
         allTexts: [...BUILT_IN_TEXTS, ...customTexts],
         customTexts,
-        isLoading: cloudTextsRaw === undefined,
+        isLoading: syncEnabled && cloudTextsRaw === undefined,
         addCustomText,
         removeCustomText,
         getExamText

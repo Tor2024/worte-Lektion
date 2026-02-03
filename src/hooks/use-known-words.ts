@@ -1,16 +1,24 @@
-
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
+import { storage } from '@/lib/storage';
 
 const KNOWN_WORDS_KEY = 'knownWords';
 
 export function useKnownWords() {
   const userId = "anonymous";
   const [localKnownWords, setLocalKnownWords] = useState<string[]>([]);
+  const [syncEnabled, setSyncEnabled] = useState(false);
+
+  useEffect(() => {
+    setSyncEnabled(storage.isCloudSyncEnabled());
+  }, []);
 
   // 1. Convex Hooks
-  const cloudWordsRaw = useQuery(api.knownWords.getKnownWords, { userId });
+  const cloudWordsRaw = useQuery(
+    api.knownWords.getKnownWords,
+    syncEnabled ? { userId } : "skip"
+  );
   const addWordMutation = useMutation(api.knownWords.addKnownWord);
   const removeWordMutation = useMutation(api.knownWords.removeKnownWord);
 
@@ -41,27 +49,37 @@ export function useKnownWords() {
       // Optimistic update
       setLocalKnownWords(prev => [...prev, word]);
       try {
-        await addWordMutation({ userId, word });
+        if (syncEnabled) {
+          await addWordMutation({ userId, word });
+        }
       } catch (e) {
         console.error("Failed to add known word to cloud:", e);
       }
     }
-  }, [knownWords, addWordMutation, userId]);
+  }, [knownWords, addWordMutation, userId, syncEnabled]);
 
   const removeKnownWord = useCallback(async (word: string) => {
     if (knownWords.includes(word)) {
       setLocalKnownWords(prev => prev.filter(w => w !== word));
       try {
-        await removeWordMutation({ userId, word });
+        if (syncEnabled) {
+          await removeWordMutation({ userId, word });
+        }
       } catch (e) {
         console.error("Failed to remove known word from cloud:", e);
       }
     }
-  }, [knownWords, removeWordMutation, userId]);
+  }, [knownWords, removeWordMutation, userId, syncEnabled]);
 
   const isKnown = useCallback((word: string) => {
     return knownWords.includes(word);
   }, [knownWords]);
 
-  return { knownWords, addKnownWord, removeKnownWord, isKnown, isLoading: cloudWordsRaw === undefined };
+  return {
+    knownWords,
+    addKnownWord,
+    removeKnownWord,
+    isKnown,
+    isLoading: syncEnabled && cloudWordsRaw === undefined
+  };
 }

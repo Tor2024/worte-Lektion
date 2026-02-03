@@ -9,8 +9,14 @@ import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 
 export function useCurriculumSRS() {
-    const [localSrsMap, setLocalSrsMap] = useState<Record<string, SM2State>>(storage.getSRS());
-    const syncEnabled = storage.isCloudSyncEnabled();
+    const [localSrsMap, setLocalSrsMap] = useState<Record<string, SM2State>>({});
+    const [syncEnabled, setSyncEnabled] = useState(false);
+
+    useEffect(() => {
+        setLocalSrsMap(storage.getSRS());
+        setSyncEnabled(storage.isCloudSyncEnabled());
+    }, []);
+
     const userId = "anonymous";
 
     // 1. Convex Hooks

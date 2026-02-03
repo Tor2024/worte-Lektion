@@ -7,8 +7,14 @@ import { Id } from '../../convex/_generated/dataModel';
 import { isWordStandardized } from '@/lib/german-utils';
 
 export function useCustomFolders() {
-    const [localFolders, setLocalFolders] = useState<CustomFolder[]>(storage.getCustomFolders());
-    const syncEnabled = storage.isCloudSyncEnabled();
+    const [localFolders, setLocalFolders] = useState<CustomFolder[]>([]);
+    const [syncEnabled, setSyncEnabled] = useState(false);
+
+    useEffect(() => {
+        setLocalFolders(storage.getCustomFolders());
+        setSyncEnabled(storage.isCloudSyncEnabled());
+    }, []);
+
     const userId = "anonymous";
 
     // 1. Convex Hooks (only if enabled)

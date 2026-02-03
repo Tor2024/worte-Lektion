@@ -12,6 +12,7 @@ import { Loader2, Brain, RefreshCw, SkipForward } from 'lucide-react';
 import { Card, CardContent } from './ui/card';
 // import { curriculum } from '@/lib/data'; // NO LONGER USED
 import Link from 'next/link';
+import { storage } from '@/lib/storage';
 import { useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 
@@ -27,9 +28,17 @@ export function SpacedRepetitionWrapper({ topic }: { topic: Topic }) {
   const [isReadyForReview, setIsReadyForReview] = useState(false);
   const [nextReviewDate, setNextReviewDate] = useState<Date | null>(null);
   const [lessonSummary, setLessonSummary] = useState<GenerateLessonSummaryOutput | null>(null);
+  const [syncEnabled, setSyncEnabled] = useState(false);
+
+  useEffect(() => {
+    setSyncEnabled(storage.isCloudSyncEnabled());
+  }, []);
 
   // We need current level topics to find "next topic"
-  const currentLevelTopics = useQuery(api.curriculum.getTopics, topic.levelId ? { levelId: topic.levelId } : "skip");
+  const currentLevelTopics = useQuery(
+    api.curriculum.getTopics,
+    syncEnabled && topic.levelId ? { levelId: topic.levelId } : "skip"
+  );
 
   const getRepetitionState = useCallback((): RepetitionState => {
     try {

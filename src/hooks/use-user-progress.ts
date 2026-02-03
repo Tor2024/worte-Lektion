@@ -17,8 +17,14 @@ const emitChange = (newProgress: ProgressData) => {
 };
 
 export function useUserProgress(initialTopicId?: string) {
-    const [localProgress, setLocalProgress] = useState<ProgressData>(progressState);
-    const syncEnabled = storage.isCloudSyncEnabled();
+    const [localProgress, setLocalProgress] = useState<ProgressData>({});
+    const [syncEnabled, setSyncEnabled] = useState(false);
+
+    useEffect(() => {
+        setLocalProgress(storage.getProgress());
+        setSyncEnabled(storage.isCloudSyncEnabled());
+    }, []);
+
     const userId = "anonymous"; // Future-proof for auth
 
     // 1. Fetch from Convex (only if sync is enabled)
