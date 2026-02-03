@@ -14,8 +14,8 @@ export function useStudyQueue() {
 
     // 1. Convex Hooks
     const cloudQueueRaw = useQuery(
-        syncEnabled ? api.studyQueue.getStudyQueue : (null as any),
-        { userId }
+        api.studyQueue.getStudyQueue,
+        syncEnabled ? { userId } : "skip"
     );
     const setQueueMutation = useMutation(api.studyQueue.setStudyQueue);
     const updateStatusMutation = useMutation(api.studyQueue.updateItemStatus);

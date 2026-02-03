@@ -15,8 +15,8 @@ export function useCurriculumSRS() {
 
     // 1. Convex Hooks
     const cloudSrsRecords = useQuery(
-        syncEnabled ? api.srs.get : (null as any),
-        { userId }
+        api.srs.get,
+        syncEnabled ? { userId } : "skip"
     );
     const updateSrsMutation = useMutation(api.srs.update);
 

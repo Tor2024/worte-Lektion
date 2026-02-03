@@ -13,8 +13,8 @@ export function useCustomFolders() {
 
     // 1. Convex Hooks (only if enabled)
     const cloudFoldersRaw = useQuery(
-        syncEnabled ? api.folders.getFolders : (null as any),
-        { userId }
+        api.folders.getFolders,
+        syncEnabled ? { userId } : "skip"
     );
     const createFolderMutation = useMutation(api.folders.createFolder);
     const deleteFolderMutation = useMutation(api.folders.deleteFolder);

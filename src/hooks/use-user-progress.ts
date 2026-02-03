@@ -23,8 +23,8 @@ export function useUserProgress(initialTopicId?: string) {
 
     // 1. Fetch from Convex (only if sync is enabled)
     const cloudProgressRecords = useQuery(
-        syncEnabled ? api.progress.get : (null as any),
-        { userId }
+        api.progress.get,
+        syncEnabled ? { userId } : "skip"
     );
     const updateProgressMutation = useMutation(api.progress.update);
 
