@@ -8,11 +8,15 @@ import { api } from '../../convex/_generated/api';
 
 export function useStudyQueue() {
     const userId = "anonymous";
+    const syncEnabled = storage.isCloudSyncEnabled();
     const [localQueue, setLocalQueue] = useState<StudyQueueItem[]>([]);
     const { folders } = useCustomFolders();
 
     // 1. Convex Hooks
-    const cloudQueueRaw = useQuery(api.studyQueue.getStudyQueue, { userId });
+    const cloudQueueRaw = useQuery(
+        syncEnabled ? api.studyQueue.getStudyQueue : (null as any),
+        { userId }
+    );
     const setQueueMutation = useMutation(api.studyQueue.setStudyQueue);
     const updateStatusMutation = useMutation(api.studyQueue.updateItemStatus);
 
@@ -24,17 +28,18 @@ export function useStudyQueue() {
 
     // 3. Map Cloud Data
     const queue = useMemo(() => {
-        if (!cloudQueueRaw) return localQueue;
+        if (!syncEnabled || !cloudQueueRaw) return localQueue;
         return cloudQueueRaw.map((item: any) => item.details as StudyQueueItem);
-    }, [cloudQueueRaw, localQueue]);
+    }, [cloudQueueRaw, localQueue, syncEnabled]);
 
     // 4. Sync Cloud -> Local
     useEffect(() => {
-        if (cloudQueueRaw) {
+        if (syncEnabled && cloudQueueRaw) {
             const mapped = cloudQueueRaw.map((item: any) => item.details as StudyQueueItem);
             storage.setStudyQueue(mapped);
+            setLocalQueue(mapped);
         }
-    }, [cloudQueueRaw]);
+    }, [cloudQueueRaw, syncEnabled]);
 
     // Sync with folders: Add new words to queue if not present
     const syncWithFolders = useCallback(async () => {
@@ -72,11 +77,13 @@ export function useStudyQueue() {
             const updatedQueue = [...queue, ...newItems];
             setLocalQueue(updatedQueue);
             storage.setStudyQueue(updatedQueue);
-            // Upload to cloud
-            try {
-                await setQueueMutation({ userId, items: updatedQueue });
-            } catch (e) {
-                console.error("Cloud queue sync failed", e);
+            // Upload to cloud (only if enabled)
+            if (syncEnabled) {
+                try {
+                    await setQueueMutation({ userId, items: updatedQueue });
+                } catch (e) {
+                    console.error("Cloud queue sync failed", e);
+                }
             }
         }
     }, [folders, queue, setQueueMutation]);
@@ -111,7 +118,7 @@ export function useStudyQueue() {
 
         // 2. Group items by level to preserve hierarchy
         const levelGroups: Record<number, StudyQueueItem[]> = {};
-        actionableItems.forEach(item => {
+        actionableItems.forEach((item: any) => {
             const level = item.word?.level ? LEVEL_PRIORITY[item.word.level as keyof typeof LEVEL_PRIORITY] : 0;
             if (!levelGroups[level]) levelGroups[level] = [];
             levelGroups[level].push(item);
@@ -132,7 +139,7 @@ export function useStudyQueue() {
             });
 
             // Randomize items within each type group
-            Object.values(typeGroups).forEach(group => group.sort(() => Math.random() - 0.5));
+            Object.values(typeGroups).forEach((group: any) => group.sort(() => Math.random() - 0.5));
 
             const types = Object.keys(typeGroups);
             let hasItems = true;
@@ -162,7 +169,7 @@ export function useStudyQueue() {
     }, [queue]);
 
     const updateItemStatus = useCallback(async (wordId: string, result: 'success' | 'fail') => {
-        const item = queue.find(i => i.id === wordId);
+        const item = queue.find((i: any) => i.id === wordId);
         if (!item) return;
 
         let newStatus = item.status;
@@ -193,19 +200,23 @@ export function useStudyQueue() {
             nextReviewNum: nextDate
         };
 
-        // UI Optimistic update
-        setLocalQueue(prev => prev.map((i: StudyQueueItem) => i.id === wordId ? updatedItem : i));
+        // Local save
+        const nextQueue = queue.map((i: StudyQueueItem) => i.id === wordId ? updatedItem : i);
+        setLocalQueue(nextQueue);
+        storage.setStudyQueue(nextQueue);
 
-        try {
-            await updateStatusMutation({
-                userId,
-                itemId: wordId,
-                status: newStatus,
-                nextReviewNum: nextDate,
-                details: updatedItem
-            });
-        } catch (e) {
-            console.error("Failed to update item status in cloud", e);
+        if (syncEnabled) {
+            try {
+                await updateStatusMutation({
+                    userId,
+                    itemId: wordId,
+                    status: newStatus,
+                    nextReviewNum: nextDate,
+                    details: updatedItem
+                });
+            } catch (e) {
+                console.error("Failed to update item status in cloud", e);
+            }
         }
     }, [queue, updateStatusMutation]);
 

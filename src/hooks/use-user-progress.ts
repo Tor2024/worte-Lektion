@@ -18,17 +18,21 @@ const emitChange = (newProgress: ProgressData) => {
 
 export function useUserProgress(initialTopicId?: string) {
     const [localProgress, setLocalProgress] = useState<ProgressData>(progressState);
+    const syncEnabled = storage.isCloudSyncEnabled();
     const userId = "anonymous"; // Future-proof for auth
 
-    // 1. Fetch from Convex
-    const cloudProgressRecords = useQuery(api.progress.get, { userId });
+    // 1. Fetch from Convex (only if sync is enabled)
+    const cloudProgressRecords = useQuery(
+        syncEnabled ? api.progress.get : (null as any),
+        { userId }
+    );
     const updateProgressMutation = useMutation(api.progress.update);
 
     // 2. Map cloud records to ProgressData object
     const cloudProgress = useMemo(() => {
         if (!cloudProgressRecords) return null;
         const data: ProgressData = {};
-        cloudProgressRecords.forEach(r => {
+        cloudProgressRecords.forEach((r: any) => {
             data[r.topicId] = r.proficiency;
         });
         return data;
@@ -84,15 +88,17 @@ export function useUserProgress(initialTopicId?: string) {
             const newProgress = { ...progressState, [id]: newProficiency };
             emitChange(newProgress);
 
-            // Sync to cloud in binary background (optimistic)
-            try {
-                await updateProgressMutation({
-                    userId,
-                    topicId: id,
-                    proficiency: newProficiency
-                });
-            } catch (error) {
-                console.error("Cloud progress sync failed:", error);
+            // Sync to cloud (only if enabled)
+            if (syncEnabled) {
+                try {
+                    await updateProgressMutation({
+                        userId,
+                        topicId: id,
+                        proficiency: newProficiency
+                    });
+                } catch (error) {
+                    console.error("Cloud progress sync failed:", error);
+                }
             }
         }
     }, [initialTopicId, updateProgressMutation]);

@@ -8,10 +8,14 @@ import { isWordStandardized } from '@/lib/german-utils';
 
 export function useCustomFolders() {
     const [localFolders, setLocalFolders] = useState<CustomFolder[]>(storage.getCustomFolders());
+    const syncEnabled = storage.isCloudSyncEnabled();
     const userId = "anonymous";
 
-    // 1. Convex Hooks
-    const cloudFoldersRaw = useQuery(api.folders.getFolders, { userId });
+    // 1. Convex Hooks (only if enabled)
+    const cloudFoldersRaw = useQuery(
+        syncEnabled ? api.folders.getFolders : (null as any),
+        { userId }
+    );
     const createFolderMutation = useMutation(api.folders.createFolder);
     const deleteFolderMutation = useMutation(api.folders.deleteFolder);
     const addWordMutation = useMutation(api.folders.addWord);
@@ -21,12 +25,12 @@ export function useCustomFolders() {
     // 2. Map Cloud data to internal types
     const cloudFolders = useMemo(() => {
         if (!cloudFoldersRaw) return null;
-        return cloudFoldersRaw.map(f => ({
+        return cloudFoldersRaw.map((f: any) => ({
             id: f._id, // Use Convex ID as primary ID
             name: f.name,
             createdAt: f.createdAt,
             updatedAt: f.createdAt, // folders table doesn't have updatedAt yet, using createdAt
-            words: (f.words || []).map(w => {
+            words: (f.words || []).map((w: any) => {
                 const details = w.details || { german: '?', russian: '?', type: 'other' };
 
                 const fullWordObject = {
@@ -46,13 +50,13 @@ export function useCustomFolders() {
                 };
             })
                 // Explicitly sort Newest First (descending addedAt)
-                .sort((a, b) => Math.floor(b.addedAt || 0) - Math.floor(a.addedAt || 0)) as (UserVocabularyWord & { needsUpdate?: boolean })[]
+                .sort((a: any, b: any) => Math.floor(b.addedAt || 0) - Math.floor(a.addedAt || 0)) as (UserVocabularyWord & { needsUpdate?: boolean })[]
         }));
     }, [cloudFoldersRaw]);
 
     // 3. Sync Cloud -> Local
     useEffect(() => {
-        if (cloudFolders && cloudFolders.length > 0) {
+        if (cloudFolders && syncEnabled) {
             // Very basic check for differences to avoid infinite loops or unnecessary writes
             const isDifferent = JSON.stringify(cloudFolders) !== JSON.stringify(localFolders);
             if (isDifferent) {
@@ -60,69 +64,130 @@ export function useCustomFolders() {
                 storage.setCustomFolders(cloudFolders);
             }
         }
-    }, [cloudFolders]);
+    }, [cloudFolders, syncEnabled]);
 
     const createFolder = useCallback(async (name: string) => {
-        try {
-            const newFolderId = await createFolderMutation({ userId, name });
-            // The query will eventually update the state, but we could optimistic-update here if needed.
-            return newFolderId;
-        } catch (error) {
-            console.error("Failed to create folder in cloud:", error);
-            throw error;
+        if (syncEnabled) {
+            try {
+                const newFolderId = await createFolderMutation({ userId, name });
+                return newFolderId;
+            } catch (error) {
+                console.error("Failed to create folder in cloud:", error);
+                throw error;
+            }
+        } else {
+            const newFolder: CustomFolder = {
+                id: Math.random().toString(36).substr(2, 9),
+                name,
+                words: [],
+                createdAt: Date.now(),
+                updatedAt: Date.now()
+            };
+            const nextFolders = [...localFolders, newFolder];
+            setLocalFolders(nextFolders);
+            storage.setCustomFolders(nextFolders);
+            return newFolder.id;
         }
-    }, [createFolderMutation]);
+    }, [createFolderMutation, syncEnabled, localFolders]);
 
     const deleteFolder = useCallback(async (id: string) => {
-        try {
-            await deleteFolderMutation({ folderId: id as Id<"folders"> });
-        } catch (error) {
-            console.error("Failed to delete folder from cloud:", error);
+        if (syncEnabled) {
+            try {
+                await deleteFolderMutation({ folderId: id as Id<"folders"> });
+            } catch (error) {
+                console.error("Failed to delete folder from cloud:", error);
+            }
+        } else {
+            const nextFolders = localFolders.filter(f => f.id !== id);
+            setLocalFolders(nextFolders);
+            storage.setCustomFolders(nextFolders);
         }
-    }, [deleteFolderMutation]);
+    }, [deleteFolderMutation, syncEnabled, localFolders]);
 
     const getFolder = useCallback((id: string) => {
         return localFolders.find(f => f.id === id);
     }, [localFolders]);
 
     const addWordToFolder = useCallback(async (folderId: string, userWord: UserVocabularyWord) => {
-        try {
-            await addWordMutation({
-                folderId: folderId as Id<"folders">,
-                userId,
-                german: userWord.word.german,
-                russian: userWord.word.russian,
-                type: userWord.word.type,
-                details: userWord.word,
-                sm2State: userWord.sm2State,
+        if (syncEnabled) {
+            try {
+                await addWordMutation({
+                    folderId: folderId as Id<"folders">,
+                    userId,
+                    german: userWord.word.german,
+                    russian: userWord.word.russian,
+                    type: userWord.word.type,
+                    details: userWord.word,
+                    sm2State: userWord.sm2State,
+                });
+            } catch (error) {
+                console.error("Failed to add word to cloud:", error);
+                throw error;
+            }
+        } else {
+            const nextFolders = localFolders.map(f => {
+                if (f.id === folderId) {
+                    return {
+                        ...f,
+                        words: [userWord, ...f.words]
+                    };
+                }
+                return f;
             });
-        } catch (error) {
-            console.error("Failed to add word to cloud:", error);
-            throw error; // Rethrow so component knows it failed
+            setLocalFolders(nextFolders);
+            storage.setCustomFolders(nextFolders);
         }
-    }, [addWordMutation]);
+    }, [addWordMutation, syncEnabled, localFolders]);
 
     const updateWordInFolder = useCallback(async (folderId: string, updatedWord: UserVocabularyWord) => {
-        try {
-            await updateWordMutation({
-                wordId: updatedWord.id as Id<"words">,
-                german: updatedWord.word.german,
-                russian: updatedWord.word.russian,
-                sm2State: updatedWord.sm2State,
-                details: updatedWord.word
+        if (syncEnabled) {
+            try {
+                await updateWordMutation({
+                    wordId: updatedWord.id as Id<"words">,
+                    german: updatedWord.word.german,
+                    russian: updatedWord.word.russian,
+                    sm2State: updatedWord.sm2State,
+                    details: updatedWord.word
+                });
+            } catch (error) {
+                console.error("Failed to update word in cloud:", error);
+            }
+        } else {
+            const nextFolders = localFolders.map(f => {
+                if (f.id === folderId) {
+                    return {
+                        ...f,
+                        words: f.words.map(w => w.id === updatedWord.id ? updatedWord : w)
+                    };
+                }
+                return f;
             });
-        } catch (error) {
-            console.error("Failed to update word in cloud:", error);
+            setLocalFolders(nextFolders);
+            storage.setCustomFolders(nextFolders);
         }
-    }, [updateWordMutation]);
+    }, [updateWordMutation, syncEnabled, localFolders]);
 
     const removeWordFromFolder = useCallback(async (folderId: string, wordId: string) => {
-        try {
-            await deleteWordMutation({ wordId: wordId as Id<"words"> });
-        } catch (error) {
-            console.error("Failed to delete word from cloud:", error);
+        if (syncEnabled) {
+            try {
+                await deleteWordMutation({ wordId: wordId as Id<"words"> });
+            } catch (error) {
+                console.error("Failed to delete word from cloud:", error);
+            }
+        } else {
+            const nextFolders = localFolders.map(f => {
+                if (f.id === folderId) {
+                    return {
+                        ...f,
+                        words: f.words.filter(w => w.id !== wordId)
+                    };
+                }
+                return f;
+            });
+            setLocalFolders(nextFolders);
+            storage.setCustomFolders(nextFolders);
         }
-    }, [deleteWordMutation]);
+    }, [deleteWordMutation, syncEnabled, localFolders]);
 
     return {
         folders: localFolders,

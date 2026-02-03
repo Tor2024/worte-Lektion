@@ -10,17 +10,21 @@ import { api } from '../../convex/_generated/api';
 
 export function useCurriculumSRS() {
     const [localSrsMap, setLocalSrsMap] = useState<Record<string, SM2State>>(storage.getSRS());
+    const syncEnabled = storage.isCloudSyncEnabled();
     const userId = "anonymous";
 
     // 1. Convex Hooks
-    const cloudSrsRecords = useQuery(api.srs.get, { userId });
+    const cloudSrsRecords = useQuery(
+        syncEnabled ? api.srs.get : (null as any),
+        { userId }
+    );
     const updateSrsMutation = useMutation(api.srs.update);
 
     // 2. Map Cloud data to Record<string, SM2State>
     const cloudSrsMap = useMemo(() => {
         if (!cloudSrsRecords) return null;
         const map: Record<string, SM2State> = {};
-        cloudSrsRecords.forEach(r => {
+        cloudSrsRecords.forEach((r: any) => {
             map[r.wordId] = {
                 interval: r.interval,
                 repetitions: r.repetitions,
@@ -34,7 +38,7 @@ export function useCurriculumSRS() {
 
     // 3. Sync Cloud -> Local
     useEffect(() => {
-        if (cloudSrsMap) {
+        if (cloudSrsMap && syncEnabled) {
             const hasChanges = Object.keys(cloudSrsMap).some(
                 wordId => JSON.stringify(cloudSrsMap[wordId]) !== JSON.stringify(localSrsMap[wordId])
             );
@@ -44,7 +48,7 @@ export function useCurriculumSRS() {
                 storage.setSRS(mergedMap);
             }
         }
-    }, [cloudSrsMap]);
+    }, [cloudSrsMap, syncEnabled]);
 
     const saveWordState = useCallback(async (germanWord: string, state: SM2State) => {
         // Update local state IMMEDIATELY
@@ -53,17 +57,19 @@ export function useCurriculumSRS() {
         storage.setSRS(newMap);
 
         // Sync to cloud
-        try {
-            await updateSrsMutation({
-                userId,
-                wordId: germanWord,
-                ...state,
-                nextReviewDate: state.nextReviewDate ?? undefined,
-            });
-        } catch (error) {
-            console.error("Failed to sync SRS to cloud:", error);
+        if (syncEnabled) {
+            try {
+                await updateSrsMutation({
+                    userId,
+                    wordId: germanWord,
+                    ...state,
+                    nextReviewDate: state.nextReviewDate ?? undefined,
+                });
+            } catch (error) {
+                console.error("Failed to sync SRS to cloud:", error);
+            }
         }
-    }, [localSrsMap, updateSrsMutation]);
+    }, [localSrsMap, updateSrsMutation, syncEnabled]);
 
     const getWordState = useCallback((germanWord: string): SM2State => {
         return localSrsMap[germanWord] || INITIAL_SM2_STATE;

@@ -82,6 +82,7 @@ interface Adverb extends BaseVocabularyWord {
 
 interface OtherWord extends BaseVocabularyWord {
   type: 'other';
+  structure?: string;
   example: string;
 }
 

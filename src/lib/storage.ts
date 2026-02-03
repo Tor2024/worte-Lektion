@@ -11,6 +11,16 @@ const KEYS = {
 export type ProgressData = { [key: string]: number };
 
 export const storage = {
+    isCloudSyncEnabled: (): boolean => {
+        if (typeof window === 'undefined') return false;
+        const hasConvex = !!process.env.NEXT_PUBLIC_CONVEX_URL;
+        return hasConvex && window.localStorage.getItem('isCloudSyncEnabled') === 'true';
+    },
+    setCloudSyncEnabled: (enabled: boolean) => {
+        if (typeof window === 'undefined') return;
+        window.localStorage.setItem('isCloudSyncEnabled', String(enabled));
+        window.location.reload(); // Refresh to apply changes globally
+    },
     getProgress: (): ProgressData => {
         if (typeof window === 'undefined') return {};
         try {
