@@ -1,9 +1,6 @@
-
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useQuery, useMutation } from 'convex/react';
-import { api } from '../../convex/_generated/api';
+import { useState, useEffect, useCallback } from 'react';
 import { ExamText } from '@/lib/types';
 import { storage } from '@/lib/storage';
 
@@ -21,94 +18,39 @@ Das Bewerbungsgespräch kann entweder persönlich или online stattfinden. Dab
 ];
 
 export function useExamTexts() {
-    const userId = "anonymous";
     const [localCustomTexts, setLocalCustomTexts] = useState<ExamText[]>([]);
-    const [syncEnabled, setSyncEnabled] = useState(false);
     const [isInitialLoadDone, setIsInitialLoadDone] = useState(false);
 
     useEffect(() => {
         setLocalCustomTexts(storage.getExamTexts());
-        setSyncEnabled(storage.isCloudSyncEnabled());
         setIsInitialLoadDone(true);
     }, []);
 
-    // 1. Convex Hooks
-    const cloudTextsRaw = useQuery(
-        api.examTexts.getExamTexts,
-        syncEnabled ? { userId } : "skip"
-    );
-    const addTextMutation = useMutation(api.examTexts.addExamText);
-    const removeTextMutation = useMutation(api.examTexts.deleteExamText);
-
-
-
-    // 3. Map Cloud Data
-    const customTexts = useMemo(() => {
-        if (!cloudTextsRaw) return localCustomTexts;
-        return cloudTextsRaw.map((t: any) => ({
-            id: t._id,
-            title: t.title,
-            description: t.description,
-            level: t.level,
-            content: t.content,
-            isCustom: t.isCustom,
-            createdAt: t.createdAt
-        })) as ExamText[];
-    }, [cloudTextsRaw, localCustomTexts]);
-
-    // 4. Sync Cloud -> Local
-    useEffect(() => {
-        if (cloudTextsRaw) {
-            storage.setExamTexts(cloudTextsRaw);
-        }
-    }, [cloudTextsRaw]);
-
     const addCustomText = useCallback(async (text: Omit<ExamText, 'id' | 'isCustom'>) => {
-        // Optimistic update
-        const tempId = `temp-${Date.now()}`;
-        const newText: ExamText = { ...text, id: tempId, isCustom: true };
-        setLocalCustomTexts(prev => [...prev, newText]);
-
-        try {
-            if (syncEnabled) {
-                await addTextMutation({
-                    userId,
-                    title: text.title,
-                    description: text.description || "",
-                    level: text.level || "B2",
-                    content: text.content || "",
-                    isCustom: true,
-                });
-            }
-        } catch (e) {
-            console.error("Failed to add exam text to cloud:", e);
-        }
+        const id = Math.random().toString(36).substr(2, 9);
+        const newText: ExamText = { ...text, id, isCustom: true };
+        const nextTexts = [...localCustomTexts, newText];
+        setLocalCustomTexts(nextTexts);
+        storage.setExamTexts(nextTexts);
         return newText;
-    }, [addTextMutation, userId, syncEnabled]);
+    }, [localCustomTexts]);
 
     const removeCustomText = useCallback(async (id: string) => {
-        // Optimistic update
-        setLocalCustomTexts(prev => prev.filter(t => t.id !== id));
-
-        try {
-            if (syncEnabled) {
-                await removeTextMutation({ id: id as any }); // Convex IDs are used here
-            }
-        } catch (e) {
-            console.error("Failed to remove exam text from cloud:", e);
-        }
-    }, [removeTextMutation, syncEnabled]);
+        const nextTexts = localCustomTexts.filter(t => t.id !== id);
+        setLocalCustomTexts(nextTexts);
+        storage.setExamTexts(nextTexts);
+    }, [localCustomTexts]);
 
     const getExamText = useCallback((id: string): ExamText | undefined => {
         const builtIn = BUILT_IN_TEXTS.find(t => t.id === id);
         if (builtIn) return builtIn;
-        return customTexts.find(t => t.id === id);
-    }, [customTexts]);
+        return localCustomTexts.find(t => t.id === id);
+    }, [localCustomTexts]);
 
     return {
-        allTexts: [...BUILT_IN_TEXTS, ...customTexts],
-        customTexts,
-        isLoading: !isInitialLoadDone || (syncEnabled && cloudTextsRaw === undefined),
+        allTexts: [...BUILT_IN_TEXTS, ...localCustomTexts],
+        customTexts: localCustomTexts,
+        isLoading: !isInitialLoadDone,
         addCustomText,
         removeCustomText,
         getExamText

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -10,11 +9,8 @@ import { Timer } from './timer';
 import { Button } from './ui/button';
 import { Loader2, Brain, RefreshCw, SkipForward } from 'lucide-react';
 import { Card, CardContent } from './ui/card';
-// import { curriculum } from '@/lib/data'; // NO LONGER USED
 import Link from 'next/link';
-import { storage } from '@/lib/storage';
-import { useQuery } from 'convex/react';
-import { api } from '../../convex/_generated/api';
+import { useLevelData } from '@/hooks/use-curriculum-data';
 
 type RepetitionState = {
   nextReviewDate: string | null;
@@ -22,26 +18,18 @@ type RepetitionState = {
 };
 
 export function SpacedRepetitionWrapper({ topic }: { topic: Topic }) {
-  const { getTopicProficiency, setTopicProficiency } = useUserProgress(topic.id);
+  const { setTopicProficiency } = useUserProgress(topic.id);
   const [repetitionState, setRepetitionState] = useState<RepetitionState | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isReadyForReview, setIsReadyForReview] = useState(false);
   const [nextReviewDate, setNextReviewDate] = useState<Date | null>(null);
   const [lessonSummary, setLessonSummary] = useState<GenerateLessonSummaryOutput | null>(null);
-  const [syncEnabled, setSyncEnabled] = useState(false);
 
-  useEffect(() => {
-    setSyncEnabled(storage.isCloudSyncEnabled());
-  }, []);
-
-  // We need current level topics to find "next topic"
-  const currentLevelTopics = useQuery(
-    api.curriculum.getTopics,
-    syncEnabled && topic.levelId ? { levelId: topic.levelId } : "skip"
-  );
+  const { topics: currentLevelTopics } = useLevelData(topic.levelId || '');
 
   const getRepetitionState = useCallback((): RepetitionState => {
     try {
+      if (typeof window === 'undefined') return { nextReviewDate: null, lastReviewTime: null };
       const item = window.localStorage.getItem(`repetition-${topic.id}`);
       return item ? JSON.parse(item) : { nextReviewDate: null, lastReviewTime: null };
     } catch (error) {
@@ -78,7 +66,9 @@ export function SpacedRepetitionWrapper({ topic }: { topic: Topic }) {
       lastReviewTime: new Date().getTime(),
     };
 
-    window.localStorage.setItem(`repetition-${topic.id}`, JSON.stringify(newState));
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(`repetition-${topic.id}`, JSON.stringify(newState));
+    }
     setRepetitionState(newState);
     setNextReviewDate(nextReviewDate);
     setIsReadyForReview(false);
@@ -86,7 +76,9 @@ export function SpacedRepetitionWrapper({ topic }: { topic: Topic }) {
 
   const handleReset = () => {
     setIsLoading(true);
-    window.localStorage.removeItem(`repetition-${topic.id}`);
+    if (typeof window !== 'undefined') {
+      window.localStorage.removeItem(`repetition-${topic.id}`);
+    }
     setTopicProficiency(0, topic.id);
     const state = getRepetitionState();
     setRepetitionState(state);
@@ -102,8 +94,7 @@ export function SpacedRepetitionWrapper({ topic }: { topic: Topic }) {
   const getNextTopic = () => {
     if (!currentLevelTopics) return null;
 
-    // Sort topics by order just in case
-    const sortedTopics = [...currentLevelTopics].sort((a, b) => (a.order || 0) - (b.order || 0));
+    const sortedTopics = [...currentLevelTopics].sort((a, b) => (1));
 
     const currentTopicIndex = sortedTopics.findIndex(t => t.id === topic.id);
 

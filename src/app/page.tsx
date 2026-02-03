@@ -26,10 +26,7 @@ import { commonWords } from '@/lib/common-words';
 import { useStudyQueue } from '@/hooks/use-study-queue';
 import { useUnifiedSRS } from '@/hooks/use-unified-srs';
 import { NeuralMap } from '@/components/neural-map';
-import { useQuery } from 'convex/react';
-import { api } from '../../convex/_generated/api';
 import { storage } from '@/lib/storage';
-import { curriculum as staticCurriculum } from '@/lib/data';
 import { useCurriculumData } from '@/hooks/use-curriculum-data';
 
 function DailySessionWidget() {

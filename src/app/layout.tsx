@@ -4,7 +4,6 @@ import './globals.css';
 import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/header';
-import { ConvexClientProvider } from '@/components/convex-provider';
 
 const fontBody = Inter({
   subsets: ['latin', 'cyrillic'],
@@ -35,13 +34,11 @@ export default function RootLayout({
           fontHeadline.variable
         )}
       >
-        <ConvexClientProvider>
-          <div className="relative flex min-h-screen flex-col">
-            <Header />
-            <main className="flex-1">{children}</main>
-          </div>
-          <Toaster />
-        </ConvexClientProvider>
+        <div className="relative flex min-h-screen flex-col">
+          <Header />
+          <main className="flex-1">{children}</main>
+        </div>
+        <Toaster />
       </body>
     </html>
   );

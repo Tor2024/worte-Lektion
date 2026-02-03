@@ -14,7 +14,6 @@ import { ArrowRight, BookText, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 import { useUserProgress } from '@/hooks/use-user-progress';
 import { cn } from '@/lib/utils';
-import { useQuery } from 'convex/react';
 import { useLevelData } from '@/hooks/use-curriculum-data';
 
 export default function LevelPage() {

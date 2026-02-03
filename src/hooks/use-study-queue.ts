@@ -1,59 +1,29 @@
+'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { storage } from '@/lib/storage';
-import { StudyQueueItem, VocabularyWord } from '@/lib/types';
+import { StudyQueueItem } from '@/lib/types';
 import { useCustomFolders } from './use-custom-folders';
-import { useQuery, useMutation } from 'convex/react';
-import { api } from '../../convex/_generated/api';
 
 export function useStudyQueue() {
-    const userId = "anonymous";
-    const [syncEnabled, setSyncEnabled] = useState(false);
+    const [localQueue, setLocalQueue] = useState<StudyQueueItem[]>([]);
     const [isInitialLoadDone, setIsInitialLoadDone] = useState(false);
+    const { folders } = useCustomFolders();
 
+    // 1. Load initial queue from localStorage
     useEffect(() => {
-        setSyncEnabled(storage.isCloudSyncEnabled());
+        setLocalQueue(storage.getStudyQueue());
         setIsInitialLoadDone(true);
     }, []);
 
-    const [localQueue, setLocalQueue] = useState<StudyQueueItem[]>([]);
-    const { folders } = useCustomFolders();
-
-    // 1. Convex Hooks
-    const cloudQueueRaw = useQuery(
-        api.studyQueue.getStudyQueue,
-        syncEnabled ? { userId } : "skip"
-    );
-    const setQueueMutation = useMutation(api.studyQueue.setStudyQueue);
-    const updateStatusMutation = useMutation(api.studyQueue.updateItemStatus);
-
-    // 2. Load initial queue from localStorage
-    useEffect(() => {
-        const savedQueue = storage.getStudyQueue();
-        setLocalQueue(savedQueue);
-    }, []);
-
-    // 3. Map Cloud Data
-    const queue = useMemo(() => {
-        if (!syncEnabled || !cloudQueueRaw) return localQueue;
-        return cloudQueueRaw.map((item: any) => item.details as StudyQueueItem);
-    }, [cloudQueueRaw, localQueue, syncEnabled]);
-
-    // 4. Sync Cloud -> Local
-    useEffect(() => {
-        if (syncEnabled && cloudQueueRaw) {
-            const mapped = cloudQueueRaw.map((item: any) => item.details as StudyQueueItem);
-            storage.setStudyQueue(mapped);
-            setLocalQueue(mapped);
-        }
-    }, [cloudQueueRaw, syncEnabled]);
-
     // Sync with folders: Add new words to queue if not present
-    const syncWithFolders = useCallback(async () => {
+    const syncWithFolders = useCallback(() => {
+        if (!isInitialLoadDone) return;
         if (folders.length === 0) return;
 
+        const existingQueue = storage.getStudyQueue();
         const newItems: StudyQueueItem[] = [];
-        const existingIds = new Set(queue.map((item: StudyQueueItem) => item.id));
+        const existingIds = new Set(existingQueue.map((item: StudyQueueItem) => item.id));
         let hasChanges = false;
 
         folders.forEach(folder => {
@@ -81,30 +51,21 @@ export function useStudyQueue() {
         });
 
         if (hasChanges) {
-            const updatedQueue = [...queue, ...newItems];
+            const updatedQueue = [...existingQueue, ...newItems];
             setLocalQueue(updatedQueue);
             storage.setStudyQueue(updatedQueue);
-            // Upload to cloud (only if enabled)
-            if (syncEnabled) {
-                try {
-                    await setQueueMutation({ userId, items: updatedQueue });
-                } catch (e) {
-                    console.error("Cloud queue sync failed", e);
-                }
-            }
         }
-    }, [folders, queue, setQueueMutation]);
+    }, [folders, isInitialLoadDone]);
 
     // Auto-sync
     useEffect(() => {
-        if (cloudQueueRaw !== undefined && folders.length > 0) {
+        if (isInitialLoadDone && folders.length > 0) {
             syncWithFolders();
         }
-    }, [folders, cloudQueueRaw, syncWithFolders]);
-
+    }, [folders, isInitialLoadDone, syncWithFolders]);
 
     const getDailySession = useCallback((limit: number = 20) => {
-        if (queue.length === 0) return [];
+        if (localQueue.length === 0) return [];
 
         const LEVEL_PRIORITY: Record<string, number> = {
             'Beruf': 100,
@@ -118,7 +79,7 @@ export function useStudyQueue() {
         const now = Date.now();
 
         // 1. Filter actionable items (due for review or entirely new)
-        const actionableItems = queue.filter((item: StudyQueueItem) =>
+        const actionableItems = localQueue.filter((item: StudyQueueItem) =>
             item.status === 'new' ||
             ((item.status === 'review' || item.status === 'leech') && item.nextReviewNum <= now)
         );
@@ -145,16 +106,13 @@ export function useStudyQueue() {
                 typeGroups[type].push(item);
             });
 
-            // Randomize items within each type group
             Object.values(typeGroups).forEach((group: any) => group.sort(() => Math.random() - 0.5));
 
             const types = Object.keys(typeGroups);
             let hasItems = true;
-            let typeIdx = 0;
             const groupIterators: Record<string, number> = {};
             types.forEach(t => groupIterators[t] = 0);
 
-            // Interleave: take one of each type in a loop
             while (hasItems) {
                 hasItems = false;
                 for (const type of types) {
@@ -173,10 +131,10 @@ export function useStudyQueue() {
         }
 
         return finalSelection;
-    }, [queue]);
+    }, [localQueue]);
 
     const updateItemStatus = useCallback(async (wordId: string, result: 'success' | 'fail') => {
-        const item = queue.find((i: any) => i.id === wordId);
+        const item = localQueue.find((i: any) => i.id === wordId);
         if (!item) return;
 
         let newStatus = item.status;
@@ -207,34 +165,19 @@ export function useStudyQueue() {
             nextReviewNum: nextDate
         };
 
-        // Local save
-        const nextQueue = queue.map((i: StudyQueueItem) => i.id === wordId ? updatedItem : i);
+        const nextQueue = localQueue.map((i: StudyQueueItem) => i.id === wordId ? updatedItem : i);
         setLocalQueue(nextQueue);
         storage.setStudyQueue(nextQueue);
-
-        if (syncEnabled) {
-            try {
-                await updateStatusMutation({
-                    userId,
-                    itemId: wordId,
-                    status: newStatus,
-                    nextReviewNum: nextDate,
-                    details: updatedItem
-                });
-            } catch (e) {
-                console.error("Failed to update item status in cloud", e);
-            }
-        }
-    }, [queue, updateStatusMutation]);
+    }, [localQueue]);
 
     return {
-        queue,
-        isLoading: !isInitialLoadDone || (syncEnabled && cloudQueueRaw === undefined),
+        queue: localQueue,
+        isLoading: !isInitialLoadDone,
         getDailySession,
         updateItemStatus,
         syncWithFolders,
-        totalDue: queue.filter((i: StudyQueueItem) => i.nextReviewNum <= Date.now() && i.status !== 'new').length,
-        totalNew: queue.filter((i: StudyQueueItem) => i.status === 'new').length,
-        totalLeeches: queue.filter((i: StudyQueueItem) => i.status === 'leech').length
+        totalDue: localQueue.filter((i: StudyQueueItem) => i.nextReviewNum <= Date.now() && i.status !== 'new').length,
+        totalNew: localQueue.filter((i: StudyQueueItem) => i.status === 'new').length,
+        totalLeeches: localQueue.filter((i: StudyQueueItem) => i.status === 'leech').length
     };
 }

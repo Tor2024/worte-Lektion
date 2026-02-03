@@ -1,10 +1,7 @@
-
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { storage, ProgressData } from '@/lib/storage';
-import { useQuery, useMutation } from 'convex/react';
-import { api } from '../../convex/_generated/api';
 
 // In-memory cache to sync across hook instances
 let progressState: ProgressData = storage.getProgress();
@@ -17,47 +14,13 @@ const emitChange = (newProgress: ProgressData) => {
 };
 
 export function useUserProgress(initialTopicId?: string) {
-    const [localProgress, setLocalProgress] = useState<ProgressData>({});
-    const [syncEnabled, setSyncEnabled] = useState(false);
+    const [localProgress, setLocalProgress] = useState<ProgressData>(progressState);
     const [isInitialLoadDone, setIsInitialLoadDone] = useState(false);
 
     useEffect(() => {
         setLocalProgress(storage.getProgress());
-        setSyncEnabled(storage.isCloudSyncEnabled());
         setIsInitialLoadDone(true);
     }, []);
-
-    const userId = "anonymous"; // Future-proof for auth
-
-    // 1. Fetch from Convex (only if sync is enabled)
-    const cloudProgressRecords = useQuery(
-        api.progress.get,
-        syncEnabled ? { userId } : "skip"
-    );
-    const updateProgressMutation = useMutation(api.progress.update);
-
-    // 2. Map cloud records to ProgressData object
-    const cloudProgress = useMemo(() => {
-        if (!cloudProgressRecords) return null;
-        const data: ProgressData = {};
-        cloudProgressRecords.forEach((r: any) => {
-            data[r.topicId] = r.proficiency;
-        });
-        return data;
-    }, [cloudProgressRecords]);
-
-    // 3. Sync Cloud -> Local if cloud is newer/more complete
-    useEffect(() => {
-        if (cloudProgress) {
-            const hasChanges = Object.keys(cloudProgress).some(
-                key => cloudProgress[key] !== progressState[key]
-            );
-            if (hasChanges) {
-                const mergedProgress = { ...progressState, ...cloudProgress };
-                emitChange(mergedProgress);
-            }
-        }
-    }, [cloudProgress]);
 
     useEffect(() => {
         const handleStorageChange = (event: StorageEvent) => {
@@ -91,25 +54,11 @@ export function useUserProgress(initialTopicId?: string) {
 
         const newProficiency = Math.max(0, Math.min(100, proficiency));
 
-        // Update local state IMMEDIATELY for UI feedback
         if (progressState[id] !== newProficiency) {
             const newProgress = { ...progressState, [id]: newProficiency };
             emitChange(newProgress);
-
-            // Sync to cloud (only if enabled)
-            if (syncEnabled) {
-                try {
-                    await updateProgressMutation({
-                        userId,
-                        topicId: id,
-                        proficiency: newProficiency
-                    });
-                } catch (error) {
-                    console.error("Cloud progress sync failed:", error);
-                }
-            }
         }
-    }, [initialTopicId, updateProgressMutation]);
+    }, [initialTopicId]);
 
     const getTopicProficiency = useCallback((id: string) => {
         return localProgress[id] || 0;
@@ -122,7 +71,6 @@ export function useUserProgress(initialTopicId?: string) {
         proficiency,
         setTopicProficiency,
         getTopicProficiency,
-        isLoading: !isInitialLoadDone || (syncEnabled && cloudProgressRecords === undefined)
+        isLoading: !isInitialLoadDone
     };
 }
-

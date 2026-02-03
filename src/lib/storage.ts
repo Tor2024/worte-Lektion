@@ -13,11 +13,9 @@ const KEYS = {
 export type ProgressData = { [key: string]: number };
 
 export const storage = {
-    isCloudSyncEnabled: (): boolean => {
-        return false;
-    },
+    isCloudSyncEnabled: (): boolean => false,
     setCloudSyncEnabled: (enabled: boolean) => {
-        // Disabled by user request
+        // No-op in local-only mode
     },
     getProgress: (): ProgressData => {
         if (typeof window === 'undefined') return {};
@@ -25,7 +23,6 @@ export const storage = {
             const item = window.localStorage.getItem(KEYS.PROGRESS);
             return item ? JSON.parse(item) : {};
         } catch (e) {
-            console.warn('LS Read Error (Progress)', e);
             return {};
         }
     },
@@ -34,20 +31,17 @@ export const storage = {
         try {
             const json = JSON.stringify(data);
             window.localStorage.setItem(KEYS.PROGRESS, json);
-            // Explicit event for same-tab updates if needed, mostly for cross-tab though
             window.dispatchEvent(new StorageEvent('storage', { key: KEYS.PROGRESS, newValue: json }));
         } catch (e) {
-            console.warn('LS Write Error (Progress)', e);
+            console.warn('LS Write Error', e);
         }
     },
-
     getSRS: (): Record<string, SM2State> => {
         if (typeof window === 'undefined') return {};
         try {
             const item = window.localStorage.getItem(KEYS.SRS);
             return item ? JSON.parse(item) : {};
         } catch (e) {
-            console.warn('LS Read Error (SRS)', e);
             return {};
         }
     },
@@ -56,17 +50,15 @@ export const storage = {
         try {
             window.localStorage.setItem(KEYS.SRS, JSON.stringify(data));
         } catch (e) {
-            console.warn('LS Write Error (SRS)', e);
+            console.warn('LS Write Error', e);
         }
     },
-
     getCustomFolders: (): CustomFolder[] => {
         if (typeof window === 'undefined') return [];
         try {
             const item = window.localStorage.getItem(KEYS.CUSTOM_FOLDERS);
             return item ? JSON.parse(item) : [];
         } catch (e) {
-            console.warn('LS Read Error (Folders)', e);
             return [];
         }
     },
@@ -74,18 +66,18 @@ export const storage = {
         if (typeof window === 'undefined') return;
         try {
             window.localStorage.setItem(KEYS.CUSTOM_FOLDERS, JSON.stringify(data));
+            // Trigger storage event for cross-hook sync
+            window.dispatchEvent(new StorageEvent('storage', { key: KEYS.CUSTOM_FOLDERS, newValue: JSON.stringify(data) }));
         } catch (e) {
-            console.warn('LS Write Error (Folders)', e);
+            console.warn('LS Write Error', e);
         }
     },
-
     getStudyQueue: (): StudyQueueItem[] => {
         if (typeof window === 'undefined') return [];
         try {
             const item = window.localStorage.getItem(KEYS.STUDY_QUEUE);
             return item ? JSON.parse(item) : [];
         } catch (e) {
-            console.warn('LS Read Error (Queue)', e);
             return [];
         }
     },
@@ -94,7 +86,7 @@ export const storage = {
         try {
             window.localStorage.setItem(KEYS.STUDY_QUEUE, JSON.stringify(data));
         } catch (e) {
-            console.warn('LS Write Error (Queue)', e);
+            console.warn('LS Write Error', e);
         }
     },
     getKnownWords: (): string[] => {
@@ -103,7 +95,6 @@ export const storage = {
             const item = window.localStorage.getItem(KEYS.KNOWN_WORDS);
             return item ? JSON.parse(item) : [];
         } catch (e) {
-            console.warn('LS Read Error (KnownWords)', e);
             return [];
         }
     },
@@ -112,7 +103,7 @@ export const storage = {
         try {
             window.localStorage.setItem(KEYS.KNOWN_WORDS, JSON.stringify(words));
         } catch (e) {
-            console.warn('LS Write Error (KnownWords)', e);
+            console.warn('LS Write Error', e);
         }
     },
     getExamTexts: (): any[] => {
@@ -121,7 +112,6 @@ export const storage = {
             const item = window.localStorage.getItem(KEYS.EXAM_TEXTS);
             return item ? JSON.parse(item) : [];
         } catch (e) {
-            console.warn('LS Read Error (ExamTexts)', e);
             return [];
         }
     },
@@ -130,7 +120,7 @@ export const storage = {
         try {
             window.localStorage.setItem(KEYS.EXAM_TEXTS, JSON.stringify(texts));
         } catch (e) {
-            console.warn('LS Write Error (ExamTexts)', e);
+            console.warn('LS Write Error', e);
         }
     }
 };
