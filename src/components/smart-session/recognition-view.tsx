@@ -9,7 +9,8 @@ import { BrainCircuit, Check, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState, useMemo, useEffect } from 'react';
 import { useSpeech } from '@/hooks/use-speech';
-import { commonWords } from '@/lib/common-words'; // Fallback for distractors
+import { commonWords } from '@/lib/common-words';
+import { cn } from '@/lib/utils';
 
 interface RecognitionViewProps {
     item: StudyQueueItem;
@@ -22,32 +23,40 @@ export function RecognitionView({ item, onResult }: RecognitionViewProps) {
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
     const { speak, isLoaded } = useSpeech();
 
+    // Randomly decide direction: 0 = German -> Russian, 1 = Russian -> German
+    const direction = useMemo(() => Math.random() > 0.5 ? 1 : 0, [item.id]);
+
     useEffect(() => {
-        if (isLoaded) {
+        if (isLoaded && direction === 0) {
             speak(formatGermanWord(word));
         }
-    }, [speak, word, isLoaded]);
+    }, [speak, word, isLoaded, direction]);
 
     const options = useMemo(() => {
-        // Simple distractor logic: grab 3 random words from commonWords that are NOT the current word
+        // Distractors based on direction
         const distractors = commonWords
             .filter(w => w.german !== word.german)
             .sort(() => Math.random() - 0.5)
             .slice(0, 3)
-            .map(w => w.russian);
+            .map(w => direction === 0 ? w.russian : w.german);
 
-        const allOptions = [...distractors, word.russian].sort(() => Math.random() - 0.5);
+        const correct = direction === 0 ? word.russian : word.german;
+        const allOptions = [...distractors, correct].sort(() => Math.random() - 0.5);
         return allOptions;
-    }, [word]);
+    }, [word, direction]);
 
     const handleSelect = (option: string) => {
-        if (selectedOption) return; // Block double click
+        if (selectedOption) return;
 
         setSelectedOption(option);
-        const correct = option === word.russian;
+        const correctValue = direction === 0 ? word.russian : word.german;
+        const correct = option === correctValue;
         setIsCorrect(correct);
 
-        // Auto-advance after small delay
+        if (correct && direction === 1) {
+            speak(formatGermanWord(word));
+        }
+
         setTimeout(() => {
             onResult(correct ? 'success' : 'fail');
         }, 1500);
@@ -59,37 +68,52 @@ export function RecognitionView({ item, onResult }: RecognitionViewProps) {
             animate={{ opacity: 1, x: 0 }}
             className="flex flex-col items-center space-y-8"
         >
-            <div className="flex items-center gap-2 text-muted-foreground uppercase text-xs tracking-widest">
-                <BrainCircuit className="h-4 w-4" /> Фаза 2: Пассивное Узнавание
+            <div className="flex items-center gap-2 text-primary uppercase text-[10px] font-black tracking-[0.2em] animate-pulse">
+                <BrainCircuit className="h-4 w-4" /> Фаза 2: Укрепление нейронной связи
             </div>
 
-            <Card className="w-full bg-card border-none shadow-xl">
-                <CardContent className="p-12 flex flex-col items-center text-center">
-                    <div className="text-5xl font-black text-foreground mb-2">
-                        {formatGermanWord(word)}
+            <Card className="w-full bg-slate-950 border-primary/20 shadow-2xl relative overflow-hidden group">
+                {/* Visual "Neural" element */}
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
+                <div className="absolute -right-10 -top-10 w-40 h-40 bg-primary/10 blur-3xl rounded-full group-hover:bg-primary/20 transition-colors" />
+
+                <CardContent className="p-12 flex flex-col items-center text-center relative z-10">
+                    <div className="text-sm font-bold text-primary/60 mb-4 uppercase tracking-widest">
+                        {direction === 0 ? "Понимаете ли вы это слово?" : "Как это будет по-немецки?"}
                     </div>
-                    <p className="text-muted-foreground">Выберите правильный перевод</p>
+                    <div className="text-5xl font-black text-white mb-6 tracking-tighter">
+                        {direction === 0 ? formatGermanWord(word) : word.russian}
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <div className="h-[2px] w-12 bg-gradient-to-r from-transparent to-primary/40" />
+                        <p className="text-muted-foreground text-sm font-medium">Выберите правильный вариант</p>
+                        <div className="h-[2px] w-12 bg-gradient-to-l from-transparent to-primary/40" />
+                    </div>
                 </CardContent>
             </Card>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
                 {options.map((option, idx) => {
+                    const isTarget = option === (direction === 0 ? word.russian : word.german);
                     const isSelected = selectedOption === option;
-                    const isTarget = option === word.russian;
 
                     let variant: "outline" | "default" | "destructive" | "secondary" = "outline";
-
                     if (selectedOption) {
-                        if (isTarget) variant = "default"; // Always show correct answer green
-                        else if (isSelected && !isTarget) variant = "destructive"; // Show selected wrong answer red
-                        else variant = "secondary"; // Fade others
+                        if (isTarget) variant = "default";
+                        else if (isSelected) variant = "destructive";
+                        else variant = "secondary";
                     }
 
                     return (
                         <Button
                             key={idx}
                             variant={variant as any}
-                            className={`h-16 text-lg relative ${isTarget && selectedOption ? 'bg-green-600 hover:bg-green-700 text-white border-green-600' : ''}`}
+                            className={cn(
+                                "h-20 text-lg font-bold rounded-2xl border-2 transition-all duration-300 relative overflow-hidden",
+                                !selectedOption && "hover:border-primary/50 hover:bg-primary/5 hover:scale-[1.02]",
+                                isTarget && selectedOption && "bg-green-600 border-green-500 text-white shadow-[0_0_20px_rgba(34,197,94,0.3)]",
+                                isSelected && !isTarget && "bg-red-600 border-red-500 text-white"
+                            )}
                             onClick={() => handleSelect(option)}
                             disabled={!!selectedOption}
                         >

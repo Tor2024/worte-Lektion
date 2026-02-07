@@ -25,7 +25,7 @@ export function SmartSessionManager() {
     const [sessionState, setSessionState] = useState<SessionState>('loading');
 
     // Batch Management
-    const BATCH_SIZE = 5;
+    const BATCH_SIZE = 2; // Was 5
     const [currentBatchIndex, setCurrentBatchIndex] = useState(0);
 
     // Phase Management
@@ -42,7 +42,7 @@ export function SmartSessionManager() {
     const [batchStories, setBatchStories] = useState<Record<number, string>>({});
 
     useEffect(() => {
-        const items = getDailySession(20);
+        const items = getDailySession(40);
         setSessionQueue(items);
         setSessionState(items.length > 0 ? 'intro' : 'summary');
     }, [getDailySession]);
@@ -187,6 +187,19 @@ export function SmartSessionManager() {
         );
     }
 
+    if (sessionState === 'consolidation') {
+        return (
+            <div className="min-h-[500px] flex flex-col justify-center">
+                <ConsolidationView
+                    items={sessionQueue}
+                    onComplete={() => setSessionState('summary')}
+                />
+            </div>
+        );
+    }
+
+    // From here on, sessionState MUST be 'active'
+
     // Active View Calculations
     const getPhaseTitle = () => {
         switch (currentPhase) {
@@ -210,10 +223,10 @@ export function SmartSessionManager() {
 
     // Phase relative progress
     const phaseProgressValue = currentPhase === 'priming'
-        ? (phaseIndex / currentBatchWords.length) * 100
+        ? (phaseIndex / (currentBatchWords.length || 1)) * 100
         : currentPhase === 'recognition'
-            ? (currentBatchWords.filter(w => (recognitionHits[w.id] || 0) >= 2).length / currentBatchWords.length) * 100
-            : (phaseIndex / currentBatchWords.length) * 100;
+            ? (currentBatchWords.filter(w => (recognitionHits[w.id] || 0) >= 2).length / (currentBatchWords.length || 1)) * 100
+            : (phaseIndex / (currentBatchWords.length || 1)) * 100;
 
     return (
         <div className="max-w-2xl mx-auto p-4 space-y-8">
@@ -231,7 +244,7 @@ export function SmartSessionManager() {
                     <Badge variant="outline" className="font-mono">
                         {currentPhase === 'recognition'
                             ? `${currentBatchWords.filter(w => (recognitionHits[w.id] || 0) >= 2).length} / ${currentBatchWords.length} ГОТОВО`
-                            : `${phaseIndex + 1} / ${currentBatchWords.length}`
+                            : `${Math.min(phaseIndex + 1, currentBatchWords.length)} / ${currentBatchWords.length}`
                         }
                     </Badge>
                 </div>
@@ -240,7 +253,7 @@ export function SmartSessionManager() {
             </div>
 
             <div className="min-h-[500px] flex flex-col justify-center">
-                {sessionState === 'active' && currentItem && (
+                {currentItem && (
                     <>
                         {currentPhase === 'priming' && (
                             <PrimingView key={currentItem.id} item={currentItem} onNext={() => handleNext('success')} />
@@ -258,7 +271,7 @@ export function SmartSessionManager() {
                                         />
                                     ))}
                                 </div>
-                                <RecognitionView key={currentItem.id} item={currentItem} onResult={handleNext} />
+                                <RecognitionView key={`${currentItem.id}-${recognitionHits[currentItem.id] || 0}`} item={currentItem} onResult={handleNext} />
                             </div>
                         )}
                         {currentPhase === 'production' && (
@@ -271,13 +284,6 @@ export function SmartSessionManager() {
                             />
                         )}
                     </>
-                )}
-
-                {sessionState === 'consolidation' && (
-                    <ConsolidationView
-                        items={sessionQueue}
-                        onComplete={() => setSessionState('summary')}
-                    />
                 )}
             </div>
         </div>

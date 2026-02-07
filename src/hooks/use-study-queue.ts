@@ -64,7 +64,7 @@ export function useStudyQueue() {
         }
     }, [folders, isInitialLoadDone, syncWithFolders]);
 
-    const getDailySession = useCallback((limit: number = 20) => {
+    const getDailySession = useCallback((limit: number = 40) => {
         if (localQueue.length === 0) return [];
 
         const LEVEL_PRIORITY: Record<string, number> = {
@@ -89,11 +89,14 @@ export function useStudyQueue() {
         );
 
         // Combine for selection: Prioritize Reviews > Learning > New (limited)
-        const NEW_WORD_LIMIT = 5;
+        const OLD_WORD_LIMIT = 30;
+        const NEW_WORD_LIMIT = 10;
+
+        const selectedOld = [...dueReviews, ...learningItems].slice(0, OLD_WORD_LIMIT);
         const selectedNew = newWords.slice(0, NEW_WORD_LIMIT);
 
         // Final pool of candidates for this session
-        const actionableItems = [...dueReviews, ...learningItems, ...selectedNew];
+        const actionableItems = [...selectedOld, ...selectedNew];
 
         if (actionableItems.length === 0) return [];
 
