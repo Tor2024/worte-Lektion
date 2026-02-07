@@ -4,18 +4,20 @@ import { useState, useEffect, useMemo } from 'react';
 import { useStudyQueue } from '@/hooks/use-study-queue';
 import { StudyQueueItem } from '@/lib/types';
 import { Button } from '@/components/ui/button';
+import { NeuralMap } from '../neural-map';
 import { Progress } from '@/components/ui/progress';
 import { BrainCircuit, CheckCircle, XCircle, ArrowRight, Layers, Target, PenTool } from 'lucide-react';
 import { PrimingView } from '@/components/smart-session/priming-view';
 import { RecognitionView } from '@/components/smart-session/recognition-view';
 import { ProductionView } from '@/components/smart-session/production-view';
 import { RemedialView } from '@/components/smart-session/remedial-view';
+import { ConsolidationView } from '@/components/smart-session/consolidation-view';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 
 type GlobalPhase = 'priming' | 'recognition' | 'production' | 'remedial';
-type SessionState = 'loading' | 'intro' | 'active' | 'summary';
+type SessionState = 'loading' | 'intro' | 'active' | 'consolidation' | 'summary';
 
 export function SmartSessionManager() {
     const { getDailySession, updateItemStatus } = useStudyQueue();
@@ -116,12 +118,13 @@ export function SmartSessionManager() {
                     setCurrentPhase('priming');
                     setPhaseIndex(0);
                 } else {
-                    // End Session: Sync results back to queue
+                    // Sync results back to queue BEFORE consolidation
+                    // to ensure progress is saved
                     sessionQueue.forEach(item => {
                         const res = (updatedResults[item.id] || 'success') as 'success' | 'fail';
                         updateItemStatus(item.id, res);
                     });
-                    setSessionState('summary');
+                    setSessionState('consolidation');
                 }
             }
         }
@@ -159,18 +162,27 @@ export function SmartSessionManager() {
     if (sessionState === 'summary') {
         const finalScore = Object.values(results).filter(r => r === 'success').length;
         return (
-            <div className="flex flex-col items-center justify-center p-8 text-center space-y-6 max-w-lg mx-auto mt-10">
-                <div className="bg-green-100 p-6 rounded-full">
-                    <CheckCircle className="h-24 w-24 text-green-500" />
+            <div className="flex flex-col items-center justify-center p-4 text-center space-y-8 max-w-4xl mx-auto">
+                <div className="space-y-2">
+                    <h1 className="text-4xl font-black tracking-tighter">СИНХРОНИЗАЦИЯ ЗАВЕРШЕНА</h1>
+                    <p className="text-muted-foreground text-lg italic">
+                        Уровень усвоения: {Math.round((finalScore / sessionQueue.length) * 100)}%. Новые нейронные связи прописаны успешно.
+                    </p>
                 </div>
-                <h1 className="text-4xl font-black">СИНХРОНИЗАЦИЯ ЗАВЕРШЕНА</h1>
-                <div className="text-7xl font-black text-primary">{finalScore}/{sessionQueue.length}</div>
-                <p className="text-muted-foreground text-lg italic">
-                    Уровень усвоения: {Math.round((finalScore / sessionQueue.length) * 100)}%. Новые нейронные связи прописаны успешно.
-                </p>
-                <Button asChild size="lg" className="w-full h-14 text-lg">
-                    <Link href="/">Вернуться в штаб</Link>
-                </Button>
+
+                <div className="w-full">
+                    <NeuralMap
+                        items={sessionQueue}
+                        title="Результат сессии: Ваши новые нейроны"
+                    />
+                </div>
+
+                <div className="flex flex-col items-center gap-4 w-full max-w-lg">
+                    <div className="text-6xl font-black text-primary">{finalScore}/{sessionQueue.length}</div>
+                    <Button asChild size="lg" className="w-full h-16 text-xl shadow-2xl hover:scale-[1.02] transition-transform rounded-2xl">
+                        <Link href="/">Вернуться в штаб</Link>
+                    </Button>
+                </div>
             </div>
         );
     }
@@ -228,7 +240,7 @@ export function SmartSessionManager() {
             </div>
 
             <div className="min-h-[500px] flex flex-col justify-center">
-                {currentItem && (
+                {sessionState === 'active' && currentItem && (
                     <>
                         {currentPhase === 'priming' && (
                             <PrimingView key={currentItem.id} item={currentItem} onNext={() => handleNext('success')} />
@@ -259,6 +271,13 @@ export function SmartSessionManager() {
                             />
                         )}
                     </>
+                )}
+
+                {sessionState === 'consolidation' && (
+                    <ConsolidationView
+                        items={sessionQueue}
+                        onComplete={() => setSessionState('summary')}
+                    />
                 )}
             </div>
         </div>

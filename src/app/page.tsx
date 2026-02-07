@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { BookOpen, ArrowRight, BrainCircuit, Siren, GraduationCap } from 'lucide-react';
+import { BookOpen, ArrowRight, BrainCircuit, Siren, GraduationCap, CheckCircle } from 'lucide-react';
 import Image from 'next/image';
 import {
   getLevelImage,
@@ -50,7 +50,7 @@ function DailySessionWidget() {
           <span className="text-xs font-bold uppercase tracking-widest text-indigo-500">План на сегодня</span>
         </div>
         <CardTitle className="text-3xl font-headline font-bold">15 Минут</CardTitle>
-        <CardDescription className="text-base">
+        <CardDescription className="text-base text-muted-foreground">
           Ежедневная тренировка: новые слова + повторение + контекст.
         </CardDescription>
       </CardHeader>
@@ -64,15 +64,15 @@ function DailySessionWidget() {
             <div className="text-3xl font-black text-foreground">{isLoading ? '...' : totalNew}</div>
             <div className="text-xs font-bold text-muted-foreground uppercase">Новые</div>
           </div>
-          {totalLeeches > 0 && (
-            <div className="col-span-2 bg-red-500/10 border border-red-500/50 p-3 rounded-xl flex items-center justify-between animate-pulse">
-              <div className="flex items-center gap-2">
-                <Siren className="h-5 w-5 text-red-500" />
-                <span className="text-sm font-bold text-red-600">Сложные слова: {totalLeeches}</span>
-              </div>
-            </div>
-          )}
         </div>
+        {totalLeeches > 0 && (
+          <div className="mt-4 bg-red-500/10 border border-red-500/50 p-3 rounded-xl flex items-center justify-between animate-pulse">
+            <div className="flex items-center gap-2">
+              <Siren className="h-5 w-5 text-red-500" />
+              <span className="text-sm font-bold text-red-600">Сложные слова: {totalLeeches}</span>
+            </div>
+          </div>
+        )}
         <p className="text-sm text-muted-foreground mt-4">
           Слова из ваших папок автоматически добавляются сюда.
         </p>
@@ -81,6 +81,85 @@ function DailySessionWidget() {
         <Button asChild size="lg" className="w-full h-14 text-lg bg-indigo-600 hover:bg-indigo-700 shadow-xl shadow-indigo-500/20 hover:scale-[1.02] transition-transform">
           <Link href="/daily-session">
             Начать тренировку <ArrowRight className="ml-2 h-5 w-5" />
+          </Link>
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+}
+
+function MyDictionariesWidget() {
+  return (
+    <Card className="flex flex-col bg-gradient-to-br from-emerald-500/10 via-transparent to-transparent border-emerald-500/20 shadow-xl relative overflow-hidden group h-full">
+      <div className="absolute top-0 right-0 p-8 opacity-5">
+        <BookOpen className="h-32 w-32" />
+      </div>
+      <CardHeader className="relative z-10">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="p-2 bg-emerald-500/10 rounded-lg">
+            <BookOpen className="h-6 w-6 text-emerald-500" />
+          </div>
+          <span className="text-xs font-bold uppercase tracking-widest text-emerald-500">Библиотека</span>
+        </div>
+        <CardTitle className="text-3xl font-headline font-bold">Словари</CardTitle>
+        <CardDescription className="text-base text-muted-foreground">
+          Управляйте своими папками и изучайте добавленные слова.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex-grow flex flex-col justify-center relative z-10 py-6 text-center">
+        <p className="text-base">
+          Создавайте тематические списки и следите за прогрессом каждой папки индивидуально.
+        </p>
+      </CardContent>
+      <CardFooter className="relative z-10 pb-8">
+        <Button asChild size="lg" variant="secondary" className="w-full h-14 text-lg border-emerald-500/20 hover:bg-emerald-500/10 hover:scale-[1.02] transition-transform outline-emerald-500">
+          <Link href="/my-lectures">
+            Открыть словари <ArrowRight className="ml-2 h-5 w-5" />
+          </Link>
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+}
+
+function ExamTextsWidget() {
+  return (
+    <Card className="flex flex-col bg-gradient-to-br from-amber-500/10 via-transparent to-transparent border-amber-500/20 shadow-xl relative overflow-hidden group h-full">
+      <div className="absolute top-0 right-0 p-8 opacity-5">
+        <GraduationCap className="h-32 w-32" />
+      </div>
+      <CardHeader className="relative z-10">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="p-2 bg-amber-500/10 rounded-lg">
+            <GraduationCap className="h-6 w-6 text-amber-500" />
+          </div>
+          <span className="text-xs font-bold uppercase tracking-widest text-amber-500">Экзамен B2 / B2 Beruf</span>
+        </div>
+        <CardTitle className="text-3xl font-headline font-bold">Тексты B2</CardTitle>
+        <CardDescription className="text-base text-muted-foreground text-left">
+          Тексты для заучивания с озвучкой и выделением предложений.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex-grow flex flex-col justify-center relative z-10 py-6">
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 text-sm">
+            <CheckCircle className="h-4 w-4 text-amber-500" />
+            <span>Подготовка к устной части (Sprechen)</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm">
+            <CheckCircle className="h-4 w-4 text-amber-500" />
+            <span>Синхронная озвучка и подсветка текста</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm">
+            <CheckCircle className="h-4 w-4 text-amber-500" />
+            <span>Добавление собственных текстов</span>
+          </div>
+        </div>
+      </CardContent>
+      <CardFooter className="relative z-10 pb-8">
+        <Button asChild size="lg" className="w-full h-14 text-lg bg-amber-600 hover:bg-amber-700 shadow-xl shadow-amber-500/20 hover:scale-[1.02] transition-transform">
+          <Link href="/exam-texts">
+            Перейти к текстам <ArrowRight className="ml-2 h-5 w-5" />
           </Link>
         </Button>
       </CardFooter>
@@ -185,67 +264,9 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16 items-stretch">
         <GlobalVocabularyTrainer words={allLearnedWords} />
-
-        <div className="flex flex-col gap-8">
-          <DailySessionWidget />
-
-          <Card className="flex flex-col border-primary/20 shadow-md relative overflow-hidden group">
-            <CardHeader>
-              <CardTitle className="text-xl font-headline font-bold flex items-center gap-2">
-                <BookOpen className="h-5 w-5 text-primary" />
-                Мои словари
-              </CardTitle>
-              <CardDescription>
-                Ваши личные папки и коллекции слов.
-              </CardDescription>
-            </CardHeader>
-            <CardFooter>
-              <Button asChild size="lg" variant="secondary" className="w-full">
-                <Link href="/my-lectures">
-                  Открыть словарь <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
-              </Button>
-            </CardFooter>
-          </Card>
-        </div>
-
-        {/* B2 EXAM PREP WIDGET */}
-        <Card className="flex flex-col bg-gradient-to-br from-amber-500/10 via-transparent to-transparent border-amber-500/20 shadow-xl relative overflow-hidden group h-full">
-          <div className="absolute top-0 right-0 p-8 opacity-5">
-            <GraduationCap className="h-32 w-32" />
-          </div>
-          <CardHeader className="relative z-10">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-amber-500/10 rounded-lg">
-                <GraduationCap className="h-6 w-6 text-amber-500" />
-              </div>
-              <span className="text-xs font-bold uppercase tracking-widest text-amber-500">Экзамен B2 / B2 Beruf</span>
-            </div>
-            <CardTitle className="text-3xl font-headline font-bold">Тексты B2</CardTitle>
-            <CardDescription className="text-base">
-              Тексты для заучивания с озвучкой и выделением предложений.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex-grow flex flex-col justify-center relative z-10 py-6">
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-sm">
-                <ArrowRight className="h-4 w-4 text-amber-500" />
-                <span>Идеально для устной части (Sprechen)</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <ArrowRight className="h-4 w-4 text-amber-500" />
-                <span>Синхронная озвучка и текст</span>
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter className="relative z-10 pb-8">
-            <Button asChild size="lg" className="w-full h-14 text-lg bg-amber-600 hover:bg-amber-700 shadow-xl shadow-amber-500/20 hover:scale-[1.02] transition-transform">
-              <Link href="/exam-texts">
-                Перейти к текстам <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
-          </CardFooter>
-        </Card>
+        <DailySessionWidget />
+        <ExamTextsWidget />
+        <MyDictionariesWidget />
       </div>
 
       <h2 className="text-3xl font-bold font-headline mb-6 text-center">Уровни обучения</h2>

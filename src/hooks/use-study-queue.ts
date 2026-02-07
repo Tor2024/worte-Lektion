@@ -4,11 +4,12 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { storage } from '@/lib/storage';
 import { StudyQueueItem } from '@/lib/types';
 import { useCustomFolders } from './use-custom-folders';
+import { generateMnemonic } from '@/ai/flows/generate-mnemonic';
 
 export function useStudyQueue() {
     const [localQueue, setLocalQueue] = useState<StudyQueueItem[]>([]);
     const [isInitialLoadDone, setIsInitialLoadDone] = useState(false);
-    const { folders } = useCustomFolders();
+    const { folders, updateWordInFolder } = useCustomFolders();
 
     useEffect(() => {
         setLocalQueue(storage.getStudyQueue());
@@ -40,6 +41,8 @@ export function useStudyQueue() {
                         status: hasHistory ? (sm2.interval > 7 ? 'review' : 'learning') : 'new',
                         currentStage: 'priming',
                         nextReviewNum: sm2.nextReviewDate || Date.now(),
+                        interval: sm2.interval || 0,
+                        easeFactor: sm2.easeFactor || 2.5,
                         tags: [folder.id],
                         consecutiveMistakes: 0
                     });
@@ -69,10 +72,30 @@ export function useStudyQueue() {
         };
 
         const now = Date.now();
-        const actionableItems = localQueue.filter((item: StudyQueueItem) =>
-            item.status === 'new' ||
-            ((item.status === 'review' || item.status === 'leech') && item.nextReviewNum <= now)
+
+        // 1. Get Due Reviews (Review or Leech status)
+        const dueReviews = localQueue.filter((item: StudyQueueItem) =>
+            (item.status === 'review' || item.status === 'leech') && item.nextReviewNum <= now
         );
+
+        // 2. Get Learning items (already started, but not yet graduated to review)
+        const learningItems = localQueue.filter((item: StudyQueueItem) =>
+            item.status === 'learning'
+        );
+
+        // 3. Get New words
+        const newWords = localQueue.filter((item: StudyQueueItem) =>
+            item.status === 'new'
+        );
+
+        // Combine for selection: Prioritize Reviews > Learning > New (limited)
+        const NEW_WORD_LIMIT = 5;
+        const selectedNew = newWords.slice(0, NEW_WORD_LIMIT);
+
+        // Final pool of candidates for this session
+        const actionableItems = [...dueReviews, ...learningItems, ...selectedNew];
+
+        if (actionableItems.length === 0) return [];
 
         const levelGroups: Record<number, StudyQueueItem[]> = {};
         actionableItems.forEach((item: any) => {
@@ -124,20 +147,68 @@ export function useStudyQueue() {
 
         let newStatus = item.status;
         let newMistakes = item.consecutiveMistakes;
-        let nextDate = item.nextReviewNum;
+        let nextInterval = item.interval || 0;
+        let nextEase = item.easeFactor || 2.5;
 
         if (result === 'fail') {
             newMistakes++;
             newStatus = newMistakes >= 3 ? 'leech' : 'learning';
-            nextDate = Date.now() + (1000 * 60 * 60 * 24);
+            nextInterval = 0; // Reset to 0 days for immediate re-learning
+            nextEase = Math.max(1.3, nextEase - 0.2); // Decrease ease factor
+
+            // Generate mnemonic if it becomes a leech and doesn't have one
+            if (newStatus === 'leech' && !item.mnemonic) {
+                try {
+                    const { mnemonic } = await generateMnemonic({
+                        german: item.word.german,
+                        russian: item.word.russian
+                    });
+                    item.mnemonic = mnemonic;
+
+                    // Persist mnemonic back to the source folder if it's a custom word
+                    const folder = folders.find(f => f.id === item.tags[0]);
+                    if (folder) {
+                        const originalWord = folder.words.find(w => w.id === item.id || w.word.german === item.word.german);
+                        if (originalWord) {
+                            updateWordInFolder(folder.id, { ...originalWord, mnemonic });
+                        }
+                    }
+                } catch (e) {
+                    console.error("Failed to generate mnemonic", e);
+                }
+            }
         } else {
             newMistakes = 0;
-            if (item.status === 'new') newStatus = 'learning';
-            else if (item.status === 'learning') newStatus = 'review';
-            nextDate = Date.now() + (1000 * 60 * 60 * 24 * (newStatus === 'review' ? 3 : 1));
+            if (item.status === 'new') {
+                newStatus = 'learning';
+                nextInterval = 1;
+            } else if (item.status === 'learning') {
+                newStatus = 'review';
+                nextInterval = 3;
+            } else {
+                newStatus = 'review';
+                // Success calculations (SM2 based)
+                if (nextInterval === 0) nextInterval = 1;
+                else if (nextInterval === 1) nextInterval = 3;
+                else nextInterval = Math.ceil(nextInterval * nextEase);
+            }
         }
 
-        const nextQueue = localQueue.map((i: StudyQueueItem) => i.id === wordId ? { ...item, status: newStatus, consecutiveMistakes: newMistakes, nextReviewNum: nextDate } : i);
+        const nextDate = Date.now() + (1000 * 60 * 60 * 24 * nextInterval);
+
+        const nextQueue = localQueue.map((i: StudyQueueItem) =>
+            i.id === wordId
+                ? {
+                    ...item,
+                    status: newStatus,
+                    consecutiveMistakes: newMistakes,
+                    nextReviewNum: nextDate,
+                    interval: nextInterval,
+                    easeFactor: nextEase,
+                    mnemonic: item.mnemonic
+                }
+                : i
+        );
         setLocalQueue(nextQueue);
         storage.setStudyQueue(nextQueue);
     }, [localQueue]);

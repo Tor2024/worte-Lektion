@@ -306,8 +306,8 @@ export function GlobalVocabularyTrainer({ words }: { words: VocabularyWord[] }) 
             <span className="text-xs font-bold uppercase tracking-widest text-primary">Словарный тренажер</span>
           </div>
           <CardTitle className="text-3xl font-headline font-bold">Тренажер слов</CardTitle>
-          <CardDescription className="text-base">
-            Повторяйте все изученные слова в одном месте
+          <CardDescription className="text-base text-muted-foreground">
+            Повторяйте все изученные слова в одном месте.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex-grow flex flex-col justify-center relative z-10 py-6">

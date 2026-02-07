@@ -112,6 +112,7 @@ export interface UserVocabularyWord {
   addedAt: number;
   deepDiveStage?: number; // 0=None, 1=Podcast, 2=Collocation, 3=Synonym, 4=Interview
   needsUpdate?: boolean;
+  mnemonic?: string; // AI-generated mnemonic for leeches
 }
 
 export interface CustomFolder {
@@ -157,8 +158,11 @@ export interface StudyQueueItem {
   status: QueueStatus;
   currentStage: QueueStage; // For the "3D" flow tracking within a session
   nextReviewNum: number; // Timestamp
+  interval: number; // Current interval in days
+  easeFactor: number; // SM2 ease factor (default 2.5)
   tags: string[]; // e.g., 'folder-id' to track origin
   consecutiveMistakes: number; // For leech tracking
+  mnemonic?: string;
 }
 
 export const INITIAL_SM2_STATE: SM2State = {

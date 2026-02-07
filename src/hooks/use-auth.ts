@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase, isCloudSyncEnabled } from '@/lib/supabase';
-import { User } from '@supabase/supabase-js';
+import { User, Session, AuthChangeEvent } from '@supabase/supabase-js';
 
 export function useAuth() {
     const [user, setUser] = useState<User | null>(null);
@@ -15,7 +15,7 @@ export function useAuth() {
         }
 
         // Check active sessions and sets the user
-        supabase.auth.getSession().then(({ data: { session } }) => {
+        supabase.auth.getSession().then(({ data: { session } }: { data: { session: Session | null } }) => {
             setUser(session?.user ?? null);
             setLoading(false);
         }).catch(() => {
@@ -24,7 +24,7 @@ export function useAuth() {
         });
 
         // Listen for changes on auth state (signed in, signed out, etc.)
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
             setUser(session?.user ?? null);
             setLoading(false);
         });

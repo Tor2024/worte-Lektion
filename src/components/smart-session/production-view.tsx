@@ -5,12 +5,13 @@ import { StudyQueueItem } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { BrainCircuit, Loader2, Sparkles, Send, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { BrainCircuit, Loader2, Sparkles, Send, ArrowRight, Eye, EyeOff, PenTool, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { generateClozeWithAI, type GenerateClozeOutput } from '@/ai/flows/generate-cloze';
 import { evaluateProductionWithAI, type EvaluateProductionOutput } from '@/ai/flows/evaluate-production';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { cn } from '@/lib/utils';
 
 interface ProductionViewProps {
     item: StudyQueueItem;
@@ -28,6 +29,8 @@ export function ProductionView({ item, storyContext, onStoryUpdate, onResult }: 
     const [dynamicEvaluation, setDynamicEvaluation] = useState<EvaluateProductionOutput | null>(null);
     const [isEvaluating, setIsEvaluating] = useState(false);
     const [showStoryContext, setShowStoryContext] = useState(false);
+    const [correctionUserAnswer, setCorrectionUserAnswer] = useState('');
+    const [isCorrected, setIsCorrected] = useState(false);
 
     // Fetch AI context on mount
     useEffect(() => {
@@ -91,7 +94,7 @@ export function ProductionView({ item, storyContext, onStoryUpdate, onResult }: 
         return (
             <div className="flex flex-col items-center justify-center p-12 space-y-4 text-center animate-pulse">
                 <Sparkles className="h-12 w-12 text-primary animate-spin" />
-                <p className="text-muted-foreground">AI создает контекст для <strong>{word.german}</strong>...</p>
+                <p className="text-muted-foreground">ИИ готовит новое задание...</p>
             </div>
         );
     }
@@ -131,6 +134,11 @@ export function ProductionView({ item, storyContext, onStoryUpdate, onResult }: 
                     <div className="text-muted-foreground italic flex flex-col gap-1 items-center">
                         <div>{clozeData.translation}</div>
                         {clozeData.hint && <div className="text-xs bg-muted px-2 py-1 rounded text-primary">{clozeData.hint}</div>}
+                        {item.mnemonic && (
+                            <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded text-amber-800 text-[10px] italic max-w-xs">
+                                <b>💡 МНЕМОНИКА:</b> &ldquo;{item.mnemonic}&rdquo;
+                            </div>
+                        )}
                     </div>
 
                     {!feedback && (
@@ -262,13 +270,54 @@ export function ProductionView({ item, storyContext, onStoryUpdate, onResult }: 
                                         </div>
                                     </div>
                                 )}
+
+                                {/* Error Correction Input */}
+                                <div className="mt-8 p-4 bg-red-50 rounded-xl border-2 border-red-200 space-y-4">
+                                    <div className="text-sm font-bold text-red-800 uppercase tracking-tight flex items-center gap-2">
+                                        <PenTool className="h-4 w-4" /> Напишите правильный ответ для закрепления:
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <Input
+                                            placeholder={clozeData.missingWord}
+                                            className={cn(
+                                                "h-12 text-lg border-2",
+                                                isCorrected ? "border-green-500 bg-green-50" : "border-red-300 focus:border-red-500"
+                                            )}
+                                            value={correctionUserAnswer}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                setCorrectionUserAnswer(val);
+                                                if (val.trim().toLowerCase() === clozeData.missingWord.toLowerCase()) {
+                                                    setIsCorrected(true);
+                                                }
+                                            }}
+                                            disabled={isCorrected}
+                                            autoFocus
+                                            autoComplete="off"
+                                            autoCorrect="off"
+                                        />
+                                        {isCorrected && (
+                                            <div className="bg-green-500 text-white p-2 rounded-lg flex items-center justify-center">
+                                                <Check className="h-6 w-6" />
+                                            </div>
+                                        )}
+                                    </div>
+                                    {!isCorrected && (
+                                        <p className="text-[10px] text-red-500 font-bold uppercase tracking-widest">Нужно вписать слово без ошибок</p>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     )}
 
                     <div className="p-4 bg-white border-t">
-                        <Button size="lg" className="w-full h-14 text-lg shadow-lg font-bold" onClick={handleContinue}>
-                            {feedback === 'correct' ? 'Идем дальше' : 'Понял, двигаемся далее'}
+                        <Button
+                            size="lg"
+                            className="w-full h-14 text-lg shadow-lg font-bold"
+                            onClick={handleContinue}
+                            disabled={feedback === 'incorrect' && !isCorrected}
+                        >
+                            {feedback === 'correct' ? 'Идем дальше' : (isCorrected ? 'Теперь можно продолжать' : 'Сначала исправьте ошибку')}
                         </Button>
                     </div>
                 </div>

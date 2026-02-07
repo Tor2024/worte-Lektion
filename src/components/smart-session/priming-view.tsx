@@ -176,6 +176,14 @@ export function PrimingView({ item, onNext }: PrimingViewProps) {
                             </div>
                         )}
                     </div>
+
+                    {/* Mnemonic */}
+                    {item.mnemonic && (
+                        <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-900 text-sm italic w-full max-w-md text-left">
+                            <span className="font-bold uppercase text-[10px] block mb-1 opacity-70">💡 Мнемоника (ассоциация):</span>
+                            &ldquo;{item.mnemonic}&rdquo;
+                        </div>
+                    )}
                 </CardContent>
             </Card>
 
