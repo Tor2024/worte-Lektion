@@ -73,29 +73,24 @@ export function useStudyQueue() {
 
         const now = Date.now();
 
-        // 1. Get Due Reviews (Review or Leech status)
-        const dueReviews = localQueue.filter((item: StudyQueueItem) =>
-            (item.status === 'review' || item.status === 'leech') && item.nextReviewNum <= now
-        );
+        // 1. Get all Old items (Review, Learning, or Leech status)
+        // Sort by nextReviewNum (most overdue first)
+        const oldWords = localQueue
+            .filter((item: StudyQueueItem) => item.status !== 'new')
+            .sort((a, b) => (a.nextReviewNum || 0) - (b.nextReviewNum || 0));
 
-        // 2. Get Learning items (already started, but not yet graduated to review)
-        const learningItems = localQueue.filter((item: StudyQueueItem) =>
-            item.status === 'learning'
-        );
+        // 2. Get New words
+        const newWords = localQueue.filter((item: StudyQueueItem) => item.status === 'new');
 
-        // 3. Get New words
-        const newWords = localQueue.filter((item: StudyQueueItem) =>
-            item.status === 'new'
-        );
-
-        // Combine for selection: Prioritize Reviews > Learning > New (limited)
+        // Selection limits
         const OLD_WORD_LIMIT = 30;
         const NEW_WORD_LIMIT = 10;
 
-        const selectedOld = [...dueReviews, ...learningItems].slice(0, OLD_WORD_LIMIT);
+        // Take the top candidates
+        const selectedOld = oldWords.slice(0, OLD_WORD_LIMIT);
         const selectedNew = newWords.slice(0, NEW_WORD_LIMIT);
 
-        // Final pool of candidates for this session
+        // Final pool of candidates for this session (up to 40)
         const actionableItems = [...selectedOld, ...selectedNew];
 
         if (actionableItems.length === 0) return [];

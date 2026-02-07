@@ -38,9 +38,9 @@ export function RecognitionView({ item, onResult }: RecognitionViewProps) {
             .filter(w => w.german !== word.german)
             .sort(() => Math.random() - 0.5)
             .slice(0, 3)
-            .map(w => direction === 0 ? w.russian : w.german);
+            .map(w => direction === 0 ? w.russian : formatGermanWord(w));
 
-        const correct = direction === 0 ? word.russian : word.german;
+        const correct = direction === 0 ? word.russian : formatGermanWord(word);
         const allOptions = [...distractors, correct].sort(() => Math.random() - 0.5);
         return allOptions;
     }, [word, direction]);
@@ -49,7 +49,7 @@ export function RecognitionView({ item, onResult }: RecognitionViewProps) {
         if (selectedOption) return;
 
         setSelectedOption(option);
-        const correctValue = direction === 0 ? word.russian : word.german;
+        const correctValue = direction === 0 ? word.russian : formatGermanWord(word);
         const correct = option === correctValue;
         setIsCorrect(correct);
 

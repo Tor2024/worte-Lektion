@@ -37,6 +37,27 @@ export function NeuralMap({ words, items, limit = 50, title = "Neural Activity" 
 
     const [hoveredWord, setHoveredWord] = useState<string | null>(null);
 
+    // Calculate random connections for the background
+    const connections = useMemo(() => {
+        const lines = [];
+        for (let i = 0; i < Math.min(displayWords.length, 15); i++) {
+            lines.push({
+                start: { x: Math.random() * 1000, y: Math.random() * 500 },
+                end: { x: Math.random() * 1000, y: Math.random() * 500 }
+            });
+        }
+        return lines;
+    }, [displayWords.length]);
+
+    function isHoveredWordConnected(wordId: string) {
+        if (!hoveredWord) return true;
+        if (hoveredWord === wordId) return true;
+        // Simple logic: Highlight nodes that have similar strength or are nearby in the list
+        const idx = displayWords.findIndex(w => w.id === wordId);
+        const hIdx = displayWords.findIndex(w => w.id === hoveredWord);
+        return Math.abs(idx - hIdx) < 3;
+    }
+
     return (
         <div className="relative w-full h-[500px] bg-[#020617] rounded-[2.5rem] overflow-hidden border border-primary/20 shadow-[0_0_50px_-12px_rgba(59,130,246,0.3)] group">
             {/* Ambient Background Glows */}
@@ -50,8 +71,34 @@ export function NeuralMap({ words, items, limit = 50, title = "Neural Activity" 
                         <pattern id="neural-grid" width="60" height="60" patternUnits="userSpaceOnUse">
                             <circle cx="1" cy="1" r="1" fill="currentColor" className="text-primary/40" />
                         </pattern>
+                        <linearGradient id="connection-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopColor="transparent" />
+                            <stop offset="50%" stopColor="var(--primary)" />
+                            <stop offset="100%" stopColor="transparent" />
+                        </linearGradient>
                     </defs>
                     <rect width="100%" height="100%" fill="url(#neural-grid)" />
+                </svg>
+            </div>
+
+            {/* Moving Synaptic Filaments */}
+            <div className="absolute inset-0 pointer-events-none opacity-20">
+                <svg width="100%" height="100%" viewBox="0 0 1000 500" preserveAspectRatio="none">
+                    {connections.map((conn, i) => (
+                        <motion.path
+                            key={i}
+                            d={`M ${conn.start.x} ${conn.start.y} Q 500 250 ${conn.end.x} ${conn.end.y}`}
+                            stroke="url(#connection-gradient)"
+                            strokeWidth="1"
+                            fill="none"
+                            initial={{ pathLength: 0, opacity: 0 }}
+                            animate={{
+                                pathLength: [0, 1, 0],
+                                opacity: [0, 0.4, 0],
+                            }}
+                            transition={{ duration: 4 + Math.random() * 4, repeat: Infinity, delay: i * 0.8 }}
+                        />
+                    ))}
                 </svg>
             </div>
 
@@ -66,12 +113,14 @@ export function NeuralMap({ words, items, limit = 50, title = "Neural Activity" 
             </div>
 
             {/* Neural Connections (Metaphorical Nodes) */}
-            <div className="absolute inset-0 flex items-center justify-center pt-24 p-8">
-                <div className="relative w-full h-full flex flex-wrap justify-center content-center gap-3">
+            <div className="absolute inset-0 flex items-center justify-center pt-24 p-8 overflow-y-auto">
+                <div className="relative w-full flex flex-wrap justify-center content-center gap-3">
                     {displayWords.map((w, idx) => {
                         const strength = Math.min((w.sm2State?.interval || 0) / 30, 1); // 1 = 30 days interval
                         const myelinated = strength > 0.8;
                         const isDue = w.sm2State?.nextReviewDate && w.sm2State.nextReviewDate < Date.now();
+                        const isActive = hoveredWord === w.id;
+                        const isPrimaryConnected = isHoveredWordConnected(w.id);
 
                         return (
                             <TooltipProvider key={w.id}>
@@ -80,13 +129,9 @@ export function NeuralMap({ words, items, limit = 50, title = "Neural Activity" 
                                         <motion.div
                                             initial={{ scale: 0, opacity: 0 }}
                                             animate={{
-                                                scale: 1,
-                                                opacity: 1,
-                                            }}
-                                            whileHover={{
-                                                scale: 1.15,
-                                                zIndex: 50,
-                                                transition: { type: 'spring', stiffness: 400, damping: 10 }
+                                                scale: isActive ? 1.1 : 1,
+                                                opacity: isPrimaryConnected ? 1 : (hoveredWord ? 0.2 : 1),
+                                                y: isActive ? -5 : 0,
                                             }}
                                             onMouseEnter={() => setHoveredWord(w.id)}
                                             onMouseLeave={() => setHoveredWord(null)}
@@ -96,7 +141,8 @@ export function NeuralMap({ words, items, limit = 50, title = "Neural Activity" 
                                                     ? 'bg-yellow-500/10 border-yellow-500/50 text-yellow-500 shadow-[0_0_15px_-5px_orange]'
                                                     : strength > 0.3
                                                         ? 'bg-blue-500/10 border-blue-500/50 text-blue-400 shadow-[0_0_15px_-5px_blue]'
-                                                        : 'bg-slate-900/50 border-slate-800 text-slate-500'
+                                                        : 'bg-slate-900/50 border-slate-800 text-slate-500',
+                                                isActive && "border-primary bg-primary/20 ring-4 ring-primary/20 scale-110 shadow-[0_0_25px_rgba(59,130,246,0.5)] z-50"
                                             )}
                                         >
                                             <span className="text-xs font-black tracking-tight whitespace-nowrap">
@@ -116,9 +162,28 @@ export function NeuralMap({ words, items, limit = 50, title = "Neural Activity" 
                                             {myelinated && (
                                                 <div className="absolute -inset-1 bg-yellow-400/10 blur-sm rounded-2xl -z-10" />
                                             )}
+
+                                            {/* Activity Sparks when hovered */}
+                                            {isActive && (
+                                                <div className="absolute -inset-4 pointer-events-none overflow-hidden">
+                                                    {[...Array(5)].map((_, i) => (
+                                                        <motion.div
+                                                            key={i}
+                                                            className="absolute h-1 w-1 bg-primary rounded-full"
+                                                            animate={{
+                                                                x: [0, (Math.random() - 0.5) * 60],
+                                                                y: [0, (Math.random() - 0.5) * 60],
+                                                                opacity: [1, 0],
+                                                                scale: [1, 0]
+                                                            }}
+                                                            transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.1 }}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            )}
                                         </motion.div>
                                     </TooltipTrigger>
-                                    <TooltipContent className="bg-slate-950 border-white/10 text-white p-4 rounded-2xl shadow-2xl backdrop-blur-xl">
+                                    <TooltipContent className="bg-slate-950 border-white/10 text-white p-4 rounded-2xl shadow-2xl backdrop-blur-xl z-50">
                                         <div className="space-y-3">
                                             <div className="font-black text-lg flex items-center gap-2">
                                                 <div className="w-2 h-2 rounded-full bg-primary animate-ping" />
@@ -149,7 +214,7 @@ export function NeuralMap({ words, items, limit = 50, title = "Neural Activity" 
             </div>
 
             {/* Neuro-Stats Overlay */}
-            <div className="absolute bottom-10 left-10 flex items-center gap-6 bg-slate-900/40 backdrop-blur-xl p-6 rounded-[2rem] border border-white/5 shadow-2xl">
+            <div className="absolute bottom-10 left-10 flex items-center gap-6 bg-slate-900/40 backdrop-blur-xl p-6 rounded-[2rem] border border-white/5 shadow-2xl z-20">
                 <div className="flex flex-col">
                     <span className="text-[10px] text-slate-500 uppercase tracking-widest font-black">Слов в базе</span>
                     <span className="text-3xl font-black text-white">{words?.length || items?.length}</span>
@@ -166,18 +231,19 @@ export function NeuralMap({ words, items, limit = 50, title = "Neural Activity" 
             </div>
 
             {/* Status Indicator */}
-            <div className="absolute bottom-10 right-10">
+            <div className="absolute bottom-10 right-10 z-20">
                 <div className="flex items-center gap-3 bg-primary/10 px-5 py-2.5 rounded-full border border-primary/20 backdrop-blur-md shadow-lg">
                     <div className="relative">
                         <div className="h-2 w-2 rounded-full bg-primary" />
                         <div className="absolute inset-0 h-2 w-2 rounded-full bg-primary animate-ping" />
                     </div>
                     <span className="text-[10px] font-black text-primary uppercase tracking-widest">
-                        Synaptic Map v2.0
+                        Synaptic Map v3.0
                     </span>
                 </div>
             </div>
         </div>
     );
 }
+
 

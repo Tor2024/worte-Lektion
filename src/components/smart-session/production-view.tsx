@@ -191,10 +191,33 @@ export function ProductionView({ item, storyContext, onStoryUpdate, onResult }: 
             {feedback && (
                 <div className="w-full max-w-lg space-y-4 animate-in slide-in-from-bottom-4 shadow-2xl rounded-2xl overflow-hidden border">
                     {feedback === 'correct' ? (
-                        <div className="p-6 bg-green-50 text-green-800 flex items-start gap-4">
-                            <div className="bg-green-100 p-2 rounded-full"><Sparkles className="h-6 w-6 text-green-600" /></div>
-                            <div>
-                                <div className="text-xl font-black">Правда!</div>
+                        <div className="p-6 bg-green-50 text-green-800 flex items-start gap-4 relative overflow-hidden">
+                            {/* Neural Success Background Effect */}
+                            <motion.div
+                                className="absolute inset-0 pointer-events-none opacity-20"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 0.2 }}
+                            >
+                                <svg width="100%" height="100%" viewBox="0 0 400 100">
+                                    <motion.path
+                                        d="M 0 50 Q 100 0 200 50 T 400 50"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        fill="none"
+                                        initial={{ pathLength: 0 }}
+                                        animate={{ pathLength: 1 }}
+                                        transition={{ duration: 1 }}
+                                    />
+                                </svg>
+                            </motion.div>
+
+                            <div className="bg-green-100 p-2 rounded-full relative z-10">
+                                <BrainCircuit className="h-6 w-6 text-green-600 animate-pulse" />
+                            </div>
+                            <div className="relative z-10">
+                                <div className="text-xl font-black flex items-center gap-2">
+                                    Укрепление связи! <Sparkles className="h-5 w-5 text-amber-500" />
+                                </div>
                                 {userAnswer.trim().toLowerCase() !== clozeData.missingWord.toLowerCase() && (
                                     <div className="text-sm opacity-80 mt-1">Обычно говорят: <b>{clozeData.missingWord}</b></div>
                                 )}
