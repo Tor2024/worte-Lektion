@@ -73,6 +73,11 @@ export function useStudyQueue() {
 
         const now = Date.now();
 
+        // Selection limits
+        const TOTAL_LIMIT = limit; // Default 40
+        const PREFERRED_NEW_LIMIT = 10;
+        const PREFERRED_OLD_LIMIT = 30;
+
         // 1. Get all Old items (Review, Learning, or Leech status)
         // Sort by nextReviewNum (most overdue first)
         const oldWords = localQueue
@@ -82,16 +87,16 @@ export function useStudyQueue() {
         // 2. Get New words
         const newWords = localQueue.filter((item: StudyQueueItem) => item.status === 'new');
 
-        // Selection limits
-        const OLD_WORD_LIMIT = 30;
-        const NEW_WORD_LIMIT = 10;
+        // Selection strategy:
+        // First, take up to 30 old words
+        const selectedOld = oldWords.slice(0, PREFERRED_OLD_LIMIT);
 
-        // Take the top candidates
-        const selectedOld = oldWords.slice(0, OLD_WORD_LIMIT);
-        const selectedNew = newWords.slice(0, NEW_WORD_LIMIT);
+        // Then, take as many new words as needed to reach 40, but at least 10
+        const neededNewCount = Math.max(PREFERRED_NEW_LIMIT, TOTAL_LIMIT - selectedOld.length);
+        const selectedNew = newWords.slice(0, neededNewCount);
 
-        // Final pool of candidates for this session (up to 40)
-        const actionableItems = [...selectedOld, ...selectedNew];
+        // Final pool of candidates for this session
+        const actionableItems = [...selectedOld, ...selectedNew].slice(0, TOTAL_LIMIT);
 
         if (actionableItems.length === 0) return [];
 
@@ -211,11 +216,25 @@ export function useStudyQueue() {
         storage.setStudyQueue(nextQueue);
     }, [localQueue]);
 
-    const stats = useMemo(() => ({
-        totalDue: localQueue.filter((i: StudyQueueItem) => i.nextReviewNum <= Date.now() && i.status !== 'new').length,
-        totalNew: localQueue.filter((i: StudyQueueItem) => i.status === 'new').length,
-        totalLeeches: localQueue.filter((i: StudyQueueItem) => i.status === 'leech').length
-    }), [localQueue]);
+    const stats = useMemo(() => {
+        const dueCount = localQueue.filter((i: StudyQueueItem) => i.nextReviewNum <= Date.now() && i.status !== 'new').length;
+        const oldCount = localQueue.filter((i: StudyQueueItem) => i.status !== 'new').length;
+        const newCount = localQueue.filter((i: StudyQueueItem) => i.status === 'new').length;
+        const learningCount = localQueue.filter((i: StudyQueueItem) => i.status === 'learning' || i.status === 'leech').length;
+        const reviewCount = localQueue.filter((i: StudyQueueItem) => i.status === 'review').length;
+
+        // Match getDailySession logic for availability
+        const availableTotal = Math.min(localQueue.length, 40);
+
+        return {
+            totalDue: dueCount,
+            totalNew: newCount,
+            totalLearning: learningCount,
+            totalReview: reviewCount,
+            totalLeeches: localQueue.filter((i: StudyQueueItem) => i.status === 'leech').length,
+            totalAvailable: availableTotal
+        };
+    }, [localQueue]);
 
     return useMemo(() => ({
         queue: localQueue,

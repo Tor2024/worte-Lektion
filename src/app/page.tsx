@@ -30,7 +30,7 @@ import { storage } from '@/lib/storage';
 import { useCurriculumData } from '@/hooks/use-curriculum-data';
 
 function DailySessionWidget() {
-  const { totalDue, totalNew, totalLeeches, isLoading } = useStudyQueue();
+  const { totalDue, totalNew, totalLearning, totalReview, totalLeeches, totalAvailable, isLoading } = useStudyQueue();
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => { setIsClient(true) }, []);
@@ -54,17 +54,38 @@ function DailySessionWidget() {
           Ежедневная тренировка: новые слова + повторение + контекст.
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex-grow flex flex-col justify-center relative z-10 py-6">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-background/50 p-4 rounded-xl border">
-            <div className="text-3xl font-black text-foreground">{isLoading ? '...' : totalDue}</div>
-            <div className="text-xs font-bold text-muted-foreground uppercase">Повторить</div>
+      <CardContent className="flex-grow flex flex-col justify-center relative z-10 py-4">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-yellow-500/10 p-4 rounded-xl border border-yellow-500/20 shadow-[0_0_10px_-5px_rgba(234,179,8,0.3)]">
+            <div className="text-3xl font-black text-yellow-600 dark:text-yellow-400">{isLoading ? '...' : totalReview}</div>
+            <div className="text-[10px] font-bold text-yellow-700/70 dark:text-yellow-400/70 uppercase tracking-tighter">Выучено</div>
+          </div>
+          <div className="bg-blue-500/10 p-4 rounded-xl border border-blue-500/20 shadow-[0_0_10px_-5px_rgba(59,130,246,0.3)]">
+            <div className="text-3xl font-black text-blue-600 dark:text-blue-400">{isLoading ? '...' : totalLearning}</div>
+            <div className="text-[10px] font-bold text-blue-700/70 dark:text-blue-400/70 uppercase tracking-tighter">В процессе</div>
           </div>
           <div className="bg-background/50 p-4 rounded-xl border">
             <div className="text-3xl font-black text-foreground">{isLoading ? '...' : totalNew}</div>
-            <div className="text-xs font-bold text-muted-foreground uppercase">Новые</div>
+            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">Новые</div>
+          </div>
+          <div className="bg-red-500/5 p-4 rounded-xl border border-red-500/10">
+            <div className="text-3xl font-black text-red-500">{isLoading ? '...' : totalDue}</div>
+            <div className="text-[10px] font-bold text-red-500/70 uppercase tracking-tighter">Повторить</div>
           </div>
         </div>
+
+        {/* Session Readiness Badge */}
+        {!isLoading && (
+          <div className="mt-4 bg-primary/10 border border-primary/20 p-4 rounded-xl flex items-center justify-between shadow-sm">
+            <div className="flex flex-col">
+              <div className="text-xl font-black text-primary animate-pulse flex items-center gap-2">
+                {totalAvailable} слов <span className="text-xs font-normal text-muted-foreground uppercase tracking-wider">готово</span>
+              </div>
+              <div className="text-xs text-muted-foreground">Ежедневная квота заполнена</div>
+            </div>
+            <div className="h-2 w-2 rounded-full bg-primary animate-ping" />
+          </div>
+        )}
         {totalLeeches > 0 && (
           <div className="mt-4 bg-red-500/10 border border-red-500/50 p-3 rounded-xl flex items-center justify-between animate-pulse">
             <div className="flex items-center gap-2">
