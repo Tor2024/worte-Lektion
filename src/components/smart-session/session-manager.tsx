@@ -108,6 +108,9 @@ export function SmartSessionManager() {
             const updatedResults: Record<string, 'success' | 'fail'> = { ...results, [currentItem.id]: finalResult };
             setResults(updatedResults);
 
+            // SAVE PROGRESS IMMEDIATELY for this word
+            updateItemStatus(currentItem.id, finalResult as 'success' | 'fail');
+
             if (phaseIndex < currentBatchWords.length - 1) {
                 setPhaseIndex(i => i + 1);
             } else {
@@ -118,12 +121,7 @@ export function SmartSessionManager() {
                     setCurrentPhase('priming');
                     setPhaseIndex(0);
                 } else {
-                    // Sync results back to queue BEFORE consolidation
-                    // to ensure progress is saved
-                    sessionQueue.forEach(item => {
-                        const res = (updatedResults[item.id] || 'success') as 'success' | 'fail';
-                        updateItemStatus(item.id, res);
-                    });
+                    // All batches finished, move to consolidation
                     setSessionState('consolidation');
                 }
             }

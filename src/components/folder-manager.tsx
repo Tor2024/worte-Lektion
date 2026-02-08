@@ -10,9 +10,12 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { UserVocabularyWord } from '@/lib/types';
 import { isWordStandardized } from '@/lib/german-utils';
+import { useStudyQueue } from '@/hooks/use-study-queue';
+import { Progress } from '@/components/ui/progress';
 
 export function FolderManager() {
-    const { folders, isLoading, createFolder, deleteFolder } = useCustomFolders();
+    const { folders, isLoading: foldersLoading, createFolder, deleteFolder } = useCustomFolders();
+    const { queue, isLoading: srsLoading } = useStudyQueue();
     const [newFolderName, setNewFolderName] = useState('');
     const [isCreating, setIsCreating] = useState(false);
 
@@ -28,14 +31,26 @@ export function FolderManager() {
         setIsCreating(false);
     };
 
-    const getFolderStatus = (folderWords: UserVocabularyWord[]) => {
-        if (folderWords.length === 0) return null;
+    const getFolderStats = (folderWords: UserVocabularyWord[]) => {
+        if (folderWords.length === 0) return { status: null, progress: 0 };
 
         const needsUpdate = folderWords.some(w => w.needsUpdate || !isWordStandardized(w));
-        return needsUpdate ? 'needs-update' : 'standardized';
+        const status = needsUpdate ? 'needs-update' : 'standardized';
+
+        // Calculate progress based on SRS status
+        const folderWordIds = new Set(folderWords.map(w => w.id));
+        const learnedInFolder = queue.filter(item =>
+            folderWordIds.has(item.id) && item.status !== 'new'
+        ).length;
+
+        const progress = folderWords.length > 0
+            ? Math.round((learnedInFolder / folderWords.length) * 100)
+            : 0;
+
+        return { status, progress };
     };
 
-    if (isLoading) {
+    if (foldersLoading || srsLoading) {
         return <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
     }
 
@@ -71,9 +86,9 @@ export function FolderManager() {
                     </div>
                 ) : (
                     folders.map((folder) => {
-                        const status = getFolderStatus(folder.words);
+                        const { status, progress } = getFolderStats(folder.words);
                         return (
-                            <Card key={folder.id} className="hover:shadow-md transition-shadow cursor-pointer relative group overflow-hidden">
+                            <Card key={folder.id} className="hover:shadow-md transition-shadow cursor-pointer relative group overflow-hidden flex flex-col">
                                 <Link href={`/my-lectures/${folder.id}`} className="absolute inset-0 z-10" />
                                 <CardHeader className="pb-2">
                                     <div className="flex justify-between items-start">
@@ -108,8 +123,15 @@ export function FolderManager() {
                                         {status === 'standardized' && <span className="text-[10px] text-green-600 font-bold uppercase tracking-tighter">B2 Ready</span>}
                                     </CardDescription>
                                 </CardHeader>
-                                <CardContent>
-                                    <div className="flex items-center text-sm text-primary font-medium mt-2">
+                                <CardContent className="flex-grow">
+                                    <div className="space-y-2 mt-2">
+                                        <div className="flex justify-between text-[10px] font-black uppercase tracking-tighter text-muted-foreground">
+                                            <span>Прогресс изучения</span>
+                                            <span className="text-primary">{progress}%</span>
+                                        </div>
+                                        <Progress value={progress} className="h-1.5" />
+                                    </div>
+                                    <div className="flex items-center text-sm text-primary font-medium mt-4">
                                         Открыть <ChevronRight className="h-4 w-4 ml-1" />
                                     </div>
                                 </CardContent>

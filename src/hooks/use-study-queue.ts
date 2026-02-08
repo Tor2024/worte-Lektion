@@ -190,10 +190,16 @@ export function useStudyQueue() {
                 nextInterval = 3;
             } else {
                 newStatus = 'review';
-                // Success calculations (SM2 based)
-                if (nextInterval === 0) nextInterval = 1;
-                else if (nextInterval === 1) nextInterval = 3;
-                else nextInterval = Math.ceil(nextInterval * nextEase);
+                // User-defined sequence: 1 -> 3 -> 7 -> 15 -> 30 -> 60
+                if (nextInterval <= 1) nextInterval = 3;
+                else if (nextInterval <= 3) nextInterval = 7;
+                else if (nextInterval <= 7) nextInterval = 15;
+                else if (nextInterval <= 15) nextInterval = 30;
+                else if (nextInterval <= 30) nextInterval = 60;
+                else {
+                    // Success calculations (SM2 based) for long-term retention
+                    nextInterval = Math.ceil(nextInterval * nextEase);
+                }
             }
         }
 

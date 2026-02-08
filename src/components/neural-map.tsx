@@ -112,6 +112,24 @@ export function NeuralMap({ words, items, limit = 50, title = "Neural Activity" 
                 </h3>
             </div>
 
+            {/* Legend */}
+            <div className="absolute top-24 left-8 z-10 hidden md:flex flex-col gap-2 bg-slate-900/40 backdrop-blur-md p-4 rounded-2xl border border-white/5 shadow-xl">
+                {[
+                    { label: 'Мастер', color: 'bg-yellow-500' },
+                    { label: 'Сила', color: 'bg-pink-500' },
+                    { label: 'Стабильность', color: 'bg-purple-500' },
+                    { label: 'Закрепление', color: 'bg-indigo-500' },
+                    { label: 'Усвоение', color: 'bg-blue-500' },
+                    { label: 'Начало', color: 'bg-cyan-500' },
+                    { label: 'Новое', color: 'bg-slate-600' }
+                ].map((tier, i) => (
+                    <div key={i} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-tighter text-white/70">
+                        <div className={cn("w-2 h-2 rounded-full", tier.color)} />
+                        {tier.label}
+                    </div>
+                ))}
+            </div>
+
             {/* Neural Connections (Metaphorical Nodes) */}
             <div className="absolute inset-0 flex items-center justify-center pt-24 p-8 overflow-y-auto">
                 <div className="relative w-full flex flex-wrap justify-center content-center gap-3">
@@ -137,11 +155,19 @@ export function NeuralMap({ words, items, limit = 50, title = "Neural Activity" 
                                             onMouseLeave={() => setHoveredWord(null)}
                                             className={cn(
                                                 "relative flex items-center justify-center px-4 py-2 rounded-2xl border cursor-help transition-all duration-300",
-                                                strength > 0.8
-                                                    ? 'bg-yellow-500/10 border-yellow-500/50 text-yellow-500 shadow-[0_0_15px_-5px_orange]'
-                                                    : strength > 0.3
-                                                        ? 'bg-blue-500/10 border-blue-500/50 text-blue-400 shadow-[0_0_15px_-5px_blue]'
-                                                        : 'bg-slate-900/50 border-slate-800 text-slate-500',
+                                                (w.sm2State?.interval || 0) === 0
+                                                    ? 'bg-slate-900/50 border-slate-800 text-slate-500'
+                                                    : w.sm2State?.interval! < 3
+                                                        ? 'bg-cyan-500/10 border-cyan-500/50 text-cyan-400 shadow-[0_0_15px_-5px_cyan]'
+                                                        : w.sm2State?.interval! < 7
+                                                            ? 'bg-blue-500/10 border-blue-500/50 text-blue-400 shadow-[0_0_15px_-5px_blue]'
+                                                            : w.sm2State?.interval! < 15
+                                                                ? 'bg-indigo-500/10 border-indigo-500/50 text-indigo-400 shadow-[0_0_15px_-5px_indigo]'
+                                                                : w.sm2State?.interval! < 30
+                                                                    ? 'bg-purple-500/10 border-purple-500/50 text-purple-400 shadow-[0_0_15px_-5px_purple]'
+                                                                    : w.sm2State?.interval! < 60
+                                                                        ? 'bg-pink-500/10 border-pink-500/50 text-pink-400 shadow-[0_0_15px_-5px_pink]'
+                                                                        : 'bg-yellow-500/10 border-yellow-500/50 text-yellow-500 shadow-[0_0_15px_-5px_orange]',
                                                 isActive && "border-primary bg-primary/20 ring-4 ring-primary/20 scale-110 shadow-[0_0_25px_rgba(59,130,246,0.5)] z-50"
                                             )}
                                         >
@@ -199,7 +225,14 @@ export function NeuralMap({ words, items, limit = 50, title = "Neural Activity" 
                                                 </div>
                                                 <div className="flex flex-col">
                                                     <span className="text-[10px] text-slate-500 uppercase font-black tracking-widest">Сила</span>
-                                                    <span className={cn("font-bold", strength > 0.8 ? "text-yellow-400" : "text-blue-400")}>
+                                                    <span className={cn("font-bold",
+                                                        (w.sm2State?.interval || 0) === 0 ? "text-slate-500" :
+                                                            w.sm2State!.interval < 3 ? "text-cyan-400" :
+                                                                w.sm2State!.interval < 7 ? "text-blue-400" :
+                                                                    w.sm2State!.interval < 15 ? "text-indigo-400" :
+                                                                        w.sm2State!.interval < 30 ? "text-purple-400" :
+                                                                            w.sm2State!.interval < 60 ? "text-pink-400" : "text-yellow-400"
+                                                    )}>
                                                         {Math.round(strength * 100)}%
                                                     </span>
                                                 </div>
