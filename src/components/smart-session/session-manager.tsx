@@ -20,9 +20,11 @@ type GlobalPhase = 'priming' | 'recognition' | 'production' | 'remedial';
 type SessionState = 'loading' | 'intro' | 'active' | 'consolidation' | 'summary';
 
 export function SmartSessionManager() {
-    const { getDailySession, updateItemStatus } = useStudyQueue();
+    const { getDailySession, updateItemStatus, overdueCount, dailyLimit } = useStudyQueue();
     const [sessionQueue, setSessionQueue] = useState<StudyQueueItem[]>([]);
     const [sessionState, setSessionState] = useState<SessionState>('loading');
+    const [sessionMode, setSessionMode] = useState<'learning' | 'review-only'>('learning');
+    const [sessionNumber, setSessionNumber] = useState(1);
 
     // Batch Management
     const BATCH_SIZE = 2; // Was 5
@@ -42,9 +44,12 @@ export function SmartSessionManager() {
     const [batchStories, setBatchStories] = useState<Record<number, string>>({});
 
     useEffect(() => {
-        const items = getDailySession(40);
-        setSessionQueue(items);
-        setSessionState(items.length > 0 ? 'intro' : 'summary');
+        // New session structure: { items, mode, sessionNumber }
+        const session = getDailySession();
+        setSessionQueue(session.items);
+        setSessionMode(session.mode);
+        setSessionNumber(session.sessionNumber);
+        setSessionState(session.items.length > 0 ? 'intro' : 'summary');
     }, [getDailySession]);
 
     // Derived: Current batch words
@@ -142,16 +147,44 @@ export function SmartSessionManager() {
             <div className="flex flex-col items-center justify-center p-8 text-center space-y-6 max-w-lg mx-auto mt-10">
                 <div className="relative">
                     <BrainCircuit className="h-24 w-24 text-primary animate-pulse" />
-                    <Badge className="absolute -top-2 -right-2 bg-green-500">v2.0 Beta</Badge>
+                    <Badge className="absolute -top-2 -right-2 bg-green-500">v2.2</Badge>
                 </div>
-                <h1 className="text-4xl font-black tracking-tighter">ПАКЕТНЫЙ РЕЖИМ</h1>
-                <p className="text-muted-foreground text-lg leading-relaxed">
-                    Подготовлено <strong>{sessionQueue.length}</strong> объектов.
-                    <br />Разбито на <strong>{totalBatches} этапа</strong> по {BATCH_SIZE} слов.
-                    <br /><span className="block mt-2 font-mono text-sm">ЗНАКОМСТВО → ДРИЛЛ (x2) → КОНТЕКСТ</span>
-                </p>
+
+                {sessionMode === 'review-only' ? (
+                    <>
+                        <h1 className="text-4xl font-black tracking-tighter">РЕЖИМ ПОВТОРЕНИЯ</h1>
+                        <p className="text-muted-foreground text-lg leading-relaxed">
+                            Сессия #{sessionNumber}. Дневной лимит достигнут (2 сессии).
+                            <br />Повторяем <strong>{sessionQueue.length}</strong> слов, изученных сегодня.
+                        </p>
+                        <div className="w-full bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 p-4 rounded-xl">
+                            <span className="text-blue-700 dark:text-blue-400 font-bold">
+                                🔄 Только повторение — новых слов нет
+                            </span>
+                        </div>
+                    </>
+                ) : (
+                    <>
+                        <h1 className="text-4xl font-black tracking-tighter">ПАКЕТНЫЙ РЕЖИМ</h1>
+                        <p className="text-muted-foreground text-lg leading-relaxed">
+                            Сессия #{sessionNumber}/2. Подготовлено <strong>{sessionQueue.length}</strong> объектов.
+                            <br />Разбито на <strong>{totalBatches} этапа</strong> по {BATCH_SIZE} слов.
+                            <br /><span className="block mt-2 font-mono text-sm">ЗНАКОМСТВО → ДРИЛЛ (x2) → КОНТЕКСТ</span>
+                        </p>
+
+                        {/* Overdue words warning */}
+                        {overdueCount > 0 && (
+                            <div className="w-full bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 p-4 rounded-xl text-center">
+                                <span className="text-amber-700 dark:text-amber-400 font-bold">
+                                    ⚠️ + {Math.min(overdueCount, 40)} просроченных слов в конце
+                                </span>
+                            </div>
+                        )}
+                    </>
+                )}
+
                 <Button size="lg" className="w-full text-xl h-16 shadow-xl hover:scale-[1.02] transition-transform" onClick={() => setSessionState('active')}>
-                    Начать Сессию
+                    {sessionMode === 'review-only' ? 'Начать Повторение' : 'Начать Сессию'}
                 </Button>
             </div>
         );
@@ -251,7 +284,7 @@ export function SmartSessionManager() {
             </div>
 
             <div className="min-h-[500px] flex flex-col justify-center">
-                {currentItem && (
+                {currentItem ? (
                     <>
                         {currentPhase === 'priming' && (
                             <PrimingView key={currentItem.id} item={currentItem} onNext={() => handleNext('success')} />
@@ -282,6 +315,30 @@ export function SmartSessionManager() {
                             />
                         )}
                     </>
+                ) : (
+                    /* Fallback UI when currentItem is NULL - fixes stuck UI bug */
+                    <div className="text-center space-y-4 p-8">
+                        <BrainCircuit className="h-16 w-16 mx-auto text-muted-foreground animate-pulse" />
+                        <p className="text-muted-foreground">Переход к следующему этапу...</p>
+                        <Button
+                            variant="outline"
+                            onClick={() => {
+                                // Auto-advance to next phase if stuck
+                                if (currentPhase === 'recognition') {
+                                    setCurrentPhase('production');
+                                    setPhaseIndex(0);
+                                } else if (currentBatchIndex < totalBatches - 1) {
+                                    setCurrentBatchIndex(i => i + 1);
+                                    setCurrentPhase('priming');
+                                    setPhaseIndex(0);
+                                } else {
+                                    setSessionState('consolidation');
+                                }
+                            }}
+                        >
+                            Продолжить →
+                        </Button>
+                    </div>
                 )}
             </div>
         </div>

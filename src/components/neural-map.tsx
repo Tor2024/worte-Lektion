@@ -112,18 +112,18 @@ export function NeuralMap({ words, items, limit = 50, title = "Neural Activity" 
                 </h3>
             </div>
 
-            {/* Legend */}
-            <div className="absolute top-24 left-8 z-10 hidden md:flex flex-col gap-2 bg-slate-900/40 backdrop-blur-md p-4 rounded-2xl border border-white/5 shadow-xl">
+            {/* Legend - Horizontal at bottom */}
+            <div className="absolute top-8 right-8 z-10 hidden md:flex flex-wrap gap-3 bg-slate-900/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/5 shadow-xl max-w-[500px]">
                 {[
                     { label: 'Мастер', color: 'bg-yellow-500' },
                     { label: 'Сила', color: 'bg-pink-500' },
-                    { label: 'Стабильность', color: 'bg-purple-500' },
-                    { label: 'Закрепление', color: 'bg-indigo-500' },
-                    { label: 'Усвоение', color: 'bg-blue-500' },
-                    { label: 'Начало', color: 'bg-cyan-500' },
-                    { label: 'Новое', color: 'bg-slate-600' }
+                    { label: 'Стаб.', color: 'bg-purple-500' },
+                    { label: 'Закр.', color: 'bg-indigo-500' },
+                    { label: 'Усв.', color: 'bg-blue-500' },
+                    { label: 'Нач.', color: 'bg-cyan-500' },
+                    { label: 'Нов.', color: 'bg-slate-600' }
                 ].map((tier, i) => (
-                    <div key={i} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-tighter text-white/70">
+                    <div key={i} className="flex items-center gap-1 text-[9px] font-black uppercase tracking-tight text-white/70">
                         <div className={cn("w-2 h-2 rounded-full", tier.color)} />
                         {tier.label}
                     </div>
@@ -131,7 +131,7 @@ export function NeuralMap({ words, items, limit = 50, title = "Neural Activity" 
             </div>
 
             {/* Neural Connections (Metaphorical Nodes) */}
-            <div className="absolute inset-0 flex items-center justify-center pt-24 p-8 overflow-y-auto">
+            <div className="absolute inset-0 flex items-center justify-center pt-16 pb-28 px-8 overflow-y-auto">
                 <div className="relative w-full flex flex-wrap justify-center content-center gap-3">
                     {displayWords.map((w, idx) => {
                         const strength = Math.min((w.sm2State?.interval || 0) / 30, 1); // 1 = 30 days interval

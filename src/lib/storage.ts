@@ -8,6 +8,7 @@ const KEYS = {
     STUDY_QUEUE: 'deutsch-learning-study-queue-v1',
     KNOWN_WORDS: 'knownWords',
     EXAM_TEXTS: 'custom_exam_texts',
+    DAILY_SESSION: 'deutsch-daily-session-v1',
 } as const;
 
 export type ProgressData = { [key: string]: number };
@@ -122,5 +123,81 @@ export const storage = {
         } catch (e) {
             console.warn('LS Write Error', e);
         }
+    },
+
+    // Daily session tracking (reset at 4:00 AM)
+    getDailySessionData: (): DailySessionData => {
+        if (typeof window === 'undefined') return getDefaultDailySession();
+        try {
+            const item = window.localStorage.getItem(KEYS.DAILY_SESSION);
+            if (!item) return getDefaultDailySession();
+
+            const data = JSON.parse(item) as DailySessionData;
+
+            // Check if we need to reset (new day after 4:00 AM)
+            if (shouldResetDailySession(data.lastSessionDate)) {
+                return getDefaultDailySession();
+            }
+
+            return data;
+        } catch (e) {
+            return getDefaultDailySession();
+        }
+    },
+
+    setDailySessionData: (data: DailySessionData) => {
+        if (typeof window === 'undefined') return;
+        try {
+            window.localStorage.setItem(KEYS.DAILY_SESSION, JSON.stringify(data));
+        } catch (e) {
+            console.warn('LS Write Error', e);
+        }
+    },
+
+    // Increment session count and save learned words
+    incrementSession: (learnedWordIds: string[]): DailySessionData => {
+        const current = storage.getDailySessionData();
+        const updated: DailySessionData = {
+            lastSessionDate: Date.now(),
+            sessionCount: current.sessionCount + 1,
+            learnedTodayIds: [...new Set([...current.learnedTodayIds, ...learnedWordIds])]
+        };
+        storage.setDailySessionData(updated);
+        return updated;
     }
 };
+
+// Types and helpers for daily session
+export interface DailySessionData {
+    lastSessionDate: number;      // Timestamp of last session
+    sessionCount: number;         // Sessions completed today (max meaningful: 2)
+    learnedTodayIds: string[];    // Word IDs learned today (for review-only mode)
+}
+
+function getDefaultDailySession(): DailySessionData {
+    return {
+        lastSessionDate: 0,
+        sessionCount: 0,
+        learnedTodayIds: []
+    };
+}
+
+// Check if we should reset daily session (after 4:00 AM)
+function shouldResetDailySession(lastSessionDate: number): boolean {
+    if (lastSessionDate === 0) return false;
+
+    const now = new Date();
+    const last = new Date(lastSessionDate);
+
+    // Get today's 4:00 AM
+    const todayReset = new Date(now);
+    todayReset.setHours(4, 0, 0, 0);
+
+    // If current time is before 4:00 AM, use yesterday's 4:00 AM as reset point
+    if (now < todayReset) {
+        todayReset.setDate(todayReset.getDate() - 1);
+    }
+
+    // Reset if last session was before the reset point
+    return last < todayReset;
+}

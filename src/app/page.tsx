@@ -30,7 +30,7 @@ import { storage } from '@/lib/storage';
 import { useCurriculumData } from '@/hooks/use-curriculum-data';
 
 function DailySessionWidget() {
-  const { totalDue, totalNew, totalLearning, totalReview, totalLeeches, totalAvailable, isLoading } = useStudyQueue();
+  const { totalDue, totalNew, totalLearning, totalReview, totalLeeches, totalAvailable, overdueCount, dailyLimit, queue, isLoading } = useStudyQueue();
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => { setIsClient(true) }, []);
@@ -56,21 +56,27 @@ function DailySessionWidget() {
       </CardHeader>
       <CardContent className="flex-grow flex flex-col justify-center relative z-10 py-4">
         <div className="grid grid-cols-2 gap-3">
-          <div className="bg-yellow-500/10 p-4 rounded-xl border border-yellow-500/20 shadow-[0_0_10px_-5px_rgba(234,179,8,0.3)]">
-            <div className="text-3xl font-black text-yellow-600 dark:text-yellow-400">{isLoading ? '...' : totalReview}</div>
-            <div className="text-[10px] font-bold text-yellow-700/70 dark:text-yellow-400/70 uppercase tracking-tighter">Выучено</div>
+          {/* Graduated - mastered words (interval >= 60 days) */}
+          <div className="bg-green-500/10 p-4 rounded-xl border border-green-500/20 shadow-[0_0_10px_-5px_rgba(34,197,94,0.3)]">
+            <div className="text-3xl font-black text-green-600 dark:text-green-400">
+              {isLoading ? '...' : queue.filter(i => i.interval >= 60).length}
+            </div>
+            <div className="text-[10px] font-bold text-green-700/70 dark:text-green-400/70 uppercase tracking-tighter">Выучено</div>
           </div>
+          {/* Due for review today */}
+          <div className="bg-purple-500/10 p-4 rounded-xl border border-purple-500/20 shadow-[0_0_10px_-5px_rgba(168,85,247,0.3)]">
+            <div className="text-3xl font-black text-purple-600 dark:text-purple-400">{isLoading ? '...' : totalDue}</div>
+            <div className="text-[10px] font-bold text-purple-700/70 dark:text-purple-400/70 uppercase tracking-tighter">Повторить</div>
+          </div>
+          {/* Learning in progress */}
           <div className="bg-blue-500/10 p-4 rounded-xl border border-blue-500/20 shadow-[0_0_10px_-5px_rgba(59,130,246,0.3)]">
             <div className="text-3xl font-black text-blue-600 dark:text-blue-400">{isLoading ? '...' : totalLearning}</div>
             <div className="text-[10px] font-bold text-blue-700/70 dark:text-blue-400/70 uppercase tracking-tighter">В процессе</div>
           </div>
-          <div className="bg-background/50 p-4 rounded-xl border">
-            <div className="text-3xl font-black text-foreground">{isLoading ? '...' : totalNew}</div>
-            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">Новые</div>
-          </div>
-          <div className="bg-red-500/5 p-4 rounded-xl border border-red-500/10">
-            <div className="text-3xl font-black text-red-500">{isLoading ? '...' : totalDue}</div>
-            <div className="text-[10px] font-bold text-red-500/70 uppercase tracking-tighter">Повторить</div>
+          {/* New words not yet started */}
+          <div className="bg-slate-500/10 p-4 rounded-xl border border-slate-500/20">
+            <div className="text-3xl font-black text-slate-600 dark:text-slate-400">{isLoading ? '...' : totalNew}</div>
+            <div className="text-[10px] font-bold text-slate-500/70 uppercase tracking-tighter">Новые</div>
           </div>
         </div>
 
@@ -81,13 +87,18 @@ function DailySessionWidget() {
               <div className="text-xl font-black text-primary animate-pulse flex items-center gap-2">
                 {totalAvailable} слов <span className="text-xs font-normal text-muted-foreground uppercase tracking-wider">готово</span>
               </div>
-              <div className="text-xs text-muted-foreground">Ежедневная квота заполнена</div>
+              <div className="text-xs text-muted-foreground">Лимит: {dailyLimit} слов/день</div>
             </div>
             <div className="h-2 w-2 rounded-full bg-primary animate-ping" />
           </div>
         )}
+        {overdueCount > 0 && (
+          <div className="mt-3 bg-amber-500/10 border border-amber-500/30 p-3 rounded-xl flex items-center gap-2">
+            <span className="text-sm font-bold text-amber-600 dark:text-amber-400">⚠️ Просрочено: {overdueCount}</span>
+          </div>
+        )}
         {totalLeeches > 0 && (
-          <div className="mt-4 bg-red-500/10 border border-red-500/50 p-3 rounded-xl flex items-center justify-between animate-pulse">
+          <div className="mt-3 bg-red-500/10 border border-red-500/50 p-3 rounded-xl flex items-center justify-between animate-pulse">
             <div className="flex items-center gap-2">
               <Siren className="h-5 w-5 text-red-500" />
               <span className="text-sm font-bold text-red-600">Сложные слова: {totalLeeches}</span>

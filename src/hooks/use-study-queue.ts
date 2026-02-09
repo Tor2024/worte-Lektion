@@ -64,44 +64,68 @@ export function useStudyQueue() {
         }
     }, [folders, isInitialLoadDone, syncWithFolders]);
 
-    const getDailySession = useCallback((limit: number = 40) => {
-        if (localQueue.length === 0) return [];
+    // Session mode type for UI display
+    type SessionMode = 'learning' | 'review-only';
+
+    const getDailySession = useCallback((): { items: StudyQueueItem[], mode: SessionMode, sessionNumber: number } => {
+        if (localQueue.length === 0) return { items: [], mode: 'learning', sessionNumber: 1 };
+
+        const dailyData = storage.getDailySessionData();
+        const sessionNumber = dailyData.sessionCount + 1; // Next session number
+        const now = Date.now();
+
+        // Session 3+: Review-only mode (words learned today)
+        if (sessionNumber > 2) {
+            const todayWords = localQueue.filter((item: StudyQueueItem) =>
+                dailyData.learnedTodayIds.includes(item.id)
+            );
+            return { items: todayWords, mode: 'review-only', sessionNumber };
+        }
+
+        // Session 1-2: Normal learning mode
+        const MAIN_LIMIT = 40;      // Main words per session
+        const OVERDUE_LIMIT = 40;   // Overdue words per session (added separately)
 
         const LEVEL_PRIORITY: Record<string, number> = {
             'Beruf': 100, 'B2': 90, 'B1': 80, 'A2': 70, 'A1': 60, 'A0': 50
         };
 
-        const now = Date.now();
+        // 1. Get overdue words (past due date) - these are EXTRA, not counted in main limit
+        const overdueWords = localQueue
+            .filter((item: StudyQueueItem) =>
+                item.status !== 'new' && item.nextReviewNum < now
+            )
+            .sort((a, b) => (a.nextReviewNum || 0) - (b.nextReviewNum || 0))
+            .slice(0, OVERDUE_LIMIT);
 
-        // Selection limits
-        const TOTAL_LIMIT = limit; // Default 40
-        const PREFERRED_NEW_LIMIT = 10;
-        const PREFERRED_OLD_LIMIT = 30;
+        // 2. Get words due TODAY (not overdue)
+        const todayStart = new Date(now);
+        todayStart.setHours(0, 0, 0, 0);
+        const todayEnd = new Date(now);
+        todayEnd.setHours(23, 59, 59, 999);
 
-        // 1. Get all Old items (Review, Learning, or Leech status)
-        // Sort by nextReviewNum (most overdue first)
-        const oldWords = localQueue
-            .filter((item: StudyQueueItem) => item.status !== 'new')
+        const dueTodayWords = localQueue
+            .filter((item: StudyQueueItem) =>
+                item.status !== 'new' &&
+                item.nextReviewNum >= now &&
+                item.nextReviewNum <= todayEnd.getTime()
+            )
             .sort((a, b) => (a.nextReviewNum || 0) - (b.nextReviewNum || 0));
 
-        // 2. Get New words
+        // 3. Get new words
         const newWords = localQueue.filter((item: StudyQueueItem) => item.status === 'new');
 
-        // Selection strategy:
-        // First, take up to 30 old words
-        const selectedOld = oldWords.slice(0, PREFERRED_OLD_LIMIT);
+        // Selection: Fill main limit with due-today + new, then add overdue at end
+        const mainPool = [...dueTodayWords, ...newWords].slice(0, MAIN_LIMIT);
 
-        // Then, take as many new words as needed to reach 40, but at least 10
-        const neededNewCount = Math.max(PREFERRED_NEW_LIMIT, TOTAL_LIMIT - selectedOld.length);
-        const selectedNew = newWords.slice(0, neededNewCount);
+        // Final session: main pool + overdue (overdue at the END)
+        const finalItems = [...mainPool, ...overdueWords];
 
-        // Final pool of candidates for this session
-        const actionableItems = [...selectedOld, ...selectedNew].slice(0, TOTAL_LIMIT);
+        if (finalItems.length === 0) return { items: [], mode: 'learning', sessionNumber };
 
-        if (actionableItems.length === 0) return [];
-
+        // Group by level for better distribution
         const levelGroups: Record<number, StudyQueueItem[]> = {};
-        actionableItems.forEach((item: any) => {
+        finalItems.forEach((item: any) => {
             const level = item.word?.level ? LEVEL_PRIORITY[item.word.level as keyof typeof LEVEL_PRIORITY] : 0;
             if (!levelGroups[level]) levelGroups[level] = [];
             levelGroups[level].push(item);
@@ -109,6 +133,7 @@ export function useStudyQueue() {
 
         const sortedLevels = Object.keys(levelGroups).map(Number).sort((a, b) => b - a);
         const finalSelection: StudyQueueItem[] = [];
+        const MAX_ITEMS = MAIN_LIMIT + OVERDUE_LIMIT;
 
         for (const level of sortedLevels) {
             const itemsInLevel = levelGroups[level];
@@ -134,14 +159,14 @@ export function useStudyQueue() {
                         finalSelection.push(typeGroups[type][idx]);
                         groupIterators[type]++;
                         hasItems = true;
-                        if (finalSelection.length >= limit) break;
+                        if (finalSelection.length >= MAX_ITEMS) break;
                     }
                 }
-                if (finalSelection.length >= limit) break;
+                if (finalSelection.length >= MAX_ITEMS) break;
             }
-            if (finalSelection.length >= limit) break;
+            if (finalSelection.length >= MAX_ITEMS) break;
         }
-        return finalSelection;
+        return { items: finalSelection, mode: 'learning' as SessionMode, sessionNumber };
     }, [localQueue]);
 
     const updateItemStatus = useCallback(async (wordId: string, result: 'success' | 'fail') => {
@@ -190,12 +215,13 @@ export function useStudyQueue() {
                 nextInterval = 3;
             } else {
                 newStatus = 'review';
-                // User-defined sequence: 1 -> 3 -> 7 -> 15 -> 30 -> 60
+                // User-defined sequence: 1 -> 3 -> 7 -> 15 -> 30 -> 45 -> 60+
                 if (nextInterval <= 1) nextInterval = 3;
                 else if (nextInterval <= 3) nextInterval = 7;
                 else if (nextInterval <= 7) nextInterval = 15;
                 else if (nextInterval <= 15) nextInterval = 30;
-                else if (nextInterval <= 30) nextInterval = 60;
+                else if (nextInterval <= 30) nextInterval = 45;
+                else if (nextInterval <= 45) nextInterval = 60;
                 else {
                     // Success calculations (SM2 based) for long-term retention
                     nextInterval = Math.ceil(nextInterval * nextEase);
@@ -223,22 +249,27 @@ export function useStudyQueue() {
     }, [localQueue]);
 
     const stats = useMemo(() => {
-        const dueCount = localQueue.filter((i: StudyQueueItem) => i.nextReviewNum <= Date.now() && i.status !== 'new').length;
-        const oldCount = localQueue.filter((i: StudyQueueItem) => i.status !== 'new').length;
+        const now = Date.now();
+        const dueCount = localQueue.filter((i: StudyQueueItem) => i.nextReviewNum <= now && i.status !== 'new').length;
+        const overdueCount = localQueue.filter((i: StudyQueueItem) => i.nextReviewNum < now && i.status !== 'new').length;
         const newCount = localQueue.filter((i: StudyQueueItem) => i.status === 'new').length;
         const learningCount = localQueue.filter((i: StudyQueueItem) => i.status === 'learning' || i.status === 'leech').length;
         const reviewCount = localQueue.filter((i: StudyQueueItem) => i.status === 'review').length;
 
-        // Match getDailySession logic for availability
-        const availableTotal = Math.min(localQueue.length, 40);
+        // Dynamic limit: 40 on first day, 80 after
+        const hasHistory = localQueue.some((i: StudyQueueItem) => i.status !== 'new');
+        const dailyLimit = hasHistory ? 80 : 40;
+        const availableTotal = Math.min(localQueue.length, dailyLimit);
 
         return {
             totalDue: dueCount,
+            overdueCount,
             totalNew: newCount,
             totalLearning: learningCount,
             totalReview: reviewCount,
             totalLeeches: localQueue.filter((i: StudyQueueItem) => i.status === 'leech').length,
-            totalAvailable: availableTotal
+            totalAvailable: availableTotal,
+            dailyLimit
         };
     }, [localQueue]);
 
