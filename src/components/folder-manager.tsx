@@ -38,13 +38,13 @@ export function FolderManager() {
         const status = needsUpdate ? 'needs-update' : 'standardized';
 
         // Calculate progress based on SRS status
-        const folderWordIds = new Set(folderWords.map(w => w.id));
-        const folderTerms = new Set(folderWords.map(w => w.word.german));
-
-        const learnedInFolder = queue.filter(item => {
-            const matchesId = folderWordIds.has(item.id);
-            const matchesTerm = item.word?.german && folderTerms.has(item.word.german);
-            return (matchesId || matchesTerm) && item.status !== 'new';
+        // We iterate folder words to ensure we never exceed 100% (queue might have duplicates)
+        const learnedInFolder = folderWords.filter(word => {
+            const queueItem = queue.find(q =>
+                q.id === word.id ||
+                (q.word?.german === word.word.german)
+            );
+            return queueItem && queueItem.status !== 'new';
         }).length;
 
         const progress = folderWords.length > 0
