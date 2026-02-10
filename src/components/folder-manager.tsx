@@ -39,9 +39,13 @@ export function FolderManager() {
 
         // Calculate progress based on SRS status
         const folderWordIds = new Set(folderWords.map(w => w.id));
-        const learnedInFolder = queue.filter(item =>
-            folderWordIds.has(item.id) && item.status !== 'new'
-        ).length;
+        const folderTerms = new Set(folderWords.map(w => w.word.german));
+
+        const learnedInFolder = queue.filter(item => {
+            const matchesId = folderWordIds.has(item.id);
+            const matchesTerm = item.word?.german && folderTerms.has(item.word.german);
+            return (matchesId || matchesTerm) && item.status !== 'new';
+        }).length;
 
         const progress = folderWords.length > 0
             ? Math.round((learnedInFolder / folderWords.length) * 100)

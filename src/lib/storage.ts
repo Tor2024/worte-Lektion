@@ -85,7 +85,9 @@ export const storage = {
     setStudyQueue: (data: StudyQueueItem[]) => {
         if (typeof window === 'undefined') return;
         try {
-            window.localStorage.setItem(KEYS.STUDY_QUEUE, JSON.stringify(data));
+            const json = JSON.stringify(data);
+            window.localStorage.setItem(KEYS.STUDY_QUEUE, json);
+            window.dispatchEvent(new StorageEvent('storage', { key: KEYS.STUDY_QUEUE, newValue: json }));
         } catch (e) {
             console.warn('LS Write Error', e);
         }

@@ -14,6 +14,23 @@ export function useStudyQueue() {
     useEffect(() => {
         setLocalQueue(storage.getStudyQueue());
         setIsInitialLoadDone(true);
+
+        const handleStorageChange = (event: StorageEvent) => {
+            if (event.key === 'deutsch-learning-study-queue-v1' && event.newValue) {
+                try {
+                    const next = JSON.parse(event.newValue);
+                    setLocalQueue(prev => {
+                        if (JSON.stringify(prev) === JSON.stringify(next)) return prev;
+                        return next;
+                    });
+                } catch (e) {
+                    console.error("Failed to sync queue from storage", e);
+                }
+            }
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
     }, []);
 
     const syncWithFolders = useCallback(() => {
