@@ -98,12 +98,31 @@ export function useStudyQueue() {
         const sessionNumber = dailyData.sessionCount + 1; // Next session number
         const now = Date.now();
 
-        // Session 3+: Review-only mode (words learned today)
+        // Session 3+: Review-only mode (No NEW words)
+        // We prioritize words learned today, but if that list is empty (or user wants more),
+        // we fill with ANY due words.
         if (sessionNumber > 2) {
-            const todayWords = queueToProcess.filter((item: StudyQueueItem) =>
+            let reviewPool = queueToProcess.filter((item: StudyQueueItem) =>
                 dailyData.learnedTodayIds.includes(item.id)
             );
-            return { items: todayWords, mode: 'review-only', sessionNumber };
+
+            // If "Today's Words" are empty or few (< 20), add ANY due words (excluding 'new')
+            // This ensures users are never blocked from reviewing, even if they exceeded session limits
+            if (reviewPool.length < 20) {
+                const otherDue = queueToProcess
+                    .filter(item => item.status !== 'new' && item.nextReviewNum <= now && !dailyData.learnedTodayIds.includes(item.id))
+                    .sort((a, b) => a.nextReviewNum - b.nextReviewNum)
+                    .slice(0, 40); // Cap at 40
+                reviewPool = [...reviewPool, ...otherDue];
+            }
+
+            // If strictly nothing to review, and nothing learned today, maybe the user wants to learn NEW words?
+            // But strict limit prevents it. We return empty in that specific case.
+            if (reviewPool.length === 0) {
+                return { items: [], mode: 'review-only', sessionNumber };
+            }
+
+            return { items: reviewPool, mode: 'review-only', sessionNumber };
         }
 
         // Session 1-2: Normal learning mode
