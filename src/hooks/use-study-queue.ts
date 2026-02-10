@@ -67,8 +67,15 @@ export function useStudyQueue() {
     // Session mode type for UI display
     type SessionMode = 'learning' | 'review-only';
 
-    const getDailySession = useCallback((): { items: StudyQueueItem[], mode: SessionMode, sessionNumber: number } => {
-        if (localQueue.length === 0) return { items: [], mode: 'learning', sessionNumber: 1 };
+    const getDailySession = useCallback((folderId?: string): { items: StudyQueueItem[], mode: SessionMode, sessionNumber: number } => {
+        let queueToProcess = localQueue;
+
+        // FILTER BY FOLDER ID IF PROVIDED
+        if (folderId) {
+            queueToProcess = localQueue.filter(item => item.tags && item.tags.includes(folderId));
+        }
+
+        if (queueToProcess.length === 0) return { items: [], mode: 'learning', sessionNumber: 1 };
 
         const dailyData = storage.getDailySessionData();
         const sessionNumber = dailyData.sessionCount + 1; // Next session number
@@ -76,7 +83,7 @@ export function useStudyQueue() {
 
         // Session 3+: Review-only mode (words learned today)
         if (sessionNumber > 2) {
-            const todayWords = localQueue.filter((item: StudyQueueItem) =>
+            const todayWords = queueToProcess.filter((item: StudyQueueItem) =>
                 dailyData.learnedTodayIds.includes(item.id)
             );
             return { items: todayWords, mode: 'review-only', sessionNumber };
@@ -91,7 +98,7 @@ export function useStudyQueue() {
         };
 
         // 1. Get overdue words (past due date) - these are EXTRA, not counted in main limit
-        const overdueWords = localQueue
+        const overdueWords = queueToProcess
             .filter((item: StudyQueueItem) =>
                 item.status !== 'new' && item.nextReviewNum < now
             )
@@ -104,7 +111,7 @@ export function useStudyQueue() {
         const todayEnd = new Date(now);
         todayEnd.setHours(23, 59, 59, 999);
 
-        const dueTodayWords = localQueue
+        const dueTodayWords = queueToProcess
             .filter((item: StudyQueueItem) =>
                 item.status !== 'new' &&
                 item.nextReviewNum >= now &&
@@ -113,7 +120,7 @@ export function useStudyQueue() {
             .sort((a, b) => (a.nextReviewNum || 0) - (b.nextReviewNum || 0));
 
         // 3. Get new words
-        const newWords = localQueue.filter((item: StudyQueueItem) => item.status === 'new');
+        const newWords = queueToProcess.filter((item: StudyQueueItem) => item.status === 'new');
 
         // Selection: Fill main limit with due-today + new, then add overdue at end
         const mainPool = [...dueTodayWords, ...newWords].slice(0, MAIN_LIMIT);

@@ -35,10 +35,6 @@ export default function FolderDetailsPage({ params }: { params: Promise<{ folder
     const [showAddWord, setShowAddWord] = useState(false);
     const [reverseMode, setReverseMode] = useState(false);
 
-    // Session State
-    const [sessionMode, setSessionMode] = useState(false);
-    const [sessionWords, setSessionWords] = useState<UserVocabularyWord[]>([]);
-
     // Batch Refresh State
     const [isBatchRefreshing, setIsBatchRefreshing] = useState(false);
     const [refreshProgress, setRefreshProgress] = useState('');
@@ -89,19 +85,7 @@ export default function FolderDetailsPage({ params }: { params: Promise<{ folder
 
     const startSession = () => {
         if (!folder) return;
-        // Logic: 5 newest + 15 due/random
-        // Simplified: Just take last 20 added for now (User requested 20 words session)
-        // Or if SRS implemented, take due first.
-
-        // Let's implement a mix:
-        const sortedByDate = [...folder.words].sort((a, b) => b.addedAt - a.addedAt);
-        const newWords = sortedByDate.slice(0, 5);
-        const rest = sortedByDate.slice(5).sort(() => 0.5 - Math.random());
-        const reviewWords = rest.slice(0, 15);
-
-        const session = [...newWords, ...reviewWords].sort(() => 0.5 - Math.random());
-        setSessionWords(session);
-        setSessionMode(true);
+        router.push(`/daily-session?folderId=${folderId}`);
     };
 
     if (!folder) {
@@ -115,7 +99,7 @@ export default function FolderDetailsPage({ params }: { params: Promise<{ folder
         )
     }
 
-    const displayWords = sessionMode ? sessionWords : folder.words;
+    const displayWords = folder.words;
 
     const handleRefreshWord = async (userWord: UserVocabularyWord) => {
         try {
@@ -258,37 +242,24 @@ export default function FolderDetailsPage({ params }: { params: Promise<{ folder
             </div>
 
             {/* LEARNING DASHBOARD */}
-            {!sessionMode && (
-                <LearningDashboard
-                    totalWords={folder.words.length}
-                    onStartSession={startSession}
-                    onGenerateStory={() => router.push(`/my-lectures/${folderId}/story`)}
-                    onUsageCoach={() => router.push(`/my-lectures/${folderId}/coach`)}
-                    onRoleplay={() => router.push(`/my-lectures/${folderId}/roleplay`)}
-                    onPodcast={() => router.push(`/my-lectures/${folderId}/podcast`)}
-                    onInterivew={() => router.push(`/my-lectures/${folderId}/interview`)}
-                    onCollocation={() => router.push(`/my-lectures/${folderId}/collocation`)}
-                    onSynonymSwap={() => router.push(`/my-lectures/${folderId}/synonym`)}
-                    onStartDrill={() => router.push(`/my-lectures/${folderId}/drill`)}
-                    onRektionDrill={() => router.push(`/my-lectures/${folderId}/rektion`)}
-                />
-            )}
+            <LearningDashboard
+                totalWords={folder.words.length}
+                onStartSession={startSession}
+                onGenerateStory={() => router.push(`/my-lectures/${folderId}/story`)}
+                onUsageCoach={() => router.push(`/my-lectures/${folderId}/coach`)}
+                onRoleplay={() => router.push(`/my-lectures/${folderId}/roleplay`)}
+                onPodcast={() => router.push(`/my-lectures/${folderId}/podcast`)}
+                onInterivew={() => router.push(`/my-lectures/${folderId}/interview`)}
+                onCollocation={() => router.push(`/my-lectures/${folderId}/collocation`)}
+                onSynonymSwap={() => router.push(`/my-lectures/${folderId}/synonym`)}
+                onStartDrill={() => router.push(`/my-lectures/${folderId}/drill`)}
+                onRektionDrill={() => router.push(`/my-lectures/${folderId}/rektion`)}
+            />
 
-            {/* SESSION BANNER */}
-            {sessionMode && (
-                <div className="bg-primary/10 border border-primary/20 p-4 rounded-lg mb-6 flex justify-between items-center">
-                    <div className="flex items-center gap-3">
-                        <span className="bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded">SESSION ACTIVE</span>
-                        <p className="text-sm font-medium">Показываются только {sessionWords.length} выбранных слов.</p>
-                    </div>
-                    <Button size="sm" variant="ghost" onClick={() => setSessionMode(false)}>
-                        <X className="h-4 w-4 mr-2" /> Завершить сессию
-                    </Button>
-                </div>
-            )}
+
 
             {/* ADD WORD (Only in normal mode) */}
-            {(!sessionMode && showAddWord) && (
+            {showAddWord && (
                 <Card className="mb-8 border-primary/20 bg-primary/5">
                     <CardContent className="pt-6">
                         <form onSubmit={handleAddWord} className="flex gap-2 items-center">
@@ -336,18 +307,16 @@ export default function FolderDetailsPage({ params }: { params: Promise<{ folder
                             onRefresh={() => handleRefreshWord(userWord)}
                         />
 
-                        {!sessionMode && (
-                            <Button
-                                variant="destructive"
-                                size="icon"
-                                className="absolute top-2 right-2 z-10 opacity-0 group-hover/wrapper:opacity-100 transition-opacity h-8 w-8 rounded-full shadow-md"
-                                onClick={() => {
-                                    if (confirm('Удалить слово?')) removeWordFromFolder(folderId, userWord.id);
-                                }}
-                            >
-                                <X className="h-4 w-4" />
-                            </Button>
-                        )}
+                        <Button
+                            variant="destructive"
+                            size="icon"
+                            className="absolute top-2 right-2 z-10 opacity-0 group-hover/wrapper:opacity-100 transition-opacity h-8 w-8 rounded-full shadow-md"
+                            onClick={() => {
+                                if (confirm('Удалить слово?')) removeWordFromFolder(folderId, userWord.id);
+                            }}
+                        >
+                            <X className="h-4 w-4" />
+                        </Button>
                     </div>
                 ))}
 

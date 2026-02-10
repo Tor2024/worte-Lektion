@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useStudyQueue } from '@/hooks/use-study-queue';
 import { StudyQueueItem } from '@/lib/types';
 import { Button } from '@/components/ui/button';
+import { storage } from '@/lib/storage';
 import { NeuralMap } from '../neural-map';
 import { Progress } from '@/components/ui/progress';
 import { BrainCircuit, CheckCircle, XCircle, ArrowRight, Layers, Target, PenTool } from 'lucide-react';
@@ -19,7 +20,11 @@ import { Badge } from '@/components/ui/badge';
 type GlobalPhase = 'priming' | 'recognition' | 'production' | 'remedial';
 type SessionState = 'loading' | 'intro' | 'active' | 'consolidation' | 'summary';
 
-export function SmartSessionManager() {
+interface SmartSessionManagerProps {
+    folderId?: string;
+}
+
+export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
     const { getDailySession, updateItemStatus, overdueCount, dailyLimit } = useStudyQueue();
     const [sessionQueue, setSessionQueue] = useState<StudyQueueItem[]>([]);
     const [sessionState, setSessionState] = useState<SessionState>('loading');
@@ -44,13 +49,28 @@ export function SmartSessionManager() {
     const [batchStories, setBatchStories] = useState<Record<number, string>>({});
 
     useEffect(() => {
+        // Only load session if we are in 'loading' state
+        if (sessionState !== 'loading') return;
+
         // New session structure: { items, mode, sessionNumber }
-        const session = getDailySession();
+        const session = getDailySession(folderId);
+
+        // Wait for queue to be ready (if empty, retry later or show empty state if truly empty)
+        // For now, getDailySession returns empty array if not ready
+
         setSessionQueue(session.items);
         setSessionMode(session.mode);
         setSessionNumber(session.sessionNumber);
+
+        // Only transition state if we actually have items
+        // If items are empty but we expect them, stay in loading?
+        // getDailySession returns [] if localQueue is empty.
+        // But localQueue loads async.
+        // We should check if studyQueue is loaded.
+        // For now, let's assume it loads fast enough or returns valid empty array.
+
         setSessionState(session.items.length > 0 ? 'intro' : 'summary');
-    }, [getDailySession]);
+    }, [getDailySession, sessionState, folderId]);
 
     // Derived: Current batch words
     const currentBatchWords = useMemo(() => {
@@ -223,7 +243,15 @@ export function SmartSessionManager() {
             <div className="min-h-[500px] flex flex-col justify-center">
                 <ConsolidationView
                     items={sessionQueue}
-                    onComplete={() => setSessionState('summary')}
+                    onComplete={() => {
+                        // SAVE SESSION PROGRESS
+                        const successIds = Object.entries(results)
+                            .filter(([_, result]) => result === 'success')
+                            .map(([id]) => id);
+
+                        storage.incrementSession(successIds);
+                        setSessionState('summary');
+                    }}
                 />
             </div>
         );

@@ -56,44 +56,34 @@ const renderPrompt = (input: GenerateClozeInput) => {
     Continue this story logically using the new word "${input.german}". Ensure the transition is smooth and the narrative remains professional or interesting (suitable for B2 level).
     ` : 'Create a simple, daily usage sentence for this word.'}
 
-    Rules:
-    1. The sentence should be A1-B2 level (adjust based on word complexity).
-    2. **STRICT TENSE RULE**: All verbs MUST be in **Präsens** (Present Tense) unless the context strictly requires another tense for a coherent story (but prefer Präsens). 
-    3. The word MUST be used in a context that requires specific grammar:
-       - If Noun: Ensure the article or adjective ending proves the case (e.g. "Ich sehe den ___").
-       - If Verb: Use a conjugated form in **Präsens**. Focus on testing correct person/number conjugation (e.g., ich, du, wir).
-       - **SEPARABLE VERBS (trennbare Verben)**: If the word has a separable prefix (e.g., einziehen, einkaufen, ankommen):
-         - **OPTION A (Preferred)**: Use a sentence structure where the word remains WHOLE (e.g., with "müssen", "können", "wollen"). Example: "Wir wollen завтра ___ (einziehen)."
-         - **OPTION B**: If you separate it, the prefix MUST be placed at the very end of the sentence. In 'grammarExplanation', explicitly mention that the prefix moved to the end.
-    
-    3. **Ambiguity Handling**:
-       - If multiple answers are valid (e.g. "einen" OR "den"), list BOTH in 'acceptedAnswers'.
-       - However, try to create context that favors one specific form if possible.
-       - 'missingWord' should be the "best" answer.
+    **CRITICAL RULES**:
+    1. **LANGUAGE**: 'sentenceWithBlank' must be **100% GERMAN**. Do NOT include any Russian words in the German sentence.
+    2. **COMPLETENESS**: The sentence must be grammatically complete (Subject + Verb + Object/Preposition). No fragments.
+    3. **TARGET WORD**: Replace the target word (or its conjugated form) with "___".
 
-    4. **Grammar Explanation**:
-       - Explain specifically why this form is chosen.
-       - If specific alternatives are valid or invalid, explain why.
-    3. Replace the target word with "___".
-    4. Provide the EXACT missing form in 'missingWord'.
-    5. Provide a Russian translation.
-    6. **CRITICAL**: Provide a 'grammarExplanation'. Explain clearly in Russian WHY this form is correct (e.g. "Here we use Akkusativ because the verb 'sehen' requires it...").
-       - **USE HTML TAGS**: Highlight key terms, endings, or case names using <b>bold</b> or <u>underline</u>.
-       - Example: "Здесь используется <b>Akkusativ</b>, так как глагол требует прямого дополнения."
-    7. Provide 2-3 extra simple example sentences using this word (full sentences, no blanks) in 'examples'. **DO NOT** use HTML tags inside these examples.
-    8. Provide a short Russian definition of the target word in 'targetWordDefinition'.
-    
-    Example for "Apfel" (Noun):
-    Sentence: "Ich esse einen roten ___ ."
-    Missing: "Apfel"
-    Explanation: "Мы используем **einen roten**, так как глагол **essen** требует **Akkusativ** (Винительный падеж), а **Apfel** — мужского рода."
-    
-    Example for "fahren" (Verb):
-    Sentence: "Wir ___ morgen nach Berlin."
-    Missing: "fahren"
-    Explanation: "Мы используем форму **fahren** для **Präsens** (Настоящее время), так как подлежащее — **Wir** (мы), окончание **-en**."
-    
-    Output JSON matching the schema.
+    **GRAMMAR RULES**:
+    1. **TENSE**: Prefer **Präsens** (Present) or **Präteritum** (Past) depending on story context.
+    2. **SEPARABLE VERBS (trennbare Verben)** (e.g., ankommen, aufstehen, mitbringen):
+       - **OPTION A (Modal Verb)**: Use a modal verb (können, müssen, wollen) so the target word stays at the end in INFINITIVE form.
+         - *Example*: "Wir wollen morgen pünktlich ___." (missing: "ankommen")
+       - **OPTION B (Separated)**: If you conjugate the verb, you **MUST** place the prefix at the very end of 'sentenceWithBlank'.
+         - *CORRECT*: "Der Zug ___ um 12 Uhr **an**." (missing: "kommt")
+         - *WRONG*: "Der Zug ___ um 12 Uhr." (Prefix is missing!)
+       - **Input Rule**: The 'missingWord' should be ONLY the part that goes in the blank (e.g., "kommt" or "ankommen").
+
+    3. **NOUNS**:
+       - Ensure the article or adjective ending proves the case.
+       - *Example*: "Ich habe einen neuen ___." (accusative hint).
+
+    **OUTPUT FORMAT**:
+    - **sentenceWithBlank**: "Der Zug ___ um 12 Uhr an." (Full German sentence)
+    - **missingWord**: "kommt" (The exact string to be typed)
+    - **translation**: Russian translation.
+    - **grammarExplanation**: Explain in RUSSIAN why this form is used. Use HTML tags (<b>, <u>) for highlighting.
+    - **examples**: 2-3 extra German sentences.
+    - **acceptedAnswers**: List other valid forms (e.g. "fahre" if "fahre" and "fahren" are both plausible, though context should clarify).
+
+    Generate JSON now.
   `;
 };
 

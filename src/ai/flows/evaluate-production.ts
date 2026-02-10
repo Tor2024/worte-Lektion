@@ -45,7 +45,9 @@ const evaluateProductionFlow = ai.defineFlow(
         1. Determine if the answer is correct or nearly correct (typo).
         2. Provide short Russian definitions for BOTH words (if the user's word exists in German).
         3. Explain the difference or why the student's word doesn't fit the context.
-        4. **SPECIAL CASE: Separable Verbs**: If the user typed the whole word (e.g., "einziehen") but the blank only expected the stem ("zieht"), explain that the prefix (e.g., "ein") is already at the end of the sentence or should be moved there.
+        4. **SPECIAL CASE: Separable Verbs**: 
+           - If the user typed the whole word (e.g., "ankommen") but the sentence already has the prefix at the end ("... an."), explain: "The prefix 'an' is already at the end. You only need the verb stem 'kommen'."
+           - If the user typed just the stem "kommen" but the sentence is MISSING the prefix (e.g. "... morgen."), then point out that the prefix is missing in their answer (if it should be there).
         5. **CRITICAL**: Do NOT use technical symbols like raw HTML tags in the response text unless specifically requested. Use <b>bold</b> for highlighting important parts in 'comparisonFeedback'.
 
         Output JSON matching the schema.
