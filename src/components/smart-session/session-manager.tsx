@@ -25,7 +25,7 @@ interface SmartSessionManagerProps {
 }
 
 export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
-    const { getDailySession, updateItemStatus, overdueCount, dailyLimit } = useStudyQueue();
+    const { getDailySession, updateItemStatus, overdueCount, dailyLimit, isLoading } = useStudyQueue();
     const [sessionQueue, setSessionQueue] = useState<StudyQueueItem[]>([]);
     const [sessionState, setSessionState] = useState<SessionState>('loading');
     const [sessionMode, setSessionMode] = useState<'learning' | 'review-only'>('learning');
@@ -52,6 +52,9 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
         // Only load session if we are in 'loading' state
         if (sessionState !== 'loading') return;
 
+        // CRITICAL FIX: Wait for queue to load from storage
+        if (isLoading) return;
+
         // New session structure: { items, mode, sessionNumber }
         const session = getDailySession(folderId);
 
@@ -70,7 +73,7 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
         // For now, let's assume it loads fast enough or returns valid empty array.
 
         setSessionState(session.items.length > 0 ? 'intro' : 'summary');
-    }, [getDailySession, sessionState, folderId]);
+    }, [getDailySession, sessionState, folderId, isLoading]);
 
     // Derived: Current batch words
     const currentBatchWords = useMemo(() => {

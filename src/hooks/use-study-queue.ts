@@ -9,10 +9,12 @@ import { generateMnemonic } from '@/ai/flows/generate-mnemonic';
 export function useStudyQueue() {
     const [localQueue, setLocalQueue] = useState<StudyQueueItem[]>([]);
     const [isInitialLoadDone, setIsInitialLoadDone] = useState(false);
+    const [dailyStats, setDailyStats] = useState<{ lastSessionDate: number, sessionCount: number }>({ lastSessionDate: 0, sessionCount: 0 });
     const { folders, updateWordInFolder } = useCustomFolders();
 
     useEffect(() => {
         setLocalQueue(storage.getStudyQueue());
+        setDailyStats(storage.getDailySessionData());
         setIsInitialLoadDone(true);
 
         const handleStorageChange = (event: StorageEvent) => {
@@ -25,6 +27,14 @@ export function useStudyQueue() {
                     });
                 } catch (e) {
                     console.error("Failed to sync queue from storage", e);
+                }
+            }
+            if (event.key === 'deutsch-daily-session-v1' && event.newValue) {
+                try {
+                    const next = JSON.parse(event.newValue);
+                    setDailyStats(next);
+                } catch (e) {
+                    console.error("Failed to sync session data", e);
                 }
             }
         };
@@ -117,12 +127,10 @@ export function useStudyQueue() {
             }
 
             // If strictly nothing to review, and nothing learned today, maybe the user wants to learn NEW words?
-            // But strict limit prevents it. We return empty in that specific case.
-            if (reviewPool.length === 0) {
-                return { items: [], mode: 'review-only', sessionNumber };
+            // Fall through to normal mode (allow New words) if review pool is empty.
+            if (reviewPool.length > 0) {
+                return { items: reviewPool, mode: 'review-only', sessionNumber };
             }
-
-            return { items: reviewPool, mode: 'review-only', sessionNumber };
         }
 
         // Session 1-2: Normal learning mode
@@ -322,6 +330,7 @@ export function useStudyQueue() {
         getDailySession,
         updateItemStatus,
         syncWithFolders,
+        dailyStats,
         ...stats
     }), [localQueue, isInitialLoadDone, getDailySession, updateItemStatus, syncWithFolders, stats]);
 }

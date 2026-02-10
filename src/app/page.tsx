@@ -88,6 +88,11 @@ function DailySessionWidget() {
                 {totalAvailable} слов <span className="text-xs font-normal text-muted-foreground uppercase tracking-wider">готово</span>
               </div>
               <div className="text-xs text-muted-foreground">Лимит: {dailyLimit} слов/день</div>
+              {(queue as any).dailyStats?.lastSessionDate > 0 && (
+                <div className="text-[10px] text-muted-foreground mt-1 font-medium bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md inline-block">
+                  Последняя: {new Date((queue as any).dailyStats.lastSessionDate).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}
+                </div>
+              )}
             </div>
             <div className="h-2 w-2 rounded-full bg-primary animate-ping" />
           </div>
