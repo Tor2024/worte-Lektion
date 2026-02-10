@@ -55,7 +55,7 @@ export function useStudyQueue() {
         folders.forEach(folder => {
             const folderWords = folder.words || [];
             folderWords.forEach(userWord => {
-                const german = userWord?.word?.german;
+                const german = userWord?.word?.german?.trim();
                 const wordId = german || userWord.id || `unknown-${Math.random()}`;
 
                 if (!existingIds.has(wordId)) {
@@ -170,7 +170,16 @@ export function useStudyQueue() {
         const mainPool = [...dueTodayWords, ...newWords].slice(0, MAIN_LIMIT);
 
         // Final session: main pool + overdue (overdue at the END)
-        const finalItems = [...mainPool, ...overdueWords];
+        let finalItems = [...mainPool, ...overdueWords];
+
+        // CRITICAL FIX: Deduplicate items by ID to strictly prevent repeats in the same session
+        const uniqueMap = new Map();
+        finalItems.forEach(item => {
+            if (!uniqueMap.has(item.id)) {
+                uniqueMap.set(item.id, item);
+            }
+        });
+        finalItems = Array.from(uniqueMap.values());
 
         if (finalItems.length === 0) return { items: [], mode: 'learning', sessionNumber };
 
