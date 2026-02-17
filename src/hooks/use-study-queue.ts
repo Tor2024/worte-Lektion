@@ -329,6 +329,7 @@ export function useStudyQueue() {
             totalReview: reviewCount,
             totalLeeches: localQueue.filter((i: StudyQueueItem) => i.status === 'leech').length,
             totalAvailable: availableTotal,
+            learnedTodayCount: storage.getDailySessionData().learnedTodayIds.length,
             dailyLimit
         };
     }, [localQueue]);

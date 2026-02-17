@@ -30,12 +30,27 @@ import { storage } from '@/lib/storage';
 import { useCurriculumData } from '@/hooks/use-curriculum-data';
 
 function DailySessionWidget() {
-  const { totalDue, totalNew, totalLearning, totalReview, totalLeeches, totalAvailable, overdueCount, dailyLimit, queue, isLoading } = useStudyQueue();
+  const {
+    totalDue,
+    totalNew,
+    totalLearning,
+    totalReview,
+    totalLeeches,
+    totalAvailable,
+    overdueCount,
+    dailyLimit,
+    learnedTodayCount,
+    queue,
+    isLoading
+  } = useStudyQueue() as any;
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => { setIsClient(true) }, []);
 
   if (!isClient) return null;
+
+  // Dynamic time estimate (Avg 24s per word across new/review)
+  const estimatedMinutes = totalAvailable > 0 ? Math.max(5, Math.ceil(totalAvailable * 0.4)) : 0;
 
   return (
     <Card className="flex flex-col bg-gradient-to-br from-indigo-500/10 via-transparent to-transparent border-indigo-500/20 shadow-xl relative overflow-hidden group h-full">
@@ -49,70 +64,80 @@ function DailySessionWidget() {
           </div>
           <span className="text-xs font-bold uppercase tracking-widest text-indigo-500">План на сегодня</span>
         </div>
-        <CardTitle className="text-3xl font-headline font-bold">15 Минут</CardTitle>
+        <CardTitle className="text-3xl font-headline font-bold">
+          {isLoading ? '...' : estimatedMinutes > 0 ? `${estimatedMinutes} Минут` : 'Все выполнено! 🎉'}
+        </CardTitle>
         <CardDescription className="text-base text-muted-foreground">
-          Ежедневная тренировка: новые слова + повторение + контекст.
+          {estimatedMinutes > 0
+            ? 'Ежедневная тренировка: новые слова + повторение + контекст.'
+            : 'Вы отлично поработали сегодня. Завтра появятся новые слова.'}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex-grow flex flex-col justify-center relative z-10 py-4">
         <div className="grid grid-cols-2 gap-3">
-          {/* Graduated - mastered words (interval >= 60 days) */}
-          <div className="bg-green-500/10 p-4 rounded-xl border border-green-500/20 shadow-[0_0_10px_-5px_rgba(34,197,94,0.3)]">
+          {/* Mastered - total mastered across system */}
+          <div className="bg-green-500/10 p-4 rounded-xl border border-green-500/20">
             <div className="text-3xl font-black text-green-600 dark:text-green-400">
-              {isLoading ? '...' : queue.filter(i => i.interval >= 60).length}
+              {isLoading ? '...' : queue.filter((i: any) => i.interval >= 30).length}
             </div>
-            <div className="text-[10px] font-bold text-green-700/70 dark:text-green-400/70 uppercase tracking-tighter">Выучено</div>
+            <div className="text-[10px] font-bold text-green-700/70 dark:text-green-400/70 uppercase tracking-tighter">Освоено слов</div>
           </div>
           {/* Due for review today */}
           <div className="bg-purple-500/10 p-4 rounded-xl border border-purple-500/20 shadow-[0_0_10px_-5px_rgba(168,85,247,0.3)]">
             <div className="text-3xl font-black text-purple-600 dark:text-purple-400">{isLoading ? '...' : totalDue}</div>
-            <div className="text-[10px] font-bold text-purple-700/70 dark:text-purple-400/70 uppercase tracking-tighter">Повторить</div>
+            <div className="text-[10px] font-bold text-purple-700/70 dark:text-purple-400/70 uppercase tracking-tighter">На повторение</div>
           </div>
           {/* Learning in progress */}
-          <div className="bg-blue-500/10 p-4 rounded-xl border border-blue-500/20 shadow-[0_0_10px_-5px_rgba(59,130,246,0.3)]">
+          <div className="bg-blue-500/10 p-4 rounded-xl border border-blue-500/20">
             <div className="text-3xl font-black text-blue-600 dark:text-blue-400">{isLoading ? '...' : totalLearning}</div>
             <div className="text-[10px] font-bold text-blue-700/70 dark:text-blue-400/70 uppercase tracking-tighter">В процессе</div>
           </div>
           {/* New words not yet started */}
           <div className="bg-slate-500/10 p-4 rounded-xl border border-slate-500/20">
             <div className="text-3xl font-black text-slate-600 dark:text-slate-400">{isLoading ? '...' : totalNew}</div>
-            <div className="text-[10px] font-bold text-slate-500/70 uppercase tracking-tighter">Новые</div>
+            <div className="text-[10px] font-bold text-slate-500/70 uppercase tracking-tighter">Новые (в базе)</div>
           </div>
         </div>
 
-        {/* Session Readiness Badge */}
+        {/* Daily Progress Bar */}
         {!isLoading && (
-          <div className="mt-4 bg-primary/10 border border-primary/20 p-4 rounded-xl flex items-center justify-between shadow-sm">
-            <div className="flex flex-col">
-              <div className="text-xl font-black text-primary animate-pulse flex items-center gap-2">
-                {totalAvailable} слов <span className="text-xs font-normal text-muted-foreground uppercase tracking-wider">готово</span>
+          <div className="mt-6 space-y-2">
+            <div className="flex justify-between items-end">
+              <div className="flex flex-col">
+                <span className="text-sm font-bold text-primary">{learnedTodayCount} из {dailyLimit} слов</span>
+                <span className="text-[10px] text-muted-foreground uppercase tracking-widest">Прогресс за сегодня</span>
               </div>
-              <div className="text-xs text-muted-foreground">Лимит: {dailyLimit} слов/день</div>
-              {(queue as any).dailyStats?.lastSessionDate > 0 && (
-                <div className="text-[10px] text-muted-foreground mt-1 font-medium bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md inline-block">
-                  Последняя: {new Date((queue as any).dailyStats.lastSessionDate).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}
-                </div>
-              )}
+              <div className="text-right">
+                <span className="text-xs font-bold text-muted-foreground">{totalAvailable} в след. сессии</span>
+              </div>
             </div>
-            <div className="h-2 w-2 rounded-full bg-primary animate-ping" />
+            <div className="h-3 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700">
+              <div
+                className="h-full bg-indigo-500 transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(99,102,241,0.5)]"
+                style={{ width: `${Math.min(100, (learnedTodayCount / dailyLimit) * 100)}%` }}
+              />
+            </div>
+            {(queue as any).dailyStats?.lastSessionDate > 0 && (
+              <div className="text-[10px] text-muted-foreground mt-1 flex justify-between">
+                <span>Последняя активность: {new Date((queue as any).dailyStats.lastSessionDate).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
+              </div>
+            )}
           </div>
         )}
+
         {overdueCount > 0 && (
-          <div className="mt-3 bg-amber-500/10 border border-amber-500/30 p-3 rounded-xl flex items-center gap-2">
-            <span className="text-sm font-bold text-amber-600 dark:text-amber-400">⚠️ Просрочено: {overdueCount}</span>
+          <div className="mt-4 bg-amber-500/10 border border-amber-500/30 p-3 rounded-xl flex items-center gap-2">
+            <span className="text-sm font-bold text-amber-600 dark:text-amber-400 animate-pulse">⚠️ {overdueCount} {overdueCount === 1 ? 'слово просрочено' : 'слов просрочено'}</span>
           </div>
         )}
         {totalLeeches > 0 && (
-          <div className="mt-3 bg-red-500/10 border border-red-500/50 p-3 rounded-xl flex items-center justify-between animate-pulse">
+          <div className="mt-3 bg-red-500/10 border border-red-500/50 p-3 rounded-xl flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Siren className="h-5 w-5 text-red-500" />
-              <span className="text-sm font-bold text-red-600">Сложные слова: {totalLeeches}</span>
+              <span className="text-sm font-bold text-red-600">Сложные слова (Leeches): {totalLeeches}</span>
             </div>
           </div>
         )}
-        <p className="text-sm text-muted-foreground mt-4">
-          Слова из ваших папок автоматически добавляются сюда.
-        </p>
       </CardContent>
       <CardFooter className="relative z-10 pb-8">
         <Button asChild size="lg" className="w-full h-14 text-lg bg-indigo-600 hover:bg-indigo-700 shadow-xl shadow-indigo-500/20 hover:scale-[1.02] transition-transform">
