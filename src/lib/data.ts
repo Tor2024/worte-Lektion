@@ -6109,6 +6109,95 @@ export const curriculum: Curriculum = {
               explanation: 'Nachhaltigkeit — ключевое слово C1 для тем экологии и будущего.'
             }
           ]
+        },
+        {
+          id: 'c1-7-psychologie-fuehrung',
+          title: 'Psychologie & Führung',
+          explanation: `
+            <div class="space-y-6">
+              <div class="bg-card p-6 rounded-xl border shadow-sm">
+                <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2">
+                  <span class="text-primary">🧠</span> Fingerspitzengefühl & Empathie
+                </h2>
+                <p class="text-lg mb-4 text-muted-foreground">
+                  На уровне C1 лидерство означает не просто отдавать приказы, а мотивировать и разрешать конфликты. Ключевую роль играют <strong>Modalpartikeln</strong> (модальные частицы), которые придают речи нужный оттенок (смягчают или усиливают).
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div class="bg-teal-50/50 p-4 rounded-lg border border-teal-100">
+                    <h3 class="font-bold text-teal-800 text-sm mb-2">Die Macht der Partikeln</h3>
+                    <ul class="space-y-3 text-xs italic text-teal-900">
+                      <li><strong>ja</strong>: ссылка на общеизвестный факт.<br/>"Das wissen Sie <strong>ja</strong>." (Вы же это знаете)</li>
+                      <li><strong>halt / eben</strong>: смирение с фактом.<br/>"Das ist <strong>halt</strong> so." (Ну что ж поделать, так и есть)</li>
+                      <li><strong>doch</strong>: напоминание или легкий упрек.<br/>"Ich habe es dir <strong>doch</strong> gesagt." (Я же тебе говорил)</li>
+                      <li><strong>mal</strong>: смягчение просьбы.<br/>"Schauen Sie <strong>mal</strong>..." (Взгляните-ка...)</li>
+                    </ul>
+                  </div>
+                  <div class="bg-rose-50/50 p-4 rounded-lg border border-rose-100">
+                    <h3 class="font-bold text-rose-800 text-sm mb-2">Führungskompetenz</h3>
+                    <p class="text-xs mb-2">Хороший руководитель (Führungskraft) должен:</p>
+                    <ul class="space-y-2 text-xs italic text-rose-900">
+                      <li>Vorbild sein (Быть примером - etwas vorleben)</li>
+                      <li>Konflikte schlichten (Улаживать конфликты)</li>
+                      <li>Feedback geben (конструктивно!)</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div class="p-4 bg-muted rounded-lg border border-border">
+                  <h3 class="font-bold text-sm mb-2 text-primary">Нюансы характера (Adjektive)</h3>
+                  <div class="grid grid-cols-2 gap-4 text-xs font-medium">
+                    <div>durchsetzungsstark (волевой/пробивной)</div>
+                    <div>einfühlsam (чуткий/эмпатичный)</div>
+                    <div>belastbar (стрессоустойчивый)</div>
+                    <div>vorausschauend (дальновидный)</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `,
+          vocabulary: [
+            {
+              theme: 'Психология и Лидерство',
+              words: [
+                { type: 'noun', german: 'Führungskraft', russian: 'руководитель/менеджер', article: 'die', plural: 'Führungskräfte', pluralArticle: 'die', exampleSingular: '<strong>Eine kompetente Führungskraft</strong>.', examplePlural: '-' },
+                { type: 'noun', german: 'Vorgesetzte', russian: 'начальник (субстантивированное прил.)', article: 'der', plural: 'Vorgesetzten', pluralArticle: 'die', exampleSingular: '<strong>Mein Vorgesetzter</strong>.', examplePlural: '-' },
+                { type: 'noun', german: 'Vorbild', russian: 'пример/образец', article: 'das', plural: 'Vorbilder', pluralArticle: 'die', exampleSingular: '<strong>Ein Vorbild</strong> sein.', examplePlural: '-' },
+                { type: 'noun', german: 'Wertschätzung', russian: 'уважение/признание ценности', article: 'die', plural: '-', pluralArticle: '-', exampleSingular: '<strong>Wertschätzung</strong> zeigen.', examplePlural: '-' },
+                { type: 'noun', german: 'Konfliktpotenzial', russian: 'конфликтный потенциал', article: 'das', plural: '-', pluralArticle: '-', exampleSingular: '<strong>Das Konfliktpotenzial</strong> erkennen.', examplePlural: '-' },
+                { type: 'verb', german: 'motivieren', russian: 'мотивировать', conjugation: 'er motiviert', example: 'Mitarbeiter motivieren.' },
+                { type: 'verb', german: 'schlichten', russian: 'улаживать (спор)', conjugation: 'er schlichtet', example: 'Einen Streit schlichten.' },
+                { type: 'verb', german: 'vorleben', russian: 'показывать на своем примере', conjugation: 'er lebt vor', example: 'Werte vorleben.' },
+                { type: 'adjective', german: 'durchsetzungsstark', russian: 'пробивной/умеющий настоять на своем', comparative: 'stärker', superlative: 'am stärksten', example: 'Ein durchsetzungsstarker Chef.' },
+                { type: 'adjective', german: 'empathisch', russian: 'эмпатичный', comparative: 'empathischer', superlative: 'am empathischsten', example: 'Empathisch reagieren.' }
+              ]
+            }
+          ],
+          exercises: [
+            {
+              id: 'c1-7-ex-1',
+              type: 'fill-in-the-blank',
+              question: 'Komm ___ rein! (Заходи-ка! - дружелюбное приглашение)',
+              correctAnswer: 'mal',
+              explanation: '"Mal" делает повелительное наклонение (Imperativ) дружелюбнее и мягче.'
+            },
+            {
+              id: 'c1-7-ex-2',
+              type: 'multiple-choice',
+              question: 'Что делает "der Schlichter"?',
+              options: ['Начинает ссору', 'Улаживает конфликт', 'Увольняет людей', 'Платит зарплату'],
+              correctAnswer: 'Улаживает конфликт',
+              explanation: 'Schlichten = урегулировать спор (Schlichtung).'
+            },
+            {
+              id: 'c1-7-ex-3',
+              type: 'word-order',
+              question: 'Соберите фразу: "Это же очевидно!" (с частицей ja)',
+              correctAnswer: 'Das ist ja offensichtlich',
+              options: ['Das', 'ist', 'ja', 'offensichtlich'],
+              explanation: '"Ja" указывает на то, что собеседник тоже должен это знать.'
+            }
+          ]
         }
       ]
     },
@@ -6552,6 +6641,275 @@ export const curriculum: Curriculum = {
               correctAnswer: 'Ich kümmere mich sofort darum',
               options: ['Ich', 'kümmere', 'mich', 'sofort', 'darum'],
               explanation: 'Sich kümmern um + Akk — заниматься чем-то.'
+            }
+          ]
+        },
+        {
+          id: 'b2-beruf-5-pflege-medizin',
+          title: 'Pflege & Medizin Basics',
+          explanation: `
+            <div class="space-y-6">
+              <div class="bg-card p-6 rounded-xl border shadow-sm">
+                <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2">
+                  <span class="text-primary">🏥</span> Kommunikation im Krankenhaus
+                </h2>
+                <p class="text-lg mb-4 text-muted-foreground">
+                  В медицинской сфере важно не только знать термины, но и уметь использовать <strong>Passiv</strong> для объективного описания состояния пациента (Dokumentation) и <strong>Konjunktiv II</strong> для вежливого общения с пациентами.
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div class="bg-blue-50/50 p-4 rounded-lg border border-blue-100">
+                    <h3 class="font-bold text-blue-800 text-sm mb-2">Dokumentation (Passiv)</h3>
+                    <p class="text-xs mb-2">В отчетах важно, ЧТО сделано, а не КТО сделал.</p>
+                    <ul class="space-y-2 text-xs italic text-blue-900">
+                      <li>"Der Patient <strong>wurde</strong> um 8:00 Uhr <strong>gewaschen</strong>."</li>
+                      <li>"Die Medikamente <strong>sind verabreicht worden</strong>." (Zustandspassiv/Perfekt)</li>
+                      <li>"Der Blutdruck <strong>ist zu kontrollieren</strong>." (Passiversatz: muss kontrolliert werden)</li>
+                    </ul>
+                  </div>
+                  <div class="bg-purple-50/50 p-4 rounded-lg border border-purple-100">
+                    <h3 class="font-bold text-purple-800 text-sm mb-2">Anamnese (Вопросы)</h3>
+                    <p class="text-xs mb-2">Вежливые, но точные вопросы.</p>
+                    <ul class="space-y-2 text-xs italic text-purple-900">
+                      <li>"Wo genau <strong>tut</strong> es Ihnen <strong>weh</strong>?"</li>
+                      <li>"Haben Sie <strong>Vorerkrankungen</strong>?"</li>
+                      <li>"Nehmen Sie regelmäßig <strong>Medikamente ein</strong>?"</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div class="space-y-4">
+                  <h3 class="font-bold text-primary text-sm">Важные глаголы (Fachsprache)</h3>
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
+                    <div class="p-2 border rounded bg-background">
+                      <strong>verabreichen</strong><br/>
+                      Давать (лекарство), вводить (инъекцию).
+                    </div>
+                    <div class="p-2 border rounded bg-background">
+                      <strong>leiden an (+ Dat)</strong><br/>
+                      Страдать от (хронической болезни).
+                    </div>
+                    <div class="p-2 border rounded bg-background">
+                      <strong>überweisen</strong><br/>
+                      Направлять (к другому врачу).
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `,
+          vocabulary: [
+            {
+              theme: 'Анатомия и Уход',
+              words: [
+                { type: 'noun', german: 'Blutdruck', russian: 'кровяное давление', article: 'der', plural: '-', pluralArticle: '-', exampleSingular: '<strong>Den Blutdruck</strong> messen.', examplePlural: '-' },
+                { type: 'noun', german: 'Entzündung', russian: 'воспаление', article: 'die', plural: 'Entzündungen', pluralArticle: 'die', exampleSingular: '<strong>Eine akute Entzündung</strong>.', examplePlural: '-' },
+                { type: 'noun', german: 'Spritze', russian: 'укол/шприц', article: 'die', plural: 'Spritzen', pluralArticle: 'die', exampleSingular: '<strong>Eine Spritze</strong> geben.', examplePlural: '-' },
+                { type: 'noun', german: 'Schmerz', russian: 'боль', article: 'der', plural: 'Schmerzen', pluralArticle: 'die', exampleSingular: 'Ein stechender <strong>Schmerz</strong>.', examplePlural: 'Über <strong>Schmerzen</strong> klagen.' },
+                { type: 'noun', german: 'Befund', russian: 'медицинское заключение/результат', article: 'der', plural: 'Befunde', pluralArticle: 'die', exampleSingular: '<strong>Der ärztliche Befund</strong>.', examplePlural: '-' },
+                { type: 'noun', german: 'Pflegekraft', russian: 'медработник (по уходу)', article: 'die', plural: 'Pflegekräfte', pluralArticle: 'die', exampleSingular: '<strong>Eine erfahrene Pflegekraft</strong>.', examplePlural: '-' },
+                { type: 'verb', german: 'behandeln', russian: 'лечить', conjugation: 'er behandelt', example: 'Einen Patienten behandeln.' },
+                { type: 'verb', german: 'vertragen', russian: 'переносить (лекарство/пищу)', conjugation: 'er verträgt', example: 'Vertragen Sie Antibiotika?' },
+                { type: 'verb', german: 'verschreiben', russian: 'выписывать (рецепт)', conjugation: 'er verschreibt', example: 'Der Arzt hat Ruhe verschrieben.' },
+                { type: 'adjective', german: 'ambulant', russian: 'амбулаторный', comparative: '-', superlative: '-', example: 'Eine ambulante Behandlung.' }
+              ]
+            }
+          ],
+          exercises: [
+            {
+              id: 'b2-beruf-5-ex-1',
+              type: 'fill-in-the-blank',
+              question: 'Der Patient ___ gestern operiert. (Passiv Präteritum)',
+              correctAnswer: 'wurde',
+              explanation: 'Passiv Präteritum: werden (в Präteritum) + Partizip II.'
+            },
+            {
+              id: 'b2-beruf-5-ex-2',
+              type: 'multiple-choice',
+              question: 'Что значит "verabreichen"?',
+              options: ['выписывать', 'принимать', 'вводить/давать (лекарство)', 'лечить'],
+              correctAnswer: 'вводить/давать (лекарство)',
+              explanation: 'Специфический медицинский термин для дачи медикаментов.'
+            },
+            {
+              id: 'b2-beruf-5-ex-3',
+              type: 'word-order',
+              question: 'Соберите фразу: "У вас есть предыдущие заболевания?"',
+              correctAnswer: 'Haben Sie Vorerkrankungen',
+              options: ['Haben', 'Sie', 'Vorerkrankungen'],
+              explanation: 'Vorerkrankungen = болезни, которые были раньше.'
+            }
+          ]
+        },
+        {
+          id: 'b2-beruf-6-handel-logistik',
+          title: 'Handel & Logistik',
+          explanation: `
+            <div class="space-y-6">
+              <div class="bg-card p-6 rounded-xl border shadow-sm">
+                <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2">
+                  <span class="text-primary">📦</span> Lieferkette & Prozesse
+                </h2>
+                <p class="text-lg mb-4 text-muted-foreground">
+                  В логистике и торговле важна точность. Грамматически здесь часто используется <strong>Nominalstil</strong> (для краткости) и <strong>Zweiteilige Konnektoren</strong> (для условий и альтернатив).
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div class="bg-orange-50/50 p-4 rounded-lg border border-orange-100">
+                    <h3 class="font-bold text-orange-800 text-sm mb-2">Причина и Следствие</h3>
+                    <p class="text-xs mb-2">Как объяснить задержку профессионально?</p>
+                    <ul class="space-y-2 text-xs italic text-orange-900">
+                      <li>"<strong>Aufgrund</strong> des Streiks..." (Из-за забастовки - Genitiv)</li>
+                      <li>"<strong>Infolge</strong> technischer Probleme..." (Вследствие...)</li>
+                      <li>"Dadurch kommt es zu <strong>Verzögerungen</strong>."</li>
+                    </ul>
+                  </div>
+                  <div class="bg-slate-50/50 p-4 rounded-lg border border-slate-100">
+                    <h3 class="font-bold text-slate-800 text-sm mb-2">Парные союзы</h3>
+                    <ul class="space-y-2 text-xs italic text-slate-900">
+                      <li>"<strong>Entweder</strong> liefern wir heute, <strong>oder</strong> morgen früh." (Или... или)</li>
+                      <li>"Wir haben <strong>sowohl</strong> Laptops <strong>als auch</strong> Monitore auf Lager." (Как..., так и...)</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div class="p-4 bg-muted rounded-lg border border-border">
+                  <h3 class="font-bold text-sm mb-2 text-primary">Важные термины (Logistik)</h3>
+                  <div class="grid grid-cols-2 gap-4 text-xs font-medium">
+                    <div>Der Lieferant (Поставщик)</div>
+                    <div>Der Lagerbestand (Запас на складе)</div>
+                    <div>Die Fracht (Груз)</div>
+                    <div>Der Lieferschein (Накладная)</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `,
+          vocabulary: [
+            {
+              theme: 'Логистика и Склад',
+              words: [
+                { type: 'noun', german: 'Lieferung', russian: 'доставка/поставка', article: 'die', plural: 'Lieferungen', pluralArticle: 'die', exampleSingular: '<strong>Die Lieferung</strong> verzögert sich.', examplePlural: '-' },
+                { type: 'noun', german: 'Bestellung', russian: 'заказ', article: 'die', plural: 'Bestellungen', pluralArticle: 'die', exampleSingular: '<strong>Eine Bestellung</strong> aufgeben.', examplePlural: '-' },
+                { type: 'noun', german: 'Lager', russian: 'склад', article: 'das', plural: 'Lager', pluralArticle: 'die', exampleSingular: '<strong>Auf dem Lager</strong>.', examplePlural: '-' },
+                { type: 'noun', german: 'Zoll', russian: 'таможня', article: 'der', plural: '-', pluralArticle: '-', exampleSingular: 'Durch <strong>den Zoll</strong> gehen.', examplePlural: '-' },
+                { type: 'noun', german: 'Versand', russian: 'отправка/пересылка', article: 'der', plural: '-', pluralArticle: '-', exampleSingular: '<strong>Der Versand</strong> ist kostenlos.', examplePlural: '-' },
+                { type: 'noun', german: 'Menge', russian: 'количество', article: 'die', plural: 'Mengen', pluralArticle: 'die', exampleSingular: '<strong>Eine große Menge</strong>.', examplePlural: '-' },
+                { type: 'verb', german: 'liefern', russian: 'доставлять/поставлять', conjugation: 'er liefert', example: 'Pünktlich liefern.' },
+                { type: 'verb', german: 'überprüfen', russian: 'проверять (товар)', conjugation: 'er überprüft', example: 'Die Ware auf Mängel überprüfen.' },
+                { type: 'verb', german: 'lagern', russian: 'хранить (на складе)', conjugation: 'er lagert', example: 'Kühl lagern.' },
+                { type: 'adjective', german: 'vorrätig', russian: 'имеющийся в наличии', comparative: '-', superlative: '-', example: 'Ist das Produkt vorrätig?' }
+              ]
+            }
+          ],
+          exercises: [
+            {
+              id: 'b2-beruf-6-ex-1',
+              type: 'fill-in-the-blank',
+              question: 'Die Ware ist leider nicht ___. (В наличии)',
+              correctAnswer: 'vorrätig',
+              explanation: 'Vorrätig sein = быть на складе.'
+            },
+            {
+              id: 'b2-beruf-6-ex-2',
+              type: 'multiple-choice',
+              question: 'Какой предлог нужен для "Aufgrund"?',
+              options: ['Dativ', 'Akkusativ', 'Genitiv', 'Nominativ'],
+              correctAnswer: 'Genitiv',
+              explanation: 'Aufgrund (по причине) всегда требует Genitiv.'
+            },
+            {
+              id: 'b2-beruf-6-ex-3',
+              type: 'word-order',
+              question: 'Соберите фразу: "Мы проверили поставку."',
+              correctAnswer: 'Wir haben die Lieferung überprüft',
+              options: ['Wir', 'haben', 'die', 'Lieferung', 'überprüft'],
+              explanation: 'Perfekt от überprüfen.'
+            }
+          ]
+        },
+        {
+          id: 'b2-beruf-7-interkulturell',
+          title: 'Interkulturelle Kompetenz',
+          explanation: `
+            <div class="space-y-6">
+              <div class="bg-card p-6 rounded-xl border shadow-sm">
+                <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2">
+                  <span class="text-primary">🌍</span> Немецкий деловой этикет
+                </h2>
+                <p class="text-lg mb-4 text-muted-foreground">
+                  Успех на работе зависит не только от слов, но и от понимания культурных кодов: <strong>Direktheit</strong> (прямота), <strong>Distanz</strong> (дистанция) и <strong>Pünktlichkeit</strong> (пунктуальность).
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div class="bg-pink-50/50 p-4 rounded-lg border border-pink-100">
+                    <h3 class="font-bold text-pink-800 text-sm mb-2">Kritik üben (Критика)</h3>
+                    <p class="text-xs mb-2">Немцы критикуют дело (Sache), а не человека. Это не грубость, а эффективность.</p>
+                    <ul class="space-y-2 text-xs italic text-pink-900">
+                      <li>"Das ist <strong>ineffizient</strong>." (Критика процесса)</li>
+                      <li>"Hier liegt ein Fehler vor." (Объективный факт)</li>
+                      <li>Не принимайте это на свой личный счет!</li>
+                    </ul>
+                  </div>
+                  <div class="bg-indigo-50/50 p-4 rounded-lg border border-indigo-100">
+                    <h3 class="font-bold text-indigo-800 text-sm mb-2">Du oder Sie? (Ты или Вы?)</h3>
+                    <p class="text-xs mb-2">В немецких офисах иерархия важна.</p>
+                    <ul class="space-y-2 text-xs italic text-indigo-900">
+                      <li>Сначала всегда "Sie".</li>
+                      <li>"Du" предлагает тот, кто выше по рангу (или старше).</li>
+                      <li>"Wollen wir uns duzen?" (Давай на ты?)</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div class="p-4 bg-muted border-l-4 border-primary rounded-r-lg">
+                  <h3 class="font-bold text-sm mb-1">Small Talk запретные темы:</h3>
+                  <p class="text-xs text-muted-foreground">Деньги (Gehalt), политика, религия и личные проблемы обычно табу в начале знакомства. Лучше говорить о: <strong>Wetter, Anreise, Urlaub, Sport</strong>.</p>
+                </div>
+              </div>
+            </div>
+          `,
+          vocabulary: [
+            {
+              theme: 'Культура и Этикет',
+              words: [
+                { type: 'noun', german: 'Verhalten', russian: 'поведение', article: 'das', plural: '-', pluralArticle: '-', exampleSingular: 'Professionelles <strong>Verhalten</strong>.', examplePlural: '-' },
+                { type: 'noun', german: 'Umgangsform', russian: 'манера общения', article: 'die', plural: 'Umgangsformen', pluralArticle: 'die', exampleSingular: 'Gute <strong>Umgangsformen</strong>.', examplePlural: '-' },
+                { type: 'noun', german: 'Hierarchie', russian: 'иерархия', article: 'die', plural: 'Hierarchien', pluralArticle: 'die', exampleSingular: 'Flache <strong>Hierarchien</strong>.', examplePlural: '-' },
+                { type: 'noun', german: 'Missverständnis', russian: 'недопонимание', article: 'das', plural: 'Missverständnisse', pluralArticle: 'die', exampleSingular: '<strong>Kulturelle Missverständnisse</strong> vermeiden.', examplePlural: '-' },
+                { type: 'noun', german: 'Konflikt', russian: 'конфликт', article: 'der', plural: 'Konflikte', pluralArticle: 'die', exampleSingular: '<strong>Einen Konflikt</strong> lösen.', examplePlural: '-' },
+                { type: 'verb', german: 'duzen', russian: 'обращаться на "ты"', conjugation: 'er duzt', example: 'Wir duzen uns im Team.' },
+                { type: 'verb', german: 'siezen', russian: 'обращаться на "Вы"', conjugation: 'er siezt', example: 'Sie sollten den Chef siezen.' },
+                { type: 'verb', german: 'vermeiden', russian: 'избегать', conjugation: 'er vermeidet', example: 'Fehler vermeiden.' },
+                { type: 'verb', german: 'respektieren', russian: 'уважать', conjugation: 'er respektiert', example: 'Andere Meinungen respektieren.' },
+                { type: 'adjective', german: 'höflich', russian: 'вежливый', comparative: 'höflicher', superlative: 'am höflichsten', example: 'Seien Sie immer höflich.' },
+                { type: 'adjective', german: 'direkt', russian: 'прямой', comparative: 'direkter', superlative: 'am direktesten', example: 'Die Deutschen sind sehr direkt.' }
+              ]
+            }
+          ],
+          exercises: [
+            {
+              id: 'b2-beruf-7-ex-1',
+              type: 'fill-in-the-blank',
+              question: 'Darf ich Ihnen das "Du" ___? (Предложить)',
+              correctAnswer: 'anbieten',
+              explanation: 'Das Du anbieten — предложить перейти на ты.'
+            },
+            {
+              id: 'b2-beruf-7-ex-2',
+              type: 'multiple-choice',
+              question: 'О чем НЕ стоит говорить на первом обеде с коллегами?',
+              options: ['О погоде', 'О зарплате', 'Об отпуске', 'О хобби'],
+              correctAnswer: 'О зарплате',
+              explanation: 'Das Gehalt ist ein Tabuthema (Тема-табу).'
+            },
+            {
+              id: 'b2-beruf-7-ex-3',
+              type: 'word-order',
+              question: 'Соберите фразу: "Мы обращаемся друг к другу на ты."',
+              correctAnswer: 'Wir duzen uns',
+              options: ['Wir', 'duzen', 'uns'],
+              explanation: 'Sich duzen = быть на ты.'
             }
           ]
         }

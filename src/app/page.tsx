@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { BookOpen, ArrowRight, BrainCircuit, Siren, GraduationCap, CheckCircle } from 'lucide-react';
+import { BookOpen, ArrowRight, BrainCircuit, Siren, GraduationCap, CheckCircle, PenLine } from 'lucide-react';
 import Image from 'next/image';
 import {
   getLevelImage,
@@ -205,6 +205,51 @@ function ExamTextsWidget() {
 }
 
 // Helper component to separate data fetching logic
+function WritingTrainingWidget() {
+  return (
+    <Card className="flex flex-col bg-gradient-to-br from-pink-500/10 via-transparent to-transparent border-pink-500/20 shadow-xl relative overflow-hidden group h-full">
+      <div className="absolute top-0 right-0 p-8 opacity-5">
+        <PenLine className="h-32 w-32" />
+      </div>
+      <CardHeader className="relative z-10">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="p-2 bg-pink-500/10 rounded-lg">
+            <PenLine className="h-6 w-6 text-pink-500" />
+          </div>
+          <span className="text-xs font-bold uppercase tracking-widest text-pink-500">Письмо B2</span>
+        </div>
+        <CardTitle className="text-3xl font-headline font-bold">Schreibwerkstatt</CardTitle>
+        <CardDescription className="text-base text-muted-foreground text-left">
+          Тренировка официальных писем с ИИ-коррекцией и универсальными фразами.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex-grow flex flex-col justify-center relative z-10 py-6">
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 text-sm">
+            <CheckCircle className="h-4 w-4 text-pink-500" />
+            <span>Жалобы, Запросы, Извинения</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm">
+            <CheckCircle className="h-4 w-4 text-pink-500" />
+            <span>Мгновенная проверка ошибок</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm">
+            <CheckCircle className="h-4 w-4 text-pink-500" />
+            <span>Redemittel-Baukasten</span>
+          </div>
+        </div>
+      </CardContent>
+      <CardFooter className="relative z-10 pb-8">
+        <Button asChild size="lg" className="w-full h-14 text-lg bg-pink-600 hover:bg-pink-700 shadow-xl shadow-pink-500/20 hover:scale-[1.02] transition-transform">
+          <Link href="/writing-training">
+            Начать писать <ArrowRight className="ml-2 h-5 w-5" />
+          </Link>
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+}
+
 // Helper component to separate data fetching logic
 export default function DashboardPage() {
   const { progress, getTopicProficiency, isLoading: progressLoading } = useUserProgress();
@@ -304,6 +349,7 @@ export default function DashboardPage() {
         <DailySessionWidget />
         <ExamTextsWidget />
         <MyDictionariesWidget />
+        <WritingTrainingWidget />
       </div>
 
       <h2 className="text-3xl font-bold font-headline mb-6 text-center">Уровни обучения</h2>
