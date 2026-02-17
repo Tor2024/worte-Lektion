@@ -166,6 +166,39 @@ export const storage = {
         };
         storage.setDailySessionData(updated);
         return updated;
+    },
+
+    // Reset everything but folders/words themselves
+    resetAllProgress: () => {
+        if (typeof window === 'undefined') return;
+
+        // 1. Clear Simple Keys
+        window.localStorage.removeItem(KEYS.PROGRESS);
+        window.localStorage.removeItem(KEYS.SRS);
+        window.localStorage.removeItem(KEYS.STUDY_QUEUE);
+        window.localStorage.removeItem(KEYS.KNOWN_WORDS);
+        window.localStorage.removeItem(KEYS.DAILY_SESSION);
+
+        // 2. Reset Multi-Folder Data (preserves folders but resets word state)
+        const folders = storage.getCustomFolders();
+        const resetFolders = folders.map(folder => ({
+            ...folder,
+            updatedAt: Date.now(),
+            words: (folder.words || []).map(word => ({
+                ...word,
+                sm2State: {
+                    interval: 0,
+                    repetitions: 0,
+                    easeFactor: 2.5,
+                    nextReviewDate: null,
+                },
+                deepDiveStage: 0
+            }))
+        }));
+        storage.setCustomFolders(resetFolders);
+
+        // 3. Trigger reload for hooks to pick up changes
+        window.location.reload();
     }
 };
 
