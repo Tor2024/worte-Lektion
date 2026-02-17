@@ -10,14 +10,18 @@ const CATEGORY_LABELS: Record<WritingTopicCategory, string> = {
     'complaint': 'Жалоба (Beschwerde)',
     'request': 'Запрос (Anfrage)',
     'apology': 'Извинение (Entschuldigung)',
-    'application': 'Заявление (Bewerbung)'
+    'application': 'Заявление (Bewerbung)',
+    'invitation': 'Приглашение (Einladung)',
+    'advice': 'Совет (Ratschlag)'
 };
 
 const CATEGORY_COLORS: Record<WritingTopicCategory, string> = {
     'complaint': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
     'request': 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
     'apology': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
-    'application': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+    'application': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+    'invitation': 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+    'advice': 'bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300'
 };
 
 export default function WritingDashboard() {
@@ -26,7 +30,7 @@ export default function WritingDashboard() {
             <header className="mb-8">
                 <h1 className="text-3xl font-bold font-headline mb-2 text-primary">Schreibwerkstatt B2</h1>
                 <p className="text-muted-foreground text-lg">
-                    Мастерская письма: тренируйте официальные письма для экзамена B2.
+                    Мастерская письма: тренируйте официальные и личные письма для экзамена B2.
                     Изучайте универсальные фразы и получайте мгновенную проверку от ИИ.
                 </p>
             </header>
