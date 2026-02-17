@@ -6,7 +6,7 @@ import { UserVocabularyWord } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { SpeakButton } from '@/components/speak-button';
-import { formatGermanWord, isWordStandardized } from '@/lib/german-utils';
+import { formatGermanWord, isWordStandardized, getGenderColorClass } from '@/lib/german-utils';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { RotateCcw, Volume2, Clock, BrainCircuit, ShieldAlert, HelpCircle, CheckCircle, ArrowRight } from 'lucide-react';
@@ -157,7 +157,7 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
 
                     {/* Center Top: Word */}
                     <div className="mb-4 flex flex-col items-center">
-                        <h3 className="text-4xl font-black font-headline select-none text-center break-words hyphens-auto tracking-tight leading-none text-foreground">
+                        <h3 className={cn("text-4xl font-black font-headline select-none text-center break-words hyphens-auto tracking-tight leading-none", getGenderColorClass(word))}>
                             {formatGermanWord(word)}
                         </h3>
                         {word.type === 'noun' && (

@@ -5,12 +5,13 @@ import { StudyQueueItem } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { SpeakButton } from '@/components/speak-button';
-import { formatGermanWord } from '@/lib/german-utils';
+import { formatGermanWord, getGenderColorClass } from '@/lib/german-utils';
 import { BrainCircuit } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { useSpeech } from '@/hooks/use-speech';
 import { useEffect } from 'react';
+import { cn } from '@/lib/utils';
 
 interface PrimingViewProps {
     item: StudyQueueItem;
@@ -88,7 +89,7 @@ export function PrimingView({ item, onNext }: PrimingViewProps) {
                 <CardContent className="p-10 flex flex-col items-center text-center space-y-6">
 
                     <div className="space-y-4">
-                        <div className="text-6xl font-black text-primary tracking-tight">
+                        <div className={cn("text-6xl font-black tracking-tight", getGenderColorClass(word))}>
                             {formatGermanWord(word)}
                         </div>
                         <div className="flex flex-col items-center gap-1">

@@ -27,6 +27,17 @@ export function formatGermanWord(word: VocabularyWord): string {
     return word.german;
 }
 
+export function getGenderColorClass(word: VocabularyWord): string {
+    if (word.type !== 'noun') return 'text-foreground';
+
+    const article = (word.article || "").trim().toLowerCase();
+    if (article === 'der') return 'text-blue-600 dark:text-blue-400';
+    if (article === 'die') return 'text-pink-600 dark:text-pink-400';
+    if (article === 'das') return 'text-emerald-600 dark:text-emerald-400';
+
+    return 'text-foreground';
+}
+
 /**
  * Strips markdown and other technical characters that shouldn't be voiced by TTS.
  * Prevents hearing "stern" or "star" when encountering bold (**) or italic (*) text.
