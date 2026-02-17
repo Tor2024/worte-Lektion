@@ -28,14 +28,8 @@ export function formatGermanWord(word: VocabularyWord): string {
 }
 
 export function getGenderColorClass(word: VocabularyWord): string {
-    if (word.type !== 'noun') return 'text-foreground';
-
-    const article = (word.article || "").trim().toLowerCase();
-    if (article === 'der') return 'text-blue-600 dark:text-blue-400';
-    if (article === 'die') return 'text-pink-600 dark:text-pink-400';
-    if (article === 'das') return 'text-emerald-600 dark:text-emerald-400';
-
-    return 'text-foreground';
+    // User requested original "pleasant dark blue" (text-primary) for ALL words
+    return 'text-primary';
 }
 
 /**
