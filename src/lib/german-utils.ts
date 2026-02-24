@@ -38,7 +38,8 @@ export function getGenderColorClass(word: VocabularyWord): string {
  */
 export function cleanTextForSpeech(text: string): string {
     if (!text) return "";
-    return text.replace(/[*_~`#]/g, '');
+    // Strips markdown symbols (*, _, ~, `, #), brackets, and extra punctuation that shouldn't be voiced
+    return text.replace(/[*_~`#\[\]\(\)]/g, '').replace(/[-]{2,}/g, ' ');
 }
 /**
  * Checks if a word meets the new B2 Beruf standardization criteria.

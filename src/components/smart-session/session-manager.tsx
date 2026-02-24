@@ -14,6 +14,7 @@ import { RecognitionView } from '@/components/smart-session/recognition-view';
 import { ProductionView } from '@/components/smart-session/production-view';
 import { RemedialView } from '@/components/smart-session/remedial-view';
 import { ConsolidationView } from '@/components/smart-session/consolidation-view';
+import { SpeakButton } from '@/components/speak-button';
 import { formatGermanWord } from '@/lib/german-utils';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -482,8 +483,19 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                         {currentPhase === 'narrative' && (
                             <div className="space-y-6">
                                 <div className="p-8 bg-blue-50/30 border-2 border-dashed border-blue-200 rounded-3xl relative">
-                                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-blue-500 text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest">
-                                        История батча
+                                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 flex items-center gap-2">
+                                        <div className="bg-blue-500 text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest shadow-md">
+                                            История батча
+                                        </div>
+                                        {!isNarrativeGenerating && batchStories[currentBatchIndex] && (
+                                            <SpeakButton
+                                                text={batchStories[currentBatchIndex]}
+                                                size="sm"
+                                                variant="secondary"
+                                                className="bg-white border-blue-200 hover:bg-blue-50 text-blue-600 shadow-sm transition-all"
+                                                showText
+                                            />
+                                        )}
                                     </div>
                                     <p className="text-xl leading-relaxed italic text-slate-700">
                                         {isNarrativeGenerating ? (
