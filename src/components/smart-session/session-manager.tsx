@@ -7,18 +7,20 @@ import { Button } from '@/components/ui/button';
 import { storage } from '@/lib/storage';
 import { NeuralMap } from '../neural-map';
 import { Progress } from '@/components/ui/progress';
-import { BrainCircuit, CheckCircle, XCircle, ArrowRight, Layers, Target, PenTool } from 'lucide-react';
+import { BrainCircuit, CheckCircle, XCircle, ArrowRight, Layers, Target, PenTool, Siren } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 import { PrimingView } from '@/components/smart-session/priming-view';
 import { RecognitionView } from '@/components/smart-session/recognition-view';
 import { ProductionView } from '@/components/smart-session/production-view';
 import { RemedialView } from '@/components/smart-session/remedial-view';
 import { ConsolidationView } from '@/components/smart-session/consolidation-view';
+import { formatGermanWord } from '@/lib/german-utils';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 
-type GlobalPhase = 'priming' | 'recognition' | 'production' | 'remedial';
-type SessionState = 'loading' | 'intro' | 'active' | 'consolidation' | 'summary';
+type GlobalPhase = 'priming' | 'recognition' | 'narrative' | 'production' | 'remedial';
+type SessionState = 'loading' | 'intro' | 'warmup' | 'active' | 'consolidation' | 'summary';
 
 interface SmartSessionManagerProps {
     folderId?: string;
@@ -50,6 +52,11 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
 
     // Narrative Anchoring: Story for each batch
     const [batchStories, setBatchStories] = useState<Record<number, string>>({});
+    const [isNarrativeGenerating, setIsNarrativeGenerating] = useState(false);
+
+    // Warm-up State
+    const [warmupIndex, setWarmupIndex] = useState(0);
+    const leeches = useMemo(() => sessionQueue.filter(w => (w.consecutiveMistakes || 0) >= 3), [sessionQueue]);
 
     useEffect(() => {
         // Only load session if we are in 'loading' state
@@ -111,6 +118,10 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
             return pendingWords[phaseIndex % pendingWords.length];
         }
 
+        if (currentPhase === 'narrative' || currentPhase === 'production') {
+            return currentBatchWords[phaseIndex] || null;
+        }
+
         return currentBatchWords[phaseIndex];
     }, [currentBatchWords, phaseIndex, currentPhase, recognitionHits, refreshWords]);
 
@@ -167,7 +178,7 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                 });
 
                 if (allDone) {
-                    setCurrentPhase('production');
+                    setCurrentPhase('narrative');
                     setPhaseIndex(0);
                 } else {
                     // Move to next pending word in batch
@@ -183,6 +194,14 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                 // Jump back to Priming
                 setCurrentPhase('priming');
                 setPhaseIndex(0); // The currentItem logic will find this word in the needsPriming list
+            }
+        }
+        else if (currentPhase === 'narrative') {
+            if (phaseIndex < currentBatchWords.length - 1) {
+                setPhaseIndex(i => i + 1);
+            } else {
+                setCurrentPhase('production');
+                setPhaseIndex(0);
             }
         }
         else if (currentPhase === 'production') {
@@ -262,8 +281,46 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                     </>
                 )}
 
-                <Button size="lg" className="w-full text-xl h-16 shadow-xl hover:scale-[1.02] transition-transform" onClick={() => setSessionState('active')}>
+                <Button size="lg" className="w-full text-xl h-16 shadow-xl hover:scale-[1.02] transition-transform" onClick={() => {
+                    if (leeches.length > 0) {
+                        setSessionState('warmup');
+                    } else {
+                        setSessionState('active');
+                    }
+                }}>
                     {sessionMode === 'review-only' ? 'Начать Повторение' : 'Начать Сессию'}
+                </Button>
+            </div>
+        );
+    }
+
+    if (sessionState === 'warmup') {
+        const currentLeech = leeches[warmupIndex];
+        return (
+            <div className="flex flex-col items-center justify-center p-8 space-y-8 max-w-lg mx-auto mt-10">
+                <div className="flex items-center gap-2 text-red-500 font-bold uppercase tracking-widest text-sm">
+                    <Siren className="h-5 w-5 animate-pulse" />
+                    Разминка: Вход в поток
+                </div>
+                <Card className="w-full border-2 border-red-500/20 shadow-2xl bg-red-50/30">
+                    <CardContent className="p-8 text-center space-y-4">
+                        <div className="text-4xl font-black text-red-600">{formatGermanWord(currentLeech.word)}</div>
+                        <div className="text-2xl italic text-slate-600 border-t pt-4">{currentLeech.word.russian}</div>
+                        {currentLeech.mnemonic && (
+                            <div className="mt-4 p-3 bg-amber-100/50 rounded-lg text-sm text-amber-900 border border-amber-200">
+                                💡 {currentLeech.mnemonic}
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+                <Button size="lg" className="w-full h-16 text-xl" onClick={() => {
+                    if (warmupIndex < leeches.length - 1) {
+                        setWarmupIndex(i => i + 1);
+                    } else {
+                        setSessionState('active');
+                    }
+                }}>
+                    Вспомнил ({warmupIndex + 1}/{leeches.length})
                 </Button>
             </div>
         );
@@ -323,6 +380,7 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
         switch (currentPhase) {
             case 'priming': return 'Фаза 1: Знакомство';
             case 'recognition': return 'Фаза 2: Дрилл (x2)';
+            case 'narrative': return 'Контекстная прелюдия';
             case 'production': return 'Фаза 3: Контекст';
             default: return '';
         }
@@ -390,6 +448,21 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                                     ))}
                                 </div>
                                 <RecognitionView key={`${currentItem.id}-${recognitionHits[currentItem.id] || 0}`} item={currentItem} onResult={handleNext} />
+                            </div>
+                        )}
+                        {currentPhase === 'narrative' && (
+                            <div className="space-y-6">
+                                <div className="p-8 bg-blue-50/30 border-2 border-dashed border-blue-200 rounded-3xl relative">
+                                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-blue-500 text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest">
+                                        История батча
+                                    </div>
+                                    <p className="text-xl leading-relaxed italic text-slate-700">
+                                        {batchStories[currentBatchIndex] || "ИИ готовит контекст..."}
+                                    </p>
+                                </div>
+                                <Button size="lg" className="w-full h-16 text-xl" onClick={() => handleNext('success')}>
+                                    К упражнениям →
+                                </Button>
                             </div>
                         )}
                         {currentPhase === 'production' && (

@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { SpeakButton } from '@/components/speak-button';
 import { formatGermanWord, getGenderColorClass } from '@/lib/german-utils';
-import { BrainCircuit } from 'lucide-react';
+import { BrainCircuit, Siren } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { useSpeech } from '@/hooks/use-speech';
@@ -77,6 +77,11 @@ export function PrimingView({ item, onNext }: PrimingViewProps) {
             <div className="flex items-center gap-3 text-muted-foreground uppercase text-xs tracking-widest font-bold">
                 <BrainCircuit className="h-4 w-4" />
                 <span>Фаза 1: Загрузка Образа</span>
+                {(item.consecutiveMistakes || 0) >= 3 && (
+                    <Badge variant="destructive" className="ml-2 animate-pulse flex gap-1 items-center">
+                        <Siren className="h-3 w-3" /> Сложное Слово (Leech)
+                    </Badge>
+                )}
                 {word.level && (
                     <Badge variant="secondary" className="ml-2 bg-primary/10 text-primary border-primary/20">
                         {word.level}
@@ -179,10 +184,15 @@ export function PrimingView({ item, onNext }: PrimingViewProps) {
                     </div>
 
                     {/* Mnemonic */}
-                    {item.mnemonic && (
-                        <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-900 text-sm italic w-full max-w-md text-left">
+                    {(item.mnemonic || ((item.consecutiveMistakes || 0) >= 3 && (word as any).mnemonic)) && (
+                        <div className={cn(
+                            "mt-4 p-3 border rounded-lg text-sm italic w-full max-w-md text-left",
+                            (item.consecutiveMistakes || 0) >= 3
+                                ? "bg-amber-100 border-amber-400 text-amber-900 shadow-lg"
+                                : "bg-amber-50 border-amber-200 text-amber-900"
+                        )}>
                             <span className="font-bold uppercase text-[10px] block mb-1 opacity-70">💡 Мнемоника (ассоциация):</span>
-                            &ldquo;{item.mnemonic}&rdquo;
+                            &ldquo;{item.mnemonic || (word as any).mnemonic}&rdquo;
                         </div>
                     )}
                 </CardContent>

@@ -5,7 +5,7 @@ import { StudyQueueItem } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { BrainCircuit, Loader2, Sparkles, Send, ArrowRight, Eye, EyeOff, PenTool, Check } from 'lucide-react';
+import { BrainCircuit, Loader2, Sparkles, Send, ArrowRight, Eye, EyeOff, PenTool, Check, Siren } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { generateClozeWithAI, type GenerateClozeOutput } from '@/ai/flows/generate-cloze';
@@ -112,6 +112,11 @@ export function ProductionView({ item, storyContext, onStoryUpdate, onResult }: 
         >
             <div className="flex items-center gap-2 text-muted-foreground uppercase text-xs tracking-widest">
                 <BrainCircuit className="h-4 w-4" /> Фаза 3: Активный Контекст
+                {(item.consecutiveMistakes || 0) >= 3 && (
+                    <div className="ml-4 px-2 py-0.5 bg-red-100 text-red-600 rounded-full text-[10px] font-black animate-pulse flex items-center gap-1 border border-red-200">
+                        <Siren className="h-3 w-3" /> LEECH PROTECTION
+                    </div>
+                )}
             </div>
 
             <Card className="w-full bg-card border-2 border-primary/10 shadow-xl overflow-hidden">
@@ -134,9 +139,14 @@ export function ProductionView({ item, storyContext, onStoryUpdate, onResult }: 
                     <div className="text-muted-foreground italic flex flex-col gap-1 items-center">
                         <div>{clozeData.translation}</div>
                         {clozeData.hint && <div className="text-xs bg-muted px-2 py-1 rounded text-primary">{clozeData.hint}</div>}
-                        {item.mnemonic && (
-                            <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded text-amber-800 text-[10px] italic max-w-xs">
-                                <b>💡 МНЕМОНИКА:</b> &ldquo;{item.mnemonic}&rdquo;
+                        {(item.mnemonic || (item.consecutiveMistakes || 0) >= 3) && (
+                            <div className={cn(
+                                "mt-2 p-2 rounded text-[10px] italic max-w-xs border shadow-sm",
+                                (item.consecutiveMistakes || 0) >= 3
+                                    ? "bg-amber-100 border-amber-400 text-amber-900"
+                                    : "bg-amber-50 border-amber-200 text-amber-800"
+                            )}>
+                                <b>💡 МНЕМОНИКА:</b> &ldquo;{item.mnemonic || (word as any).mnemonic || "Нет ассоциации"} &rdquo;
                             </div>
                         )}
                     </div>
