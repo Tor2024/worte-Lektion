@@ -229,12 +229,9 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
             }
         }
         else if (currentPhase === 'narrative') {
-            if (phaseIndex < currentBatchWords.length - 1) {
-                setPhaseIndex(i => i + 1);
-            } else {
-                setCurrentPhase('production');
-                setPhaseIndex(0);
-            }
+            // One click for the whole batch story, move to production
+            setCurrentPhase('production');
+            setPhaseIndex(0);
         }
         else if (currentPhase === 'production') {
             const finalResult = result === 'fail' ? 'fail' : (results[currentItem.id] === 'fail' ? 'fail' : 'success');
