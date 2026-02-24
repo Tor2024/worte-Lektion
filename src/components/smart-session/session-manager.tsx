@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { storage } from '@/lib/storage';
 import { NeuralMap } from '../neural-map';
 import { Progress } from '@/components/ui/progress';
-import { BrainCircuit, CheckCircle, XCircle, ArrowRight, Layers, Target, PenTool, Siren } from 'lucide-react';
+import { BrainCircuit, CheckCircle, XCircle, ArrowRight, Layers, Target, PenTool, Siren, Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { PrimingView } from '@/components/smart-session/priming-view';
 import { RecognitionView } from '@/components/smart-session/recognition-view';
@@ -18,6 +18,7 @@ import { formatGermanWord } from '@/lib/german-utils';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
+import { generateStory } from '@/ai/flows/generate-story';
 
 type GlobalPhase = 'priming' | 'recognition' | 'narrative' | 'production' | 'remedial';
 type SessionState = 'loading' | 'intro' | 'warmup' | 'active' | 'consolidation' | 'summary';
@@ -146,6 +147,37 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
             }
         }
     }, [currentPhase, currentBatchWords, phaseIndex, sessionState, refreshWords]);
+
+    // Narrative Story Generation Effect
+    useEffect(() => {
+        if (sessionState !== 'active' || currentPhase !== 'narrative') return;
+        if (batchStories[currentBatchIndex]) return; // Already generated
+
+        const genStory = async () => {
+            setIsNarrativeGenerating(true);
+            try {
+                const germanWords = currentBatchWords.map(w => w.id);
+                const data = await generateStory({
+                    words: germanWords,
+                    topic: "Beruf und Alltag (Focus on learning context)"
+                });
+                setBatchStories(prev => ({
+                    ...prev,
+                    [currentBatchIndex]: data.story
+                }));
+            } catch (err) {
+                console.error("Failed to generate batch story", err);
+                setBatchStories(prev => ({
+                    ...prev,
+                    [currentBatchIndex]: "Не удалось сгенерировать историю, но мы продолжим дрилл!"
+                }));
+            } finally {
+                setIsNarrativeGenerating(false);
+            }
+        };
+
+        genStory();
+    }, [currentPhase, currentBatchIndex, currentBatchWords, sessionState]);
 
     const handleNext = (result: 'success' | 'fail') => {
         if (!currentItem) return;
@@ -457,7 +489,13 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                                         История батча
                                     </div>
                                     <p className="text-xl leading-relaxed italic text-slate-700">
-                                        {batchStories[currentBatchIndex] || "ИИ готовит контекст..."}
+                                        {isNarrativeGenerating ? (
+                                            <span className="flex items-center gap-2 animate-pulse">
+                                                <Loader2 className="h-4 w-4 animate-spin" /> Синхронизация контекстных полей...
+                                            </span>
+                                        ) : (
+                                            batchStories[currentBatchIndex] || "История не найдена."
+                                        )}
                                     </p>
                                 </div>
                                 <Button size="lg" className="w-full h-16 text-xl" onClick={() => handleNext('success')}>
