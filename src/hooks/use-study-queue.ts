@@ -317,9 +317,8 @@ export function useStudyQueue() {
         const learningCount = localQueue.filter((i: StudyQueueItem) => i.status === 'learning' || i.status === 'leech').length;
         const reviewCount = localQueue.filter((i: StudyQueueItem) => i.status === 'review').length;
 
-        // Dynamic limit: 40 on first day, 80 after
-        const hasHistory = localQueue.some((i: StudyQueueItem) => i.status !== 'new');
-        const dailyLimit = hasHistory ? 80 : 40;
+        // Global limit: 40 words per session (sustainable goal)
+        const dailyLimit = 40;
         const availableTotal = Math.min(localQueue.length, dailyLimit);
 
         return {
