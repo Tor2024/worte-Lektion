@@ -134,8 +134,9 @@ export function useStudyQueue() {
         }
 
         // Session 1-2: Normal learning mode
-        const MAIN_LIMIT = 40;      // Main words per session
-        const OVERDUE_LIMIT = 40;   // Overdue words per session (added separately)
+        const MAIN_LIMIT = 25;      // Reduced from 40 for cognitive safety
+        const OVERDUE_LIMIT = 15;   // Reduced from 40 to prevent "overdue avalanches"
+        const NEW_WORD_LIMIT = 7;   // Target quota for sustainable growth
 
         const LEVEL_PRIORITY: Record<string, number> = {
             'Beruf': 100, 'B2': 90, 'B1': 80, 'A2': 70, 'A1': 60, 'A0': 50
@@ -150,8 +151,6 @@ export function useStudyQueue() {
             .slice(0, OVERDUE_LIMIT);
 
         // 2. Get words due TODAY (not overdue)
-        const todayStart = new Date(now);
-        todayStart.setHours(0, 0, 0, 0);
         const todayEnd = new Date(now);
         todayEnd.setHours(23, 59, 59, 999);
 
@@ -163,13 +162,15 @@ export function useStudyQueue() {
             )
             .sort((a, b) => (a.nextReviewNum || 0) - (b.nextReviewNum || 0));
 
-        // 3. Get new words
-        const newWords = queueToProcess.filter((item: StudyQueueItem) => item.status === 'new');
+        // 3. Get new words with a strict quota
+        const newWords = queueToProcess
+            .filter((item: StudyQueueItem) => item.status === 'new')
+            .slice(0, NEW_WORD_LIMIT);
 
-        // Selection: Fill main limit with due-today + new, then add overdue at end
+        // Selection: Fill main limit with due-today, then supplement with new words up to limit
         const mainPool = [...dueTodayWords, ...newWords].slice(0, MAIN_LIMIT);
 
-        // Final session: main pool + overdue (overdue at the END)
+        // Final session: main pool + overdue
         let finalItems = [...mainPool, ...overdueWords];
 
         // CRITICAL FIX: Deduplicate items by ID to strictly prevent repeats in the same session

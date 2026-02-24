@@ -68,12 +68,12 @@ export function LearningDashboard({
                             Начать Смарт-Сессию
                         </CardTitle>
                         <CardDescription className="text-primary-foreground/80">
-                            Фокус на 20 словах: 5 новых, 15 на повторение.
+                            Фокус на 40 словах: до 7 новых, 33 на повторение.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Button variant="secondary" className="w-full font-bold">
-                            Начать ({Math.min(20, totalWords)} слов)
+                            Начать ({Math.min(40, totalWords)} слов)
                         </Button>
                     </CardContent>
                 </Card>

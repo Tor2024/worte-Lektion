@@ -32,7 +32,7 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
     const [sessionNumber, setSessionNumber] = useState(1);
 
     // Batch Management
-    const BATCH_SIZE = 2; // Was 5
+    const BATCH_SIZE = 4; // Increased from 2 for better cognitive flow
     const [currentBatchIndex, setCurrentBatchIndex] = useState(0);
 
     // Phase Management
@@ -41,6 +41,9 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
 
     // Drill State (Phase 2)
     const [recognitionHits, setRecognitionHits] = useState<Record<string, number>>({});
+
+    // Refresh State: Words that were forgotten and need re-priming
+    const [refreshWords, setRefreshWords] = useState<Set<string>>(new Set());
 
     // Score/Results
     const [results, setResults] = useState<Record<string, 'success' | 'fail'>>({});
@@ -85,20 +88,66 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
 
     // Derived: Current item based on phaseIndex within current batch
     const currentItem = useMemo(() => {
+        if (currentPhase === 'priming') {
+            // SMART SKIP LOGIC:
+            // 1. Always show Priming for NEW words or words in REFRESH mode.
+            // 2. Show Priming for words with interval < 7 (Check-in).
+            // 3. Skip for words with interval >= 7.
+            const needsPriming = currentBatchWords.filter(w => {
+                const isNew = w.status === 'new';
+                const isRefresh = refreshWords.has(w.id);
+                const isShortInterval = (w.interval || 0) < 7;
+                return isNew || isRefresh || isShortInterval;
+            });
+
+            if (needsPriming.length === 0) return null; // Phase will auto-advance in useEffect or handleNext
+            return needsPriming[phaseIndex] || null;
+        }
+
         if (currentPhase === 'recognition') {
             // In recognition, we filter for words that haven't reached 2 hits yet
             const pendingWords = currentBatchWords.filter(w => (recognitionHits[w.id] || 0) < 2);
             if (pendingWords.length === 0) return null;
             return pendingWords[phaseIndex % pendingWords.length];
         }
+
         return currentBatchWords[phaseIndex];
-    }, [currentBatchWords, phaseIndex, currentPhase, recognitionHits]);
+    }, [currentBatchWords, phaseIndex, currentPhase, recognitionHits, refreshWords]);
+
+    // AUTO-ADVANCE phase if no items need current phase
+    useEffect(() => {
+        if (sessionState !== 'active') return;
+
+        if (currentPhase === 'priming') {
+            const needsPriming = currentBatchWords.filter(w => {
+                const isNew = w.status === 'new';
+                const isRefresh = refreshWords.has(w.id);
+                const isShortInterval = (w.interval || 0) < 7;
+                return isNew || isRefresh || isShortInterval;
+            });
+
+            if (needsPriming.length === 0) {
+                setCurrentPhase('recognition');
+                setPhaseIndex(0);
+            } else if (phaseIndex >= needsPriming.length) {
+                setCurrentPhase('recognition');
+                setPhaseIndex(0);
+            }
+        }
+    }, [currentPhase, currentBatchWords, phaseIndex, sessionState, refreshWords]);
 
     const handleNext = (result: 'success' | 'fail') => {
         if (!currentItem) return;
 
         if (currentPhase === 'priming') {
-            if (phaseIndex < currentBatchWords.length - 1) {
+            const needsPriming = currentBatchWords.filter(w => {
+                const isNew = w.status === 'new';
+                const isRefresh = refreshWords.has(w.id);
+                const isShortInterval = (w.interval || 0) < 7;
+                return isNew || isRefresh || isShortInterval;
+            });
+
+            if (phaseIndex < needsPriming.length - 1) {
                 setPhaseIndex(i => i + 1);
             } else {
                 // Move to Recognition for this batch
@@ -125,10 +174,15 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                     setPhaseIndex(i => i + 1);
                 }
             } else {
-                // Fail in recognition resets hits for this word
+                // FORGOT WORD LOGIC:
+                // If fail in recognition, add to RefreshWords and go back to Priming for THIS word
+                setRefreshWords(prev => new Set(prev).add(currentItem.id));
                 setRecognitionHits(prev => ({ ...prev, [currentItem.id]: 0 }));
-                setPhaseIndex(i => i + 1);
                 setResults(prev => ({ ...prev, [currentItem.id]: 'fail' }));
+
+                // Jump back to Priming
+                setCurrentPhase('priming');
+                setPhaseIndex(0); // The currentItem logic will find this word in the needsPriming list
             }
         }
         else if (currentPhase === 'production') {
@@ -148,6 +202,8 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                     setCurrentBatchIndex(i => i + 1);
                     setCurrentPhase('priming');
                     setPhaseIndex(0);
+                    // Clear refresh flags for the new batch
+                    setRefreshWords(new Set());
                 } else {
                     // All batches finished, move to consolidation
                     setSessionState('consolidation');
