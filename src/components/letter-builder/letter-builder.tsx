@@ -206,7 +206,22 @@ export function LetterBuilder() {
                 {/* RIGHT: Live Preview */}
                 <Card className="flex flex-col min-h-0 border-2 shadow-xl bg-orange-50/50 dark:bg-slate-900/50">
                     <CardHeader className="py-4 border-b flex flex-row justify-between items-center bg-white/50 dark:bg-slate-900/50 backdrop-blur">
-                        <CardTitle className="text-lg">Предпросмотр</CardTitle>
+                        <div className="flex items-center gap-3">
+                            <CardTitle className="text-lg">Предпросмотр</CardTitle>
+                            {currentText && (
+                                <Badge
+                                    variant={currentText.split(/\s+/).filter(Boolean).length >= 150 ? "default" : "outline"}
+                                    className={cn(
+                                        "transition-all",
+                                        currentText.split(/\s+/).filter(Boolean).length >= 150
+                                            ? "bg-green-600 hover:bg-green-700"
+                                            : "text-muted-foreground"
+                                    )}
+                                >
+                                    {currentText.split(/\s+/).filter(Boolean).length} слов
+                                </Badge>
+                            )}
+                        </div>
                         <Button size="sm" onClick={copyToClipboard} disabled={!currentText}>
                             <Copy className="w-4 h-4 mr-2" /> Копировать
                         </Button>
