@@ -116,7 +116,10 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
         if (currentPhase === 'recognition') {
             // In recognition, we filter for words that haven't reached 2 hits yet
             const pendingWords = currentBatchWords.filter(w => (recognitionHits[w.id] || 0) < 2);
-            if (pendingWords.length === 0) return null;
+            if (pendingWords.length === 0) {
+                // If all done but phase hasn't transitioned yet, show the last word to avoid null flash
+                return currentBatchWords[currentBatchWords.length - 1] || null;
+            }
             return pendingWords[phaseIndex % pendingWords.length];
         }
 
@@ -154,7 +157,27 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                 setPhaseIndex(0);
             }
         }
-    }, [currentPhase, currentBatchWords, phaseIndex, sessionState, refreshWords, sessionMode]);
+
+        // AUTO-ADVANCE RECOGNITION PHASE
+        if (currentPhase === 'recognition') {
+            const allDone = currentBatchWords.length > 0 && currentBatchWords.every(w => (recognitionHits[w.id] || 0) >= 2);
+            if (allDone) {
+                if (sessionMode === 'review-only') {
+                    if (currentBatchIndex < totalBatches - 1) {
+                        setCurrentBatchIndex(i => i + 1);
+                        setCurrentPhase('recognition');
+                        setPhaseIndex(0);
+                        setRefreshWords(new Set());
+                    } else {
+                        setSessionState('consolidation');
+                    }
+                } else {
+                    setCurrentPhase('narrative');
+                    setPhaseIndex(0);
+                }
+            }
+        }
+    }, [currentPhase, currentBatchWords, phaseIndex, sessionState, refreshWords, sessionMode, recognitionHits, currentBatchIndex, totalBatches]);
 
     // Narrative Story Generation Effect
     useEffect(() => {
