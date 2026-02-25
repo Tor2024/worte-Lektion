@@ -234,6 +234,13 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                 const newHits = (recognitionHits[currentItem.id] || 0) + 1;
                 setRecognitionHits(prev => ({ ...prev, [currentItem.id]: newHits }));
 
+                // In review-only mode, we treat 2 hits as a final success for the word
+                if (newHits >= 2 && sessionMode === 'review-only') {
+                    const finalResult = results[currentItem.id] === 'fail' ? 'fail' : 'success';
+                    setResults(prev => ({ ...prev, [currentItem.id]: finalResult }));
+                    updateItemStatus(currentItem.id, finalResult as 'success' | 'fail');
+                }
+
                 // Check if all words in current batch reached 2 hits
                 const allDone = currentBatchWords.every(w => {
                     const hits = w.id === currentItem.id ? newHits : (recognitionHits[w.id] || 0);
@@ -242,10 +249,10 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
 
                 if (allDone) {
                     if (sessionMode === 'review-only') {
-                        // SKIP NARRATIVE & PRODUCTION IN REVIEW-ONLY MODE
+                        // All words in batch done, move to next batch or end
                         if (currentBatchIndex < totalBatches - 1) {
                             setCurrentBatchIndex(i => i + 1);
-                            setCurrentPhase('recognition'); // Skip priming for next batch too
+                            setCurrentPhase('recognition');
                             setPhaseIndex(0);
                             setRefreshWords(new Set());
                         } else {
@@ -261,14 +268,19 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                 }
             } else {
                 // FORGOT WORD LOGIC:
-                // If fail in recognition, add to RefreshWords and go back to Priming for THIS word
                 setRefreshWords(prev => new Set(prev).add(currentItem.id));
                 setRecognitionHits(prev => ({ ...prev, [currentItem.id]: 0 }));
                 setResults(prev => ({ ...prev, [currentItem.id]: 'fail' }));
 
-                // Jump back to Priming
+                // In review-only mode, update status as fail immediately if failed in recognition
+                if (sessionMode === 'review-only') {
+                    updateItemStatus(currentItem.id, 'fail');
+                }
+
+                // Jump back to Priming (or stay in recognition if we decide so, but current logic jumps back)
+                // Since my new logic skips priming in review-only, it will just jump back to phase start.
                 setCurrentPhase('priming');
-                setPhaseIndex(0); // The currentItem logic will find this word in the needsPriming list
+                setPhaseIndex(0);
             }
         }
         else if (currentPhase === 'narrative') {
