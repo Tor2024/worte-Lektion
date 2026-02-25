@@ -58,6 +58,28 @@ export const UNIVERSAL_PHRASES: UniversalPhrase[] = [
         category: 'intro',
         tags: ['apology']
     },
+    {
+        id: 'intro-complaint-ordered',
+        text: 'Vor zwei Wochen habe ich bei Ihnen ... bestellt.',
+        translation: 'Две недели назад я заказал у Вас...',
+        category: 'intro',
+        tags: ['complaint']
+    },
+    {
+        id: 'intro-complaint-loyal',
+        text: 'Wir sind seit langer Zeit treue Kunden Ihrer Firma.',
+        translation: 'Мы долгое время являемся верными клиентами Вашей фирмы.',
+        category: 'intro',
+        tags: ['complaint', 'request'],
+        isUniversal: true
+    },
+    {
+        id: 'intro-thanks-delivery',
+        text: 'Vielen Dank für die pünktliche/zuverlässige Lieferung.',
+        translation: 'Большое спасибо за пунктуальную/надежную доставку.',
+        category: 'intro',
+        tags: ['complaint', 'request']
+    },
     // --- INTRO (Unofficial) ---
     {
         id: 'intro-unofficial-long-time',
@@ -104,6 +126,44 @@ export const UNIVERSAL_PHRASES: UniversalPhrase[] = [
         category: 'body',
         tags: ['apology', 'request']
     },
+    {
+        id: 'body-understand-natural',
+        text: 'Ich verstehe natürlich, dass die Situation für ... schwierig ist.',
+        translation: 'Я, конечно, понимаю, что ситуация для ... сложна.',
+        category: 'body',
+        tags: ['apology', 'request']
+    },
+    {
+        id: 'body-occurrence',
+        text: 'So etwas kann immer mal vorkommen.',
+        translation: 'Такое всегда может случиться.',
+        category: 'body',
+        tags: ['apology', 'request'],
+        isUniversal: true
+    },
+    {
+        id: 'body-proposal-reason',
+        text: 'Aus diesem Grund würde ich vorschlagen, dass...',
+        translation: 'По этой причине я хотел бы предложить, чтобы...',
+        category: 'body',
+        tags: ['complaint', 'request'],
+        isUniversal: true
+    },
+    {
+        id: 'body-opinion-pro-contra',
+        text: 'Was für/gegen ... spricht, ist, dass... / ... hat den Vorteil/Nachteil, dass...',
+        translation: 'Что говорит за/против ..., так это то, что... / ... имеет преимущество/недостаток в том, что...',
+        category: 'body',
+        tags: ['advice', 'complaint'],
+        isUniversal: true
+    },
+    {
+        id: 'body-opinion-suitable',
+        text: '... ist besonders geeignet für/bei...',
+        translation: '... особенно хорошо подходит для...',
+        category: 'body',
+        tags: ['advice']
+    },
     // --- BODY (Unofficial) ---
     {
         id: 'body-unofficial-imagine',
@@ -119,7 +179,89 @@ export const UNIVERSAL_PHRASES: UniversalPhrase[] = [
         category: 'body',
         tags: ['advice']
     },
+    {
+        id: 'body-example-instance',
+        text: 'Als Beispiel könnte man anführen, dass...',
+        translation: 'В качестве примера можно привести то, что...',
+        category: 'body',
+        tags: ['advice', 'complaint'],
+        isUniversal: true
+    },
+    {
+        id: 'body-beispielsweise',
+        text: '... beispielsweise ...',
+        translation: '... например ...',
+        category: 'body',
+        tags: ['advice', 'complaint']
+    },
+    {
+        id: 'body-demgegenueber',
+        text: 'Demgegenüber...',
+        translation: 'Напротив / В противовес этому...',
+        category: 'body',
+        tags: ['advice'],
+        isUniversal: true
+    },
+    {
+        id: 'body-zusatzlich',
+        text: 'Zusätzlich...',
+        translation: 'Дополнительно...',
+        category: 'body',
+        tags: ['advice', 'complaint']
+    },
+    {
+        id: 'body-obwohl',
+        text: 'Obwohl ..., ...',
+        translation: 'Хотя ..., ...',
+        category: 'body',
+        tags: ['advice', 'complaint'],
+        isUniversal: true
+    },
+    {
+        id: 'body-nebenbei',
+        text: 'Ganz nebenbei...',
+        translation: 'Кстати / Между прочим...',
+        category: 'body',
+        tags: ['advice']
+    },
+    {
+        id: 'body-auserdem',
+        text: 'Außerdem...',
+        translation: 'Кроме того...',
+        category: 'body',
+        tags: ['advice', 'complaint'],
+        isUniversal: true
+    },
 
+    {
+        id: 'body-it-possible',
+        text: 'Es wäre möglich, ... (zu + Infinitiv)',
+        translation: 'Было бы возможно...',
+        category: 'body',
+        tags: ['request', 'application']
+    },
+    {
+        id: 'body-opinion-over-1',
+        text: 'Ich bin der Überzeugung / davon überzeugt, dass...',
+        translation: 'Я убежден / уверен в том, что...',
+        category: 'body',
+        tags: ['advice', 'complaint'],
+        isUniversal: true
+    },
+    {
+        id: 'body-opinion-standpunkt',
+        text: 'Ich selbst stehe auf dem Standpunkt, dass...',
+        translation: 'Я сам стою на позиции, что...',
+        category: 'body',
+        tags: ['advice']
+    },
+    {
+        id: 'body-opinion-explain',
+        text: 'Das lässt sich dadurch erklären, dass...',
+        translation: 'Это можно объяснить тем, что...',
+        category: 'body',
+        tags: ['advice']
+    },
     // --- ACTION / REQUEST (Official) ---
     {
         id: 'action-check',
@@ -148,6 +290,45 @@ export const UNIVERSAL_PHRASES: UniversalPhrase[] = [
         translation: 'Пожалуйста, ответьте мне до...',
         category: 'action',
         tags: ['complaint', 'request']
+    },
+    {
+        id: 'action-ask-to-do',
+        text: 'Ich möchte Sie bitten, ... (zu + Infinitiv)',
+        translation: 'Я хотел бы попросить Вас...',
+        category: 'action',
+        tags: ['request'],
+        isUniversal: true
+    },
+    {
+        id: 'action-request-help',
+        text: 'Ich habe eine Bitte an Sie. / Ich benötige Ihre Hilfe.',
+        translation: 'У меня к Вам просьба. / Мне нужна Ваша помощь.',
+        category: 'action',
+        tags: ['request'],
+        isUniversal: true
+    },
+    {
+        id: 'action-withdraw',
+        text: 'Daher möchte ich vom Kauf zurücktreten / die Bestellung stornieren.',
+        translation: 'Поэтому я хочу отказаться от покупки / отменить заказ.',
+        category: 'action',
+        tags: ['complaint'],
+        isUniversal: true
+    },
+    {
+        id: 'action-forum-propose',
+        text: 'Man könnte... / Es wäre gut/sinnvoll... / Ich würde dafür plädieren, dass...',
+        translation: 'Можно было бы... / Было бы хорошо/разумно... / Я бы выступал за то, чтобы...',
+        category: 'action',
+        tags: ['advice'],
+        isUniversal: true
+    },
+    {
+        id: 'action-worth-it',
+        text: 'Es lohnt sich, ... (zu + Infinitiv)',
+        translation: 'Стоит того, чтобы...',
+        category: 'action',
+        tags: ['advice']
     },
     // --- ACTION (Unofficial) ---
     {
@@ -187,6 +368,35 @@ export const UNIVERSAL_PHRASES: UniversalPhrase[] = [
         translation: 'С уважением (официально)',
         category: 'closing',
         tags: ['complaint', 'request', 'application', 'apology']
+    },
+    {
+        id: 'closing-thanks-hearty',
+        text: 'Ich bedanke mich herzlich bei Ihnen.',
+        translation: 'Я сердечно благодарю Вас.',
+        category: 'closing',
+        tags: ['request', 'apology'],
+        isUniversal: true
+    },
+    {
+        id: 'closing-inform-steps',
+        text: 'Bitte informieren Sie mich über Ihre weiteren Schritte / Ihr weiteres Vorgehen.',
+        translation: 'Пожалуйста, проинформируйте меня о Ваших дальнейших шагах / планах.',
+        category: 'closing',
+        tags: ['complaint', 'request']
+    },
+    {
+        id: 'closing-hope-not-needed',
+        text: 'Ich hoffe, dass das nicht nötig sein wird, und erwarte Ihre Antwort.',
+        translation: 'Надеюсь, что в этом не будет необходимости, и жду Вашего ответа.',
+        category: 'closing',
+        tags: ['complaint']
+    },
+    {
+        id: 'closing-understanding-situation',
+        text: 'Ich hoffe, dass Sie Verständnis für meine Situation haben.',
+        translation: 'Надеюсь, что у Вас есть понимание моей ситуации.',
+        category: 'closing',
+        tags: ['apology', 'complaint']
     },
     // --- CLOSING (Unofficial) ---
     {
