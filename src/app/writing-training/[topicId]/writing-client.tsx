@@ -108,9 +108,16 @@ export default function WritingClient({ topic, phrases }: WritingClientProps) {
                                                         className="group p-3 rounded-lg border bg-muted/30 hover:bg-muted hover:border-primary/50 transition-all cursor-pointer relative"
                                                         onClick={() => handleInsertPhrase(p.text)}
                                                     >
-                                                        <p className="font-medium text-sm pr-6">{p.text}</p>
+                                                        <div className="flex justify-between items-start">
+                                                            <p className="font-medium text-sm pr-6 leading-tight">{p.text}</p>
+                                                            {p.isUniversal && (
+                                                                <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-200 text-[10px] h-4 px-1 shrink-0">
+                                                                    ⭐ Экзамен
+                                                                </Badge>
+                                                            )}
+                                                        </div>
                                                         <p className="text-xs text-muted-foreground mt-1">{p.translation}</p>
-                                                        <Copy className="w-3 h-3 absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity text-primary" />
+                                                        <Copy className="w-3 h-3 absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity text-primary" />
                                                     </div>
                                                 ))}
                                             </div>

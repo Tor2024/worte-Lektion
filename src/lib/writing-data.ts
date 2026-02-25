@@ -6,6 +6,7 @@ export interface UniversalPhrase {
     translation: string;
     category: 'intro' | 'body' | 'action' | 'closing';
     tags: WritingTopicCategory[];
+    isUniversal?: boolean;
 }
 
 export interface WritingTopic {
@@ -32,7 +33,16 @@ export const UNIVERSAL_PHRASES: UniversalPhrase[] = [
         text: 'Hiermit möchte ich mich bei Ihnen über ... beschweren.',
         translation: 'Настоящим я хочу пожаловаться вам на...',
         category: 'intro',
-        tags: ['complaint']
+        tags: ['complaint'],
+        isUniversal: true
+    },
+    {
+        id: 'intro-ad-enthusiasm',
+        text: 'Als ich Ihre Anzeige las, war ich sofort begeistert, deshalb habe ich mich angemeldet.',
+        translation: 'Прочитав ваше объявление, я был в восторге, поэтому я записался/зарегистрировался.',
+        category: 'intro',
+        tags: ['complaint', 'request', 'application'],
+        isUniversal: true
     },
     {
         id: 'intro-writing-cause',
@@ -77,7 +87,8 @@ export const UNIVERSAL_PHRASES: UniversalPhrase[] = [
         text: 'Ein weiterer wichtiger Punkt ist...',
         translation: 'Еще один важный момент - это...',
         category: 'body',
-        tags: ['complaint', 'request', 'application']
+        tags: ['complaint', 'request', 'application'],
+        isUniversal: true
     },
     {
         id: 'body-contrast',
@@ -160,7 +171,8 @@ export const UNIVERSAL_PHRASES: UniversalPhrase[] = [
         text: 'Ich hoffe auf eine baldige Antwort.',
         translation: 'Надеюсь на скорый ответ.',
         category: 'closing',
-        tags: ['complaint', 'request', 'application']
+        tags: ['complaint', 'request', 'application'],
+        isUniversal: true
     },
     {
         id: 'closing-apology',
