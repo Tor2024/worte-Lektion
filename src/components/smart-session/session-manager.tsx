@@ -132,6 +132,13 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
         if (sessionState !== 'active') return;
 
         if (currentPhase === 'priming') {
+            // SKIP PRIMING IN REVIEW-ONLY MODE (as per user request: "only selection/translations")
+            if (sessionMode === 'review-only') {
+                setCurrentPhase('recognition');
+                setPhaseIndex(0);
+                return;
+            }
+
             const needsPriming = currentBatchWords.filter(w => {
                 const isNew = w.status === 'new';
                 const isRefresh = refreshWords.has(w.id);
@@ -147,7 +154,7 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                 setPhaseIndex(0);
             }
         }
-    }, [currentPhase, currentBatchWords, phaseIndex, sessionState, refreshWords]);
+    }, [currentPhase, currentBatchWords, phaseIndex, sessionState, refreshWords, sessionMode]);
 
     // Narrative Story Generation Effect
     useEffect(() => {
@@ -211,8 +218,20 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                 });
 
                 if (allDone) {
-                    setCurrentPhase('narrative');
-                    setPhaseIndex(0);
+                    if (sessionMode === 'review-only') {
+                        // SKIP NARRATIVE & PRODUCTION IN REVIEW-ONLY MODE
+                        if (currentBatchIndex < totalBatches - 1) {
+                            setCurrentBatchIndex(i => i + 1);
+                            setCurrentPhase('recognition'); // Skip priming for next batch too
+                            setPhaseIndex(0);
+                            setRefreshWords(new Set());
+                        } else {
+                            setSessionState('consolidation');
+                        }
+                    } else {
+                        setCurrentPhase('narrative');
+                        setPhaseIndex(0);
+                    }
                 } else {
                     // Move to next pending word in batch
                     setPhaseIndex(i => i + 1);
@@ -477,7 +496,12 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                                         />
                                     ))}
                                 </div>
-                                <RecognitionView key={`${currentItem.id}-${recognitionHits[currentItem.id] || 0}`} item={currentItem} onResult={handleNext} />
+                                <RecognitionView
+                                    key={`${currentItem.id}-${recognitionHits[currentItem.id] || 0}`}
+                                    item={currentItem}
+                                    onResult={handleNext}
+                                    direction={(recognitionHits[currentItem.id] || 0) % 2 === 0 ? 0 : 1}
+                                />
                             </div>
                         )}
                         {currentPhase === 'narrative' && (
@@ -532,8 +556,18 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                             onClick={() => {
                                 // Auto-advance to next phase if stuck
                                 if (currentPhase === 'recognition') {
-                                    setCurrentPhase('production');
-                                    setPhaseIndex(0);
+                                    if (sessionMode === 'review-only') {
+                                        if (currentBatchIndex < totalBatches - 1) {
+                                            setCurrentBatchIndex(i => i + 1);
+                                            setCurrentPhase('recognition');
+                                            setPhaseIndex(0);
+                                        } else {
+                                            setSessionState('consolidation');
+                                        }
+                                    } else {
+                                        setCurrentPhase('production');
+                                        setPhaseIndex(0);
+                                    }
                                 } else if (currentBatchIndex < totalBatches - 1) {
                                     setCurrentBatchIndex(i => i + 1);
                                     setCurrentPhase('priming');

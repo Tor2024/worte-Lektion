@@ -15,16 +15,19 @@ import { cn } from '@/lib/utils';
 interface RecognitionViewProps {
     item: StudyQueueItem;
     onResult: (result: 'success' | 'fail') => void;
+    direction?: 0 | 1; // 0 = DE->RU, 1 = RU->DE
 }
 
-export function RecognitionView({ item, onResult }: RecognitionViewProps) {
+export function RecognitionView({ item, onResult, direction: forcedDirection }: RecognitionViewProps) {
     const { word } = item;
     const [selectedOption, setSelectedOption] = useState<string | null>(null);
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
     const { speak, isLoaded } = useSpeech();
 
-    // Randomly decide direction: 0 = German -> Russian, 1 = Russian -> German
-    const direction = useMemo(() => Math.random() > 0.5 ? 1 : 0, [item.id]);
+    // If forcedDirection is provided, use it. Otherwise, fallback to random (for standalone usage).
+    const direction = useMemo(() =>
+        forcedDirection !== undefined ? forcedDirection : (Math.random() > 0.5 ? 1 : 0),
+        [item.id, forcedDirection]);
 
     useEffect(() => {
         if (isLoaded && direction === 0) {
