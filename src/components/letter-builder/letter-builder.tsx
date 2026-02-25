@@ -171,7 +171,14 @@ export function LetterBuilder() {
                                                     onClick={() => handleSelectModule(section.id, module)}
                                                 >
                                                     <div className="flex justify-between items-start mb-2">
-                                                        <Badge variant="outline">{module.label}</Badge>
+                                                        <div className="flex gap-2">
+                                                            <Badge variant="outline">{module.label}</Badge>
+                                                            {module.isUniversal && (
+                                                                <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-200">
+                                                                    ⭐ Экзамен
+                                                                </Badge>
+                                                            )}
+                                                        </div>
                                                         {selectedModules[section.id]?.id === module.id && (
                                                             <Check className="w-5 h-5 text-primary" />
                                                         )}

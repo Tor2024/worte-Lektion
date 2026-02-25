@@ -9,17 +9,19 @@ export interface LetterModule {
     types: LetterType[];
     section: LetterSection;
     isPlaceholder?: boolean;
+    isUniversal?: boolean;
 }
 
 export const LETTER_MODULES: LetterModule[] = [
-    // --- SALUTATION ---
+    // --- SALUTATION (ПРИВЕТСТВИЕ) ---
     {
         id: 'salutation-formal-unknown',
-        label: 'Формально (без имени)',
+        label: 'Официально (без имени)',
         german: 'Sehr geehrte Damen und Herren,',
-        russian: 'Уважаемые дамы и господа,',
+        russian: 'Уважаемые дамы и господа, (запятая!)',
         types: ['complaint', 'inquiry', 'apology', 'opinion', 'general'],
-        section: 'salutation'
+        section: 'salutation',
+        isUniversal: true
     },
     {
         id: 'salutation-formal-male',
@@ -28,7 +30,8 @@ export const LETTER_MODULES: LetterModule[] = [
         russian: 'Уважаемый господин [Имя],',
         types: ['complaint', 'inquiry', 'apology', 'opinion', 'general'],
         section: 'salutation',
-        isPlaceholder: true
+        isPlaceholder: true,
+        isUniversal: true
     },
     {
         id: 'salutation-formal-female',
@@ -37,172 +40,262 @@ export const LETTER_MODULES: LetterModule[] = [
         russian: 'Уважаемая госпожа [Имя],',
         types: ['complaint', 'inquiry', 'apology', 'opinion', 'general'],
         section: 'salutation',
-        isPlaceholder: true
+        isPlaceholder: true,
+        isUniversal: true
     },
 
-    // --- INTRO ---
+    // --- INTRO (ВСТУПЛЕНИЕ) ---
     {
-        id: 'intro-complaint-1',
+        id: 'intro-formal-ref',
+        label: 'Ссылка на повод',
+        german: 'Ich schreibe Ihnen mit Bezug auf [Betreff].',
+        russian: 'Пишу Вам в связи с [Повод].',
+        types: ['inquiry', 'general', 'apology'],
+        section: 'intro',
+        isPlaceholder: true,
+        isUniversal: true
+    },
+    {
+        id: 'intro-formal-notice',
+        label: 'Официальное уведомление',
+        german: 'Hiermit muss ich Ihnen mitteilen, dass...',
+        russian: 'Настоящим я должен сообщить Вам, что...',
+        types: ['inquiry', 'general', 'apology'],
+        section: 'intro'
+    },
+    {
+        id: 'intro-complaint-problem',
         label: 'Повод для жалобы',
-        german: 'hiermit möchte ich mich bei Ihnen über [Betreff] beschweren.',
-        russian: 'настоящим я хочу пожаловаться вам на [Тема].',
+        german: 'Ich schreibe Ihnen wegen folgenden Problems: [Problem]',
+        russian: 'Пишу Вам по поводу следующей проблемы: [Проблема]',
+        types: ['complaint'],
+        section: 'intro',
+        isPlaceholder: true,
+        isUniversal: true
+    },
+    {
+        id: 'intro-complaint-attention',
+        label: 'Обратить внимание',
+        german: 'Ich möchte Sie auf folgenden Missstand aufmerksam machen: [Thema]',
+        russian: 'Я хотел бы обратить Ваше внимание на следующее нарушение/недостаток: [Тема]',
         types: ['complaint'],
         section: 'intro',
         isPlaceholder: true
     },
     {
-        id: 'intro-complaint-disappoint',
-        label: 'Разочарование',
-        german: 'leider muss ich Ihnen mitteilen, dass ich mit Ihrem Service sehr unzufrieden bin.',
-        russian: 'к сожалению, я должен сообщить вам, что я очень недоволен вашим сервисом.',
-        types: ['complaint'],
-        section: 'intro'
+        id: 'intro-complaint-ad',
+        label: 'После объявления (Экзамен!)',
+        german: 'Als ich Ihre Anzeige las, war ich sofort begeistert, deshalb habe ich mich angemeldet.',
+        russian: 'Когда я прочитал ваше объявление, я был в восторге, поэтому я записался.',
+        types: ['complaint', 'inquiry'],
+        section: 'intro',
+        isUniversal: true
     },
     {
-        id: 'intro-inquiry-1',
-        label: 'Интерес к предложению',
-        german: 'mit großem Interesse habe ich Ihre Anzeige gelesen und wende mich an Sie, weil...',
-        russian: 'с большим интересом я прочитал ваше объявление и обращаюсь к вам, потому что...',
-        types: ['inquiry'],
-        section: 'intro'
-    },
-    {
-        id: 'intro-inquiry-2',
-        label: 'Просьба о информации',
-        german: 'ich schreibe Ihnen, da ich mich für Ihr Angebot interessiere und weitere Informationen benötige.',
-        russian: 'я пишу вам, так как меня интересует ваше предложение и мне нужна дополнительная информация.',
-        types: ['inquiry'],
-        section: 'intro'
-    },
-    {
-        id: 'intro-apology-1',
-        label: 'Извинение за задержку',
-        german: 'bitte entschuldigen Sie die verspätete Rückmeldung.',
-        russian: 'пожалуйста, извините за поздний ответ.',
-        types: ['apology'],
-        section: 'intro'
-    },
-    {
-        id: 'intro-general-reference',
-        label: 'Ссылка на разговор',
-        german: 'bezugnehmend auf unser Telefonat vom [Datum] möchte ich Ihnen Folgendes mitteilen.',
-        russian: 'ссылаясь на наш телефонный разговор от [Дата], я хотел бы сообщить вам следующее.',
-        types: ['general', 'complaint', 'inquiry'],
+        id: 'intro-general-phone',
+        label: 'После звонка',
+        german: 'Bezüglich unseres Telefonats vom [Datum] muss ich Ihnen mitteilen, dass...',
+        russian: 'Относительно нашего телефонного разговора от [Дата] должен сообщить Вам, что...',
+        types: ['general', 'complaint'],
         section: 'intro',
         isPlaceholder: true
     },
 
-    // --- BODY (GRUND/ARGUMENTE) ---
+    // --- BODY (ОСНОВНАЯ ЧАСТЬ) ---
+    // Section 1: Understanding & Proposals
     {
-        id: 'body-complaint-expectations',
-        label: 'Ожидания не оправдались',
-        german: 'Meine Erwartungen wurden leider nicht erfüllt, da [Grund].',
-        russian: 'Мои ожидания, к сожалению, не оправдались, так как [Причина].',
-        types: ['complaint'],
+        id: 'body-understanding-1',
+        label: 'Надежда на понимание',
+        german: 'Ich hoffe auf Ihr Verständnis, was diese Situation betrifft.',
+        russian: 'Я надеюсь на Ваше понимание в отношении данной ситуации.',
+        types: ['apology', 'general'],
+        section: 'body'
+    },
+    {
+        id: 'body-aware',
+        label: 'Осознание ситуации',
+        german: 'Mir ist klar/bewusst, dass [Situation] für Sie schwierig ist.',
+        russian: 'Мне ясно/я осознаю, что [ситуация] для Вас сложна.',
+        types: ['apology', 'general'],
         section: 'body',
         isPlaceholder: true
     },
     {
-        id: 'body-complaint-details',
-        label: 'Детали проблемы',
-        german: 'Ein weiterer Punkt, der mich stört, ist die Tatsache, dass...',
-        russian: 'Еще один пункт, который меня беспокоит — это тот факт, что...',
-        types: ['complaint'],
-        section: 'body'
-    },
-    {
-        id: 'body-inquiry-details',
-        label: 'Запрос деталей',
-        german: 'Könnten Sie mir bitte mitteilen, ob [Frage]?',
-        russian: 'Не могли бы вы мне сообщить, [Вопрос]?',
-        types: ['inquiry'],
+        id: 'body-possibility',
+        label: 'Предложение возможности',
+        german: 'Es besteht vielleicht die Möglichkeit, [Vorschlag] zu [Verb-Infinitiv].',
+        russian: 'Возможно, существует возможность [сделать что-то].',
+        types: ['general', 'inquiry'],
         section: 'body',
         isPlaceholder: true
     },
     {
-        id: 'body-inquiry-offer',
-        label: 'Запрос предложения',
-        german: 'Ich bitte Sie um ein unverbindliches Angebot für...',
-        russian: 'Я прошу вас о предварительном предложении для...',
-        types: ['inquiry'],
-        section: 'body'
+        id: 'body-vorgeschlagen',
+        label: 'Предложение от себя',
+        german: 'Ich möchte Ihnen vorschlagen, [Vorschlag] zu [Verb-Infinitiv].',
+        russian: 'Я хотел бы предложить Вам [сделать что-то].',
+        types: ['general', 'inquiry'],
+        section: 'body',
+        isPlaceholder: true,
+        isUniversal: true
     },
     {
-        id: 'body-apology-reason',
-        label: 'Объяснение причины',
-        german: 'Der Grund für dieses Missverständnis lag in [Grund].',
-        russian: 'Причина этого недоразумения заключалась в [Причина].',
+        id: 'body-request-help',
+        label: 'Просьба о помощи',
+        german: 'Ich wende mich an Sie mit der Bitte, mir bei [Thema] zu helfen.',
+        russian: 'Я обращаюсь к Вам с просьбой помочь мне в [Тема].',
+        types: ['general', 'inquiry'],
+        section: 'body',
+        isPlaceholder: true,
+        isUniversal: true
+    },
+    {
+        id: 'body-apology-regret',
+        label: 'Сожаление',
+        german: 'Ich bedauere sehr, dass [Ereignis]. Es tut mir äußerst leid.',
+        russian: 'Я очень сожалею, что [событие]. Мне крайне жаль.',
         types: ['apology'],
         section: 'body',
         isPlaceholder: true
     },
-    {
-        id: 'body-opinion-advantage',
-        label: 'Преимущество',
-        german: 'Ein wesentlicher Vorteil ist meiner Meinung nach, dass...',
-        russian: 'Существенным преимуществом, по моему мнению, является то, что...',
-        types: ['opinion'],
-        section: 'body'
-    },
-    {
-        id: 'body-opinion-disadvantage',
-        label: 'Недостаток',
-        german: 'Dagegen spricht jedoch, dass...',
-        russian: 'Однако против этого говорит то, что...',
-        types: ['opinion'],
-        section: 'body'
-    },
 
-    // --- CLOSING (LÖSUNG/AM ENDE) ---
+    // Section 2: Complaint Details
     {
-        id: 'closing-complaint-demand',
-        label: 'Требование решения',
-        german: 'Ich erwarte von Ihnen eine angemessene Lösung für dieses Problem.',
-        russian: 'Я ожидаю от вас подходящего решения этой проблемы.',
+        id: 'body-complaint-unsatisfied',
+        label: 'Недовольство курсом/услугой',
+        german: 'Leider bin ich sehr unzufrieden mit Ihrem Angebot / dem Sprachkurs.',
+        russian: 'К сожалению, я очень недоволен Вашим предложением / языковым курсом.',
         types: ['complaint'],
-        section: 'closing'
+        section: 'body',
+        isUniversal: true
     },
     {
-        id: 'closing-complaint-deadline',
-        label: 'Срок ответа',
-        german: 'Bitte antworten Sie mir bis zum [Datum].',
-        russian: 'Пожалуйста, ответьте мне до [Дата].',
+        id: 'body-complaint-find',
+        label: 'Констатация проблем',
+        german: 'Leider musste ich feststellen, dass [Problem].',
+        russian: 'К сожалению, мне пришлось констатировать, что [Проблема].',
+        types: ['complaint'],
+        section: 'body',
+        isPlaceholder: true,
+        isUniversal: true
+    },
+    {
+        id: 'body-interest',
+        label: 'Общий интерес',
+        german: 'Es ist sicherlich in unserem gemeinsamen Interesse, wenn [Lösung].',
+        russian: 'Это наверняка в наших общих интересах, если [решение].',
         types: ['complaint', 'general'],
-        section: 'closing',
-        isPlaceholder: true
+        section: 'body',
+        isPlaceholder: true,
+        isUniversal: true
     },
     {
-        id: 'closing-inquiry-thanks',
-        label: 'Благодарность заранее',
+        id: 'body-pressure',
+        label: 'Угроза (Крайний случай)',
+        german: 'Andernfalls sehe ich mich gezwungen, einen Anwalt einzuschalten / vom Kauf zurückzutreten.',
+        russian: 'В противном случае я буду вынужден привлечь адвоката / отказаться от покупки.',
+        types: ['complaint'],
+        section: 'body',
+        isUniversal: true
+    },
+
+    // Section 3: Forum / Opinion
+    {
+        id: 'body-opinion-start',
+        label: 'Мое мнение',
+        german: 'Meiner Meinung/Ansicht nach [Meinung].',
+        russian: 'По моему мнению / на мой взгляд [Мнение].',
+        types: ['opinion'],
+        section: 'body',
+        isPlaceholder: true,
+        isUniversal: true
+    },
+    {
+        id: 'body-opinion-reason',
+        label: 'Существенная причина',
+        german: 'Ein wesentlicher Grund dafür, dass [Thema], ist [Grund].',
+        russian: 'Существенная причина того, что [тема] — это [причина].',
+        types: ['opinion'],
+        section: 'body',
+        isPlaceholder: true,
+        isUniversal: true
+    },
+    {
+        id: 'body-opinion-arg',
+        label: 'Аргумент "ЗА"',
+        german: 'Ein Argument, das für [Thema] spricht, ist [Argument].',
+        russian: 'Аргумент, говорящий за [тема] — это [аргумент].',
+        types: ['opinion'],
+        section: 'body',
+        isPlaceholder: true,
+        isUniversal: true
+    },
+    {
+        id: 'body-opinion-example',
+        label: 'Пример',
+        german: 'Ein Beispiel hierfür ist [Beispiel].',
+        russian: 'Примером этого является [Пример].',
+        types: ['opinion'],
+        section: 'body',
+        isPlaceholder: true,
+        isUniversal: true
+    },
+    {
+        id: 'body-opinion-more',
+        label: 'Кроме того',
+        german: 'Darüber hinaus [Ergänzung].',
+        russian: 'Кроме того [дополнение].',
+        types: ['opinion', 'general'],
+        section: 'body',
+        isPlaceholder: true,
+        isUniversal: true
+    },
+
+    // --- CLOSING (ЗАКЛЮЧЕНИЕ) ---
+    {
+        id: 'closing-thanks-advance',
+        label: 'Спасибо заранее',
         german: 'Vielen Dank im Voraus für Ihre Bemühungen.',
-        russian: 'Заранее спасибо за ваши усилия.',
-        types: ['inquiry', 'general'],
-        section: 'closing'
+        russian: 'Заранее большое спасибо за Ваши усилия.',
+        types: ['inquiry', 'general', 'complaint'],
+        section: 'closing',
+        isUniversal: true
     },
     {
-        id: 'closing-apology-future',
-        label: 'Обещание',
-        german: 'Ich versichere Ihnen, dass sich dies nicht wiederholen wird.',
-        russian: 'Я уверяю вас, что это не повторится.',
-        types: ['apology'],
-        section: 'closing'
+        id: 'closing-understanding',
+        label: 'Просьба о понимании',
+        german: 'Ich bitte Sie um Ihr Verständnis.',
+        russian: 'Прошу Вас о понимании.',
+        types: ['apology', 'general'],
+        section: 'closing',
+        isUniversal: true
     },
     {
-        id: 'closing-general-contact',
-        label: 'Контакт для связи',
-        german: 'Für Rückfragen stehe ich Ihnen gerne zur Verfügung.',
-        russian: 'Я с удовольствием отвечу на ваши вопросы.',
-        types: ['general', 'inquiry', 'apology', 'opinion'],
+        id: 'closing-expect-reply',
+        label: 'Ожидание скорого ответа',
+        german: 'Ich hoffe auf eine zufriedenstellende Lösung und sehe Ihrer baldigen Antwort entgegen.',
+        russian: 'Надеюсь на удовлетворительное решение и жду Вашего скорого ответа.',
+        types: ['complaint', 'inquiry'],
+        section: 'closing',
+        isUniversal: true
+    },
+    {
+        id: 'closing-contact',
+        label: 'Свяжитесь со мной',
+        german: 'Bitte kontaktieren/informieren Sie mich innerhalb der nächsten zwei Wochen.',
+        russian: 'Пожалуйста, свяжитесь со мной / проинформируйте меня в течение следующих двух недель.',
+        types: ['complaint', 'general'],
         section: 'closing'
     },
 
-    // --- FAREWELL ---
+    // --- FAREWELL (ПРОЩАНИЕ) ---
     {
-        id: 'farewell-best',
-        label: 'С уважением',
+        id: 'farewell-standard',
+        label: 'Стандарт (Официально)',
         german: 'Mit freundlichen Grüßen',
         russian: 'С уважением',
         types: ['complaint', 'inquiry', 'apology', 'opinion', 'general'],
-        section: 'farewell'
+        section: 'farewell',
+        isUniversal: true
     }
 ];
