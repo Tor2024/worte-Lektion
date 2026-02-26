@@ -41,7 +41,7 @@ const renderPrompt = (input: GenerateStoryInput) => {
   - German Text (with bolded keywords)
   - Russian Translation
   - List of keywords actually used.
-  - wordMap: A JSON object where keys are ALL unique German words from the title and story, and values are their Russian translations.
+  - wordMap: A JSON object where keys are **EVERY single unique word** used in the German Title and Story, and values are their Russian translations. No word should be skipped. Contextual translation is preferred.
   
   Return JSON matching the schema.`;
 };

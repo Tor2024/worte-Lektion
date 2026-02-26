@@ -660,12 +660,12 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                         )}
                         {currentPhase === 'narrative' && (
                             <div className="space-y-6">
-                                <div className="p-10 bg-gradient-to-br from-blue-600/10 to-indigo-900/30 border border-white/10 rounded-[2rem] relative shadow-2xl backdrop-blur-sm group overflow-hidden">
-                                    {/* Background Glow */}
-                                    <div className="absolute -right-20 -top-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl opacity-50" />
+                                <div className="p-10 bg-[#f4ecd8] border border-[#d6c7a1] rounded-[2.5rem] relative shadow-2xl group min-h-[300px] ring-8 ring-[#f4ecd8]/50 ring-offset-4 ring-offset-slate-900/10">
+                                    {/* Background Subtle Texture/Effect */}
+                                    <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')]" />
 
-                                    <div className="absolute -top-4 left-10 flex items-center gap-3">
-                                        <div className="bg-primary text-primary-foreground px-5 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-lg border border-white/20">
+                                    <div className="absolute -top-5 left-8 flex items-center gap-3 z-10">
+                                        <div className="bg-[#2c1810] text-[#f4ecd8] px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-xl border border-[#d6c7a1]/30">
                                             Контекстная прелюдия
                                         </div>
                                         {!isNarrativeGenerating && batchStories[currentBatchIndex] && (
@@ -673,14 +673,15 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                                                 text={batchStories[currentBatchIndex].story}
                                                 size="sm"
                                                 variant="secondary"
-                                                className="bg-white/10 border-white/10 hover:bg-white/20 text-white shadow-xl backdrop-blur-md transition-all rounded-full h-8"
+                                                className="bg-white/80 hover:bg-white text-[#2c1810] shadow-xl transition-all rounded-full h-9 px-4 border border-[#d6c7a1]"
                                                 showText
                                             />
                                         )}
                                     </div>
-                                    <div className="text-xl leading-relaxed italic text-white/95 font-medium drop-shadow-sm min-h-[100px]">
+
+                                    <div className="text-xl leading-relaxed italic text-[#2c1810] font-serif font-medium drop-shadow-sm relative z-0">
                                         {isNarrativeGenerating ? (
-                                            <div className="flex flex-col items-center justify-center py-12 space-y-4 text-primary/60">
+                                            <div className="flex flex-col items-center justify-center py-12 space-y-4 text-[#2c1810]/40">
                                                 <Loader2 className="h-10 w-10 animate-spin" />
                                                 <span className="text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">
                                                     Синхронизация контекстных полей...
@@ -694,13 +695,13 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                                                 />
                                             </div>
                                         ) : (
-                                            <div className="text-center py-12 text-slate-400 italic text-sm">
+                                            <div className="text-center py-12 text-[#2c1810]/40 italic text-sm font-sans">
                                                 История не найдена.
                                             </div>
                                         )}
                                     </div>
                                 </div>
-                                <Button size="lg" className="w-full h-16 text-xl" onClick={() => handleNext('success')}>
+                                <Button size="lg" className="w-full h-16 text-xl bg-[#2c1810] hover:bg-[#3d2419] text-[#f4ecd8] rounded-2xl shadow-xl transition-all active:scale-[0.98]" onClick={() => handleNext('success')}>
                                     К упражнениям →
                                 </Button>
                             </div>

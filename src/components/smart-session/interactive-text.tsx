@@ -7,6 +7,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 
 interface InteractiveTextProps {
     text: string;
@@ -16,34 +17,31 @@ interface InteractiveTextProps {
 export function InteractiveText({ text, wordMap }: InteractiveTextProps) {
     if (!text) return null;
 
-    // Split text by words and spaces, preserving both
-    // Matches words (including those with umlauts/special chars) or everything else
-    const fragments = text.split(/(\s+|\*\*.*?\*\*|[.,!?;:]+)/);
+    // First, handle markdown bolding **word**
+    const parts = text.split(/(\*\*.*?\*\*)/);
 
     return (
         <TooltipProvider>
-            <div className="leading-relaxed opacity-90">
-                {fragments.map((fragment, i) => {
-                    // If it's a bolded word from AI (**word**)
-                    if (fragment.startsWith('**') && fragment.endsWith('**')) {
-                        const cleanWord = fragment.slice(2, -2);
-                        return <InteractiveWord key={i} word={cleanWord} wordMap={wordMap} isBold />;
+            <div className="leading-relaxed">
+                {parts.map((part, i) => {
+                    if (part.startsWith('**') && part.endsWith('**')) {
+                        const word = part.slice(2, -2);
+                        return <InteractiveWord key={i} word={word} wordMap={wordMap} isBold />;
                     }
 
-                    // If it's whitespace or punctuation
-                    if (fragment.match(/^\s+$/) || fragment.match(/^[.,!?;:]+$/)) {
-                        return <span key={i}>{fragment}</span>;
-                    }
+                    // For non-bolded text, split by whitespace, but keep whitespace
+                    const fragments = part.split(/(\s+)/);
+                    return fragments.map((fragment, j) => {
+                        if (fragment.match(/^\s+$/)) return <span key={`${i}-${j}`}>{fragment}</span>;
 
-                    // For regular words, split them further if they contain hidden fragments
-                    // (e.g. if the regex above didn't catch everything)
-                    const subFragments = fragment.split(/([a-zA-ZäöüÄÖÜß]+)/);
-
-                    return subFragments.map((sub, j) => {
-                        if (sub.match(/^[a-zA-ZäöüÄÖÜß]+$/)) {
-                            return <InteractiveWord key={`${i}-${j}`} word={sub} wordMap={wordMap} />;
-                        }
-                        return <span key={`${i}-${j}`}>{sub}</span>;
+                        // Split by non-alphabetic characters to isolate words from punctuation
+                        const tokens = fragment.split(/([^a-zA-ZäöüÄÖÜß]+)/);
+                        return tokens.map((token, k) => {
+                            if (token.match(/^[a-zA-ZäöüÄÖÜß]+$/)) {
+                                return <InteractiveWord key={`${i}-${j}-${k}`} word={token} wordMap={wordMap} />;
+                            }
+                            return <span key={`${i}-${j}-${k}`}>{token}</span>;
+                        });
                     });
                 })}
             </div>
@@ -52,25 +50,38 @@ export function InteractiveText({ text, wordMap }: InteractiveTextProps) {
 }
 
 function InteractiveWord({ word, wordMap, isBold }: { word: string; wordMap: Record<string, string>; isBold?: boolean }) {
-    const cleanWord = word.toLowerCase();
-    const translation = wordMap[cleanWord] || wordMap[word];
+    // Try both absolute match and lowercase match
+    const translation = wordMap[word] || wordMap[word.toLowerCase()];
 
     if (!translation) {
-        return <span className={isBold ? "font-black text-primary underline decoration-primary/30" : ""}>{word}</span>;
+        return (
+            <span className={cn(
+                "transition-colors",
+                isBold ? "font-black text-primary underline decoration-primary/30" : "text-inherit"
+            )}>
+                {word}
+            </span>
+        );
     }
 
     return (
-        <Tooltip delayDuration={300}>
+        <Tooltip delayDuration={100}>
             <TooltipTrigger asChild>
-                <span className={isBold ?
-                    "font-black text-primary underline decoration-primary/30 cursor-help" :
-                    "cursor-help border-b border-dotted border-slate-500/30 hover:border-primary/50 transition-colors"
-                }>
+                <span className={cn(
+                    "cursor-help transition-all duration-200 border-b border-transparent hover:border-[#2c1810]/30 hover:bg-[#2c1810]/5",
+                    isBold ? "font-black text-primary underline decoration-primary/50 underline-offset-4" : "text-inherit"
+                )}>
                     {word}
                 </span>
             </TooltipTrigger>
-            <TooltipContent className="bg-slate-900 text-white border-slate-800 text-xs py-1 px-2 shadow-xl">
-                {translation}
+            <TooltipContent
+                side="top"
+                className="bg-[#2c1810] text-[#f4ecd8] border-[#d6c7a1]/20 shadow-2xl px-3 py-1.5 text-xs font-medium animate-in zoom-in-95 duration-200"
+            >
+                <div className="flex flex-col gap-0.5">
+                    <span className="opacity-50 text-[9px] uppercase tracking-widest font-bold">Перевод</span>
+                    {translation}
+                </div>
             </TooltipContent>
         </Tooltip>
     );
