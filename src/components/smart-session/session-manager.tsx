@@ -19,7 +19,8 @@ import { formatGermanWord } from '@/lib/german-utils';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
-import { generateStory } from '@/ai/flows/generate-story';
+import { generateStory, type GenerateStoryOutput } from '@/ai/flows/generate-story';
+import { InteractiveText } from './interactive-text';
 
 import { decomposeGermanWord, type DecomposeOutput } from '@/ai/flows/decompose-german-word';
 import { Edit2, Save, X, Info } from 'lucide-react';
@@ -57,7 +58,7 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
     const [results, setResults] = useState<Record<string, 'success' | 'fail'>>({});
 
     // Narrative Anchoring: Story for each batch
-    const [batchStories, setBatchStories] = useState<Record<number, string>>({});
+    const [batchStories, setBatchStories] = useState<Record<number, GenerateStoryOutput>>({});
     const [isNarrativeGenerating, setIsNarrativeGenerating] = useState(false);
 
     // Warm-up State
@@ -222,13 +223,19 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                 });
                 setBatchStories(prev => ({
                     ...prev,
-                    [currentBatchIndex]: data.story
+                    [currentBatchIndex]: data as GenerateStoryOutput
                 }));
             } catch (err) {
                 console.error("Failed to generate batch story", err);
                 setBatchStories(prev => ({
                     ...prev,
-                    [currentBatchIndex]: "Не удалось сгенерировать историю, но мы продолжим дрилл!"
+                    [currentBatchIndex]: {
+                        story: "Не удалось сгенерировать историю, но мы продолжим дрилл!",
+                        title: "Ошибка синхронизации",
+                        russianTranslation: "Failed to generate story",
+                        usedWords: [],
+                        wordMap: {}
+                    }
                 }));
             } finally {
                 setIsNarrativeGenerating(false);
@@ -344,10 +351,18 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
     };
 
     const updateBatchStory = (newSentence: string) => {
-        setBatchStories(prev => ({
-            ...prev,
-            [currentBatchIndex]: (prev[currentBatchIndex] ? prev[currentBatchIndex] + " " : "") + newSentence
-        }));
+        setBatchStories(prev => {
+            const current = prev[currentBatchIndex];
+            if (!current) return prev;
+
+            return {
+                ...prev,
+                [currentBatchIndex]: {
+                    ...current,
+                    story: current.story + " " + newSentence
+                }
+            };
+        });
     };
 
     if (sessionState === 'loading') return <div className="p-10 text-center animate-pulse text-primary font-bold">Синхронизация нейро-слоев...</div>;
@@ -645,30 +660,45 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                         )}
                         {currentPhase === 'narrative' && (
                             <div className="space-y-6">
-                                <div className="p-8 bg-blue-50/30 border-2 border-dashed border-blue-200 rounded-3xl relative">
-                                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 flex items-center gap-2">
-                                        <div className="bg-blue-500 text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest shadow-md">
-                                            История батча
+                                <div className="p-10 bg-gradient-to-br from-blue-600/10 to-indigo-900/30 border border-white/10 rounded-[2rem] relative shadow-2xl backdrop-blur-sm group overflow-hidden">
+                                    {/* Background Glow */}
+                                    <div className="absolute -right-20 -top-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl opacity-50" />
+
+                                    <div className="absolute -top-4 left-10 flex items-center gap-3">
+                                        <div className="bg-primary text-primary-foreground px-5 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-lg border border-white/20">
+                                            Контекстная прелюдия
                                         </div>
                                         {!isNarrativeGenerating && batchStories[currentBatchIndex] && (
                                             <SpeakButton
-                                                text={batchStories[currentBatchIndex]}
+                                                text={batchStories[currentBatchIndex].story}
                                                 size="sm"
                                                 variant="secondary"
-                                                className="bg-white border-blue-200 hover:bg-blue-50 text-blue-600 shadow-sm transition-all"
+                                                className="bg-white/10 border-white/10 hover:bg-white/20 text-white shadow-xl backdrop-blur-md transition-all rounded-full h-8"
                                                 showText
                                             />
                                         )}
                                     </div>
-                                    <p className="text-xl leading-relaxed italic text-slate-700">
+                                    <div className="text-xl leading-relaxed italic text-white/95 font-medium drop-shadow-sm min-h-[100px]">
                                         {isNarrativeGenerating ? (
-                                            <span className="flex items-center gap-2 animate-pulse">
-                                                <Loader2 className="h-4 w-4 animate-spin" /> Синхронизация контекстных полей...
-                                            </span>
+                                            <div className="flex flex-col items-center justify-center py-12 space-y-4 text-primary/60">
+                                                <Loader2 className="h-10 w-10 animate-spin" />
+                                                <span className="text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">
+                                                    Синхронизация контекстных полей...
+                                                </span>
+                                            </div>
+                                        ) : batchStories[currentBatchIndex] ? (
+                                            <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+                                                <InteractiveText
+                                                    text={batchStories[currentBatchIndex].story}
+                                                    wordMap={batchStories[currentBatchIndex].wordMap}
+                                                />
+                                            </div>
                                         ) : (
-                                            batchStories[currentBatchIndex] || "История не найдена."
+                                            <div className="text-center py-12 text-slate-400 italic text-sm">
+                                                История не найдена.
+                                            </div>
                                         )}
-                                    </p>
+                                    </div>
                                 </div>
                                 <Button size="lg" className="w-full h-16 text-xl" onClick={() => handleNext('success')}>
                                     К упражнениям →
@@ -679,7 +709,7 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                             <ProductionView
                                 key={currentItem.id}
                                 item={currentItem}
-                                storyContext={batchStories[currentBatchIndex] || ""}
+                                storyContext={batchStories[currentBatchIndex]?.story || ""}
                                 onStoryUpdate={updateBatchStory}
                                 onResult={handleNext}
                             />

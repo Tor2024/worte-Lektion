@@ -17,6 +17,7 @@ const GenerateStoryOutputSchema = z.object({
     story: z.string().describe('The generated German story (B2 level).'),
     russianTranslation: z.string().describe('Full Russian translation of the story.'),
     usedWords: z.array(z.string()).describe('List of words from the input that were successfully used.'),
+    wordMap: z.record(z.string(), z.string()).describe('A mapping of EVERY unique word in the story to its Russian translation.'),
 });
 
 export type GenerateStoryOutput = z.infer<typeof GenerateStoryOutputSchema>;
@@ -40,6 +41,7 @@ const renderPrompt = (input: GenerateStoryInput) => {
   - German Text (with bolded keywords)
   - Russian Translation
   - List of keywords actually used.
+  - wordMap: A JSON object where keys are ALL unique German words from the title and story, and values are their Russian translations.
   
   Return JSON matching the schema.`;
 };
