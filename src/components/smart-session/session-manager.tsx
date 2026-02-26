@@ -69,6 +69,25 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
 
     const leeches = useMemo(() => sessionQueue.filter(w => (w.consecutiveMistakes || 0) >= 3), [sessionQueue]);
 
+    // Decomposition Effect for Warmup
+    useEffect(() => {
+        if (sessionState !== 'warmup' || !leeches[warmupIndex]) return;
+
+        const currentLeech = leeches[warmupIndex];
+        setIsEditingMnemonic(false);
+        setEditingMnemonicValue(currentLeech.mnemonic || "");
+        setDecomposition(null);
+
+        // Decompose word if it's long (more than one word or long compound)
+        if (currentLeech.word.german.includes(' ') || currentLeech.word.german.length > 10) {
+            setIsDecomposing(true);
+            decomposeGermanWord({ german: currentLeech.word.german })
+                .then(setDecomposition)
+                .catch(err => console.error("Decomposition failed", err))
+                .finally(() => setIsDecomposing(false));
+        }
+    }, [sessionState, warmupIndex, leeches]);
+
     useEffect(() => {
         // Only load session if we are in 'loading' state
         if (sessionState !== 'loading') return;
@@ -386,26 +405,6 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
             </div>
         );
     }
-
-    // Decomposition Effect for Warmup
-    useEffect(() => {
-        if (sessionState !== 'warmup' || !leeches[warmupIndex]) return;
-
-        const currentLeech = leeches[warmupIndex];
-        setIsEditingMnemonic(false);
-        setEditingMnemonicValue(currentLeech.mnemonic || "");
-        setDecomposition(null);
-
-        // Decompose word if it's long (more than one word or long compound)
-        if (currentLeech.word.german.includes(' ') || currentLeech.word.german.length > 10) {
-            setIsDecomposing(true);
-            decomposeGermanWord({ german: currentLeech.word.german })
-                .then(setDecomposition)
-                .catch(err => console.error("Decomposition failed", err))
-                .finally(() => setIsDecomposing(false));
-        }
-    }, [sessionState, warmupIndex, leeches]);
-
     if (sessionState === 'warmup') {
         const currentLeech = leeches[warmupIndex];
         return (
