@@ -224,7 +224,7 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
 
                     {/* Middle Scrollable Section: Verb Details, Adjectives, Prepositions, Context */}
                     <div className="w-full flex-grow overflow-y-auto pr-1 my-2 min-h-0 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
-                        <div className="flex flex-col gap-3 pb-2 pt-1 h-full">
+                        <div className="flex flex-col gap-3 pb-2 pt-1">
 
                             {/* Middle: Rich Verb Details */}
                             {word.type === 'verb' && (
@@ -531,7 +531,7 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
 
     return (
         <div
-            className={cn("relative h-[700px] w-full perspective-1000 cursor-pointer group", className)}
+            className={cn("relative h-[520px] w-full perspective-1000 cursor-pointer group", className)}
             onClick={handleFlip}
         >
             <motion.div
@@ -549,7 +549,7 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                         transform: 'rotateY(0deg)'
                     }}
                 >
-                    <div className="flex-grow flex flex-col p-6 items-center justify-between text-center relative z-10">
+                    <div className="flex-grow flex flex-col p-6 items-center justify-start text-center relative z-10 w-full h-full">
                         {renderFrontContent()}
                     </div>
 

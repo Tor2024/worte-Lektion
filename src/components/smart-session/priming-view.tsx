@@ -95,7 +95,7 @@ export function PrimingView({ item, onNext }: PrimingViewProps) {
 
                     <div className="space-y-4">
                         <div className="flex flex-col gap-0 items-center justify-center">
-                            <div className={cn("text-6xl font-black tracking-tight", getGenderColorClass(word))}>
+                            <div className="text-6xl font-black tracking-tight text-primary">
                                 {formatGermanWord(word)}
                             </div>
                             {/* Specific Governance Display for Verbs and Adjectives */}

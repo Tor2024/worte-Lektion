@@ -86,7 +86,7 @@ export function RecognitionView({ item, onResult, direction: forcedDirection }: 
                     </div>
 
                     <div className="flex flex-col items-center gap-1 mb-6">
-                        <div className={cn("text-5xl font-black tracking-tighter", direction === 0 ? getGenderColorClass(word) : "text-white h-[60px]")}>
+                        <div className="text-5xl font-black tracking-tighter text-white h-[60px]">
                             {direction === 0 ? formatGermanWord(word) : word.russian}
                         </div>
                         {direction === 0 && ((word.type === 'verb' || word.type === 'adjective') && (word as any).governance && (word as any).governance.length > 0) && (
