@@ -134,17 +134,49 @@ export function PrimingView({ item, onNext, onMarkAsKnown }: PrimingViewProps) {
                                 {formatGermanWord(word)}
                             </div>
                             {/* Specific Governance Display for Verbs and Adjectives */}
-                            {((word.type === 'verb' || word.type === 'adjective') && (word as any).governance && (word as any).governance.length > 0) && (
-                                <div className="text-xl font-bold text-primary/80 tracking-tight flex flex-wrap justify-center gap-1 mt-2">
+                            {/* Governance Section (Rektion) */}
+                            {(word.type === 'verb' || word.type === 'adjective') && (word as any).governance && (word as any).governance.length > 0 && (
+                                <div className="flex flex-col items-center gap-3 mt-4 w-full">
                                     {(word as any).governance.map((gov: any, idx: number) => (
-                                        <span key={idx}>+ {gov.preposition} <span className="text-muted-foreground/80">{gov.case}</span></span>
+                                        <div key={idx} className="flex flex-col items-center bg-white/5 p-4 rounded-2xl border border-white/10 w-full max-w-sm">
+                                            <div className="flex items-center gap-2 text-2xl font-black">
+                                                <span className="text-primary">+ {gov.preposition}</span>
+                                                <span className={cn(
+                                                    "px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-widest",
+                                                    gov.case === 'Akkusativ' ? "bg-red-500/20 text-red-500 border border-red-500/30" :
+                                                        gov.case === 'Dativ' ? "bg-emerald-500/20 text-green-500 border border-emerald-500/30" :
+                                                            "bg-slate-500/20 text-slate-400 border border-slate-500/30"
+                                                )}>
+                                                    {gov.case}
+                                                </span>
+                                            </div>
+                                            {gov.meaning && (
+                                                <div className="text-sm font-bold text-primary/70 mt-1 italic">
+                                                    ({gov.meaning})
+                                                </div>
+                                            )}
+                                            {gov.example && (
+                                                <div className="mt-2 text-xs text-muted-foreground/80 leading-relaxed border-t border-white/5 pt-2 w-full italic">
+                                                    &ldquo;{gov.example}&rdquo;
+                                                </div>
+                                            )}
+                                        </div>
                                     ))}
                                 </div>
                             )}
+
                             {/* Legacy case fallback for verbs */}
                             {word.type === 'verb' && !((word as any).governance && (word as any).governance.length > 0) && ((word as any).preposition || (word as any).case) && (
-                                <div className="text-xl font-bold text-primary/80 tracking-tight mt-2">
-                                    + {[(word as any).preposition, (word as any).case].filter(Boolean).join(' ')}
+                                <div className="text-2xl font-black text-primary/80 tracking-tight mt-4 flex items-center gap-2">
+                                    <span>+ {(word as any).preposition || ""}</span>
+                                    <span className={cn(
+                                        "px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-widest",
+                                        (word as any).case === 'Akkusativ' ? "bg-red-500/20 text-red-500 border border-red-500/30" :
+                                            (word as any).case === 'Dativ' ? "bg-emerald-500/20 text-green-500 border border-emerald-500/30" :
+                                                "bg-slate-500/20 text-slate-400 border border-slate-500/30"
+                                    )}>
+                                        {(word as any).case}
+                                    </span>
                                 </div>
                             )}
                         </div>

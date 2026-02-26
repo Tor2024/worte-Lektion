@@ -471,6 +471,10 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                                         </Button>
                                         <Button size="sm" className="h-8 px-2 bg-amber-600 hover:bg-amber-700" onClick={() => {
                                             updateMnemonic(currentLeech.id, editingMnemonicValue);
+                                            // Update local sessionQueue so the UI reflects the change immediately
+                                            setSessionQueue(prev => prev.map(item =>
+                                                item.id === currentLeech.id ? { ...item, mnemonic: editingMnemonicValue } : item
+                                            ));
                                             setIsEditingMnemonic(false);
                                         }}>
                                             <Save className="h-4 w-4 mr-1" /> Сохранить

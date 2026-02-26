@@ -90,17 +90,44 @@ export function RecognitionView({ item, onResult, onMarkAsKnown, direction: forc
                         <div className="text-5xl font-black tracking-tighter text-white h-[60px]">
                             {direction === 0 ? formatGermanWord(word) : word.russian}
                         </div>
-                        {direction === 0 && ((word.type === 'verb' || word.type === 'adjective') && (word as any).governance && (word as any).governance.length > 0) && (
-                            <div className="text-lg font-bold text-primary/80 tracking-tight flex flex-wrap justify-center gap-1 mt-1">
+                        {/* Governance Section (Rektion) as Hint */}
+                        {((word.type === 'verb' || word.type === 'adjective') && (word as any).governance && (word as any).governance.length > 0) && (
+                            <div className="flex flex-col items-center gap-2 mt-4 w-full max-w-[280px]">
                                 {(word as any).governance.map((gov: any, idx: number) => (
-                                    <span key={idx}>+ {gov.preposition} <span className="opacity-70">{gov.case}</span></span>
+                                    <div key={idx} className="flex flex-col items-center bg-white/5 py-2 px-3 rounded-xl border border-white/10 w-full transition-colors hover:bg-white/10">
+                                        <div className="flex items-center gap-2 text-lg font-black">
+                                            <span className="text-primary">+ {gov.preposition}</span>
+                                            <span className={cn(
+                                                "px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest",
+                                                gov.case === 'Akkusativ' ? "bg-red-500/20 text-red-500 border border-red-500/30" :
+                                                    gov.case === 'Dativ' ? "bg-emerald-500/20 text-green-500 border border-emerald-500/30" :
+                                                        "bg-slate-500/20 text-slate-400 border border-slate-500/30"
+                                            )}>
+                                                {gov.case}
+                                            </span>
+                                        </div>
+                                        {gov.meaning && (
+                                            <div className="text-[10px] font-bold text-primary/60 italic">
+                                                ({gov.meaning})
+                                            </div>
+                                        )}
+                                    </div>
                                 ))}
                             </div>
                         )}
+
                         {/* Legacy case fallback for verbs */}
-                        {direction === 0 && word.type === 'verb' && !((word as any).governance && (word as any).governance.length > 0) && ((word as any).preposition || (word as any).case) && (
-                            <div className="text-lg font-bold text-primary/80 tracking-tight mt-1">
-                                + {[(word as any).preposition, (word as any).case].filter(Boolean).join(' ')}
+                        {word.type === 'verb' && !((word as any).governance && (word as any).governance.length > 0) && ((word as any).preposition || (word as any).case) && (
+                            <div className="text-lg font-black text-primary/80 tracking-tight mt-4 flex items-center gap-2">
+                                <span>+ {(word as any).preposition || ""}</span>
+                                <span className={cn(
+                                    "px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest",
+                                    (word as any).case === 'Akkusativ' ? "bg-red-500/20 text-red-500 border border-red-500/30" :
+                                        (word as any).case === 'Dativ' ? "bg-emerald-500/20 text-green-500 border border-emerald-500/30" :
+                                            "bg-slate-500/20 text-slate-400 border border-slate-500/30"
+                                )}>
+                                    {(word as any).case}
+                                </span>
                             </div>
                         )}
                     </div>
