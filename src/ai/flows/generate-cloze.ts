@@ -25,6 +25,10 @@ const GenerateClozeOutputSchema = z.object({
     targetWordDefinition: z.string().describe('Short Russian definition of the correct word/form in this context.'),
     examples: z.array(z.string()).describe('2-3 additional simple German sentences using this word in different contexts. DO NOT use HTML tags here.'),
     acceptedAnswers: z.array(z.string()).describe('List of ALL grammatically correct answers for this specific blank (e.g. ["einen", "den"]). Start with the most common one.'),
+    wordByWord: z.array(z.object({
+        german: z.string(),
+        russian: z.string()
+    })).describe('A mapping of EVERY word in the generated sentence (including the missingWord) to its Russian translation for interactive help.'),
 });
 
 export type GenerateClozeOutput = z.infer<typeof GenerateClozeOutputSchema>;
@@ -53,35 +57,29 @@ const renderPrompt = (input: GenerateClozeInput) => {
     "${input.storyContext}"
     
     **YOUR TASK**: 
-    Continue this story logically using the new word "${input.german}". Ensure the transition is smooth and the narrative remains professional or interesting (suitable for B2 level).
+    Continue this story logically using the new word "${input.german}". 
     ` : 'Create a simple, daily usage sentence for this word.'}
 
     **CRITICAL RULES**:
-    1. **LANGUAGE**: 'sentenceWithBlank' must be **100% GERMAN**. Do NOT include any Russian words in the German sentence.
-    2. **COMPLETENESS**: The sentence must be grammatically complete (Subject + Verb + Object/Preposition). No fragments.
+    1. **SIMPLICITY**: Use very **simple vocabulary** (A1-A2 level) for all words EXCEPT the target word. The user is overwhelmed by complex surrounding words. Avoid rare idioms, complex passive constructions, or advanced academic terms.
+    2. **LANGUAGE**: 'sentenceWithBlank' must be **100% GERMAN**.
     3. **TARGET WORD**: Replace the target word (or its conjugated form) with "___".
+    4. **WORD-BY-WORD**: Provide a full mapping of every word in the sentence to its Russian translation.
+       - Include the missingWord in this mapping.
+       - Clean words from punctuation (e.g., "Zug." -> "Zug").
 
     **GRAMMAR RULES**:
-    1. **TENSE**: Prefer **Präsens** (Present) or **Präteritum** (Past) depending on story context.
-    2. **SEPARABLE VERBS (trennbare Verben)** (e.g., ankommen, aufstehen, mitbringen):
-       - **OPTION A (Modal Verb)**: Use a modal verb (können, müssen, wollen) so the target word stays at the end in INFINITIVE form.
-         - *Example*: "Wir wollen morgen pünktlich ___." (missing: "ankommen")
-       - **OPTION B (Separated)**: If you conjugate the verb, you **MUST** place the prefix at the very end of 'sentenceWithBlank'.
-         - *CORRECT*: "Der Zug ___ um 12 Uhr **an**." (missing: "kommt")
-         - *WRONG*: "Der Zug ___ um 12 Uhr." (Prefix is missing!)
-       - **Input Rule**: The 'missingWord' should be ONLY the part that goes in the blank (e.g., "kommt" or "ankommen").
-
-    3. **NOUNS**:
-       - Ensure the article or adjective ending proves the case.
-       - *Example*: "Ich habe einen neuen ___." (accusative hint).
+    1. **TENSE**: Prefer **Präsens** (Present) or **Perfekt** for simple narrative.
+    2. **SEPARABLE VERBS**: 
+       - If separated, missingWord is the conjugated part. Put the prefix at the end.
+       - Example: "Der Zug ___ um 12 Uhr **an**." (missing: "kommt")
 
     **OUTPUT FORMAT**:
-    - **sentenceWithBlank**: "Der Zug ___ um 12 Uhr an." (Full German sentence)
-    - **missingWord**: "kommt" (The exact string to be typed)
+    - **sentenceWithBlank**: "Der Zug ___ um 12 Uhr an."
+    - **missingWord**: "kommt"
     - **translation**: Russian translation.
-    - **grammarExplanation**: Explain in RUSSIAN why this form is used. Use HTML tags (<b>, <u>) for highlighting.
-    - **examples**: 2-3 extra German sentences.
-    - **acceptedAnswers**: List other valid forms (e.g. "fahre" if "fahre" and "fahren" are both plausible, though context should clarify).
+    - **grammarExplanation**: Explain in RUSSIAN why this form is used.
+    - **wordByWord**: [{german: "Der", russian: "Этот"}, {german: "Zug", russian: "поезд"}, {german: "kommt", russian: "приходит"}, {german: "an", russian: "прибывает"}]
 
     Generate JSON now.
   `;

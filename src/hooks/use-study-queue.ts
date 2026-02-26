@@ -324,6 +324,74 @@ export function useStudyQueue() {
         storage.setStudyQueue(nextQueue);
     }, [localQueue]);
 
+    const updateMnemonic = useCallback(async (wordId: string, mnemonic: string) => {
+        const item = localQueue.find((i: any) => i.id === wordId);
+        if (!item) return;
+
+        // 1. Update local state & storage
+        const nextQueue = localQueue.map((i: StudyQueueItem) =>
+            i.id === wordId ? { ...i, mnemonic } : i
+        );
+        setLocalQueue(nextQueue);
+        storage.setStudyQueue(nextQueue);
+
+        // 2. Persist to source folder
+        const folderId = item.tags?.[0];
+        if (folderId) {
+            const folder = folders.find(f => f.id === folderId);
+            if (folder) {
+                const originalWord = folder.words.find(w => w.id === item.id || w.word.german === item.word.german);
+                if (originalWord) {
+                    updateWordInFolder(folderId, { ...originalWord, mnemonic });
+                }
+            }
+        }
+    }, [localQueue, folders, updateWordInFolder]);
+
+    const setAsKnown = useCallback(async (wordId: string) => {
+        const item = localQueue.find((i: any) => i.id === wordId);
+        if (!item) return;
+
+        // Set to a very long interval (6 months) and mark as review
+        const nextInterval = 180;
+        const nextDate = Date.now() + (1000 * 60 * 60 * 24 * nextInterval);
+
+        const nextQueue = localQueue.map((i: StudyQueueItem) =>
+            i.id === wordId
+                ? {
+                    ...i,
+                    status: 'review' as const,
+                    consecutiveMistakes: 0,
+                    nextReviewNum: nextDate,
+                    interval: nextInterval,
+                    easeFactor: 2.5
+                }
+                : i
+        );
+        setLocalQueue(nextQueue);
+        storage.setStudyQueue(nextQueue);
+
+        // Also update SM2 state in folder if possible
+        const folderId = item.tags?.[0];
+        if (folderId) {
+            const folder = folders.find(f => f.id === folderId);
+            if (folder) {
+                const originalWord = folder.words.find(w => w.id === item.id || w.word.german === item.word.german);
+                if (originalWord) {
+                    updateWordInFolder(folderId, {
+                        ...originalWord,
+                        sm2State: {
+                            repetitions: 10, // Simulate mastery
+                            interval: nextInterval,
+                            easeFactor: 2.5,
+                            nextReviewDate: nextDate
+                        }
+                    });
+                }
+            }
+        }
+    }, [localQueue, folders, updateWordInFolder]);
+
     const stats = useMemo(() => {
         const now = Date.now();
         const dueCount = localQueue.filter((i: StudyQueueItem) => i.nextReviewNum <= now && i.status !== 'new').length;
@@ -354,8 +422,10 @@ export function useStudyQueue() {
         isLoading: !isInitialLoadDone,
         getDailySession,
         updateItemStatus,
+        updateMnemonic,
+        setAsKnown,
         syncWithFolders,
         dailyStats,
         ...stats
-    }), [localQueue, isInitialLoadDone, getDailySession, updateItemStatus, syncWithFolders, stats]);
+    }), [localQueue, isInitialLoadDone, getDailySession, updateItemStatus, updateMnemonic, setAsKnown, syncWithFolders, stats]);
 }

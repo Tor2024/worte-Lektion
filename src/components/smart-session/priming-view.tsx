@@ -10,17 +10,52 @@ import { BrainCircuit, Siren } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { useSpeech } from '@/hooks/use-speech';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
+import { decomposeGermanWord, type DecomposeOutput } from '@/ai/flows/decompose-german-word';
+import { getVerbFamily, type VerbFamilyOutput } from '@/ai/flows/get-verb-family';
+import { VerbFamilyTree } from './verb-family-tree';
+import { Loader2, Info, Network } from 'lucide-react';
 
 interface PrimingViewProps {
     item: StudyQueueItem;
     onNext: () => void;
+    onMarkAsKnown: () => void;
 }
 
-export function PrimingView({ item, onNext }: PrimingViewProps) {
+export function PrimingView({ item, onNext, onMarkAsKnown }: PrimingViewProps) {
     const { word } = item;
     const { speak, stop, isLoaded } = useSpeech();
+    const [decomposition, setDecomposition] = useState<DecomposeOutput | null>(null);
+    const [isDecomposing, setIsDecomposing] = useState(false);
+    const [verbFamily, setVerbFamily] = useState<VerbFamilyOutput | null>(null);
+    const [isFetchingFamily, setIsFetchingFamily] = useState(false);
+
+    // Decomposition Effect
+    useEffect(() => {
+        setDecomposition(null);
+        setVerbFamily(null); // Reset when word changes
+        if (word.german.includes(' ') || word.german.length > 10) {
+            setIsDecomposing(true);
+            decomposeGermanWord({ german: word.german })
+                .then(setDecomposition)
+                .catch(err => console.error("Decomposition failed", err))
+                .finally(() => setIsDecomposing(false));
+        }
+    }, [word.german]);
+
+    const fetchVerbFamily = async () => {
+        if (isFetchingFamily || verbFamily) return;
+        setIsFetchingFamily(true);
+        try {
+            const data = await getVerbFamily({ verb: formatGermanWord(word), russian: word.russian });
+            setVerbFamily(data);
+        } catch (err) {
+            console.error("Failed to fetch verb family", err);
+        } finally {
+            setIsFetchingFamily(false);
+        }
+    };
 
     useEffect(() => {
         if (!isLoaded) return;
@@ -137,6 +172,52 @@ export function PrimingView({ item, onNext }: PrimingViewProps) {
                         <SpeakButton text={formatGermanWord(word)} size="lg" />
                     </div>
 
+                    {/* Word Breakdown (Decomposition) */}
+                    {isDecomposing && (
+                        <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground animate-pulse py-2">
+                            <Loader2 className="h-3 w-3 animate-spin" /> Разбираем слово на части...
+                        </div>
+                    )}
+
+                    {decomposition && (
+                        <div className="w-full max-w-sm bg-muted/30 p-4 rounded-xl border border-dashed border-primary/20 text-left space-y-2 animate-in fade-in slide-in-from-top-2">
+                            <div className="text-[10px] font-bold uppercase tracking-widest text-primary/60 flex items-center gap-1">
+                                <Info className="h-3 w-3" /> Разбор конструкции:
+                            </div>
+                            <div className="grid grid-cols-1 gap-1">
+                                {decomposition.components.map((c, i) => (
+                                    <div key={i} className="text-sm flex justify-between gap-4">
+                                        <span className="font-bold text-slate-700">{c.word} {c.pronunciation && <span className="text-[10px] text-muted-foreground font-normal">[{c.pronunciation}]</span>}</span>
+                                        <span className="text-slate-500">{c.translation}</span>
+                                    </div>
+                                ))}
+                            </div>
+                            {decomposition.explanation && (
+                                <p className="text-[10px] italic text-muted-foreground pt-1 border-t border-primary/10">
+                                    {decomposition.explanation}
+                                </p>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Verb Family Integration */}
+                    {word.type === 'verb' && !verbFamily && (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="mt-2 gap-2 border-primary/20 text-primary/60 hover:text-primary transition-all rounded-full h-8 px-4"
+                            onClick={fetchVerbFamily}
+                            disabled={isFetchingFamily}
+                        >
+                            {isFetchingFamily ? <Loader2 className="h-3 w-3 animate-spin" /> : <Network className="h-3 w-3" />}
+                            <span className="text-[10px] font-bold uppercase tracking-tight">Семейство глагола (логика приставок)</span>
+                        </Button>
+                    )}
+
+                    {verbFamily && (
+                        <VerbFamilyTree data={verbFamily} currentVerb={formatGermanWord(word)} />
+                    )}
+
                     {/* Context Example */}
                     {'example' in word && (
                         <div className="bg-muted/50 p-6 rounded-xl text-lg relative mt-4">
@@ -227,9 +308,14 @@ export function PrimingView({ item, onNext }: PrimingViewProps) {
             </Card>
 
             <div className="w-full max-w-sm space-y-4">
-                <Button size="lg" className="w-full h-16 text-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg" onClick={onNext}>
-                    Запомнил
-                </Button>
+                <div className="flex flex-col gap-2">
+                    <Button size="lg" className="w-full h-16 text-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg" onClick={onNext}>
+                        Запомнил
+                    </Button>
+                    <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-green-600 hover:bg-green-50" onClick={onMarkAsKnown}>
+                        Знаю отлично (пропустить)
+                    </Button>
+                </div>
                 <p className="text-xs text-center text-muted-foreground opacity-70">
                     Нажмите, когда четко представите образ слова.
                 </p>

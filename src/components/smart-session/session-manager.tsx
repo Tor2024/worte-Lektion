@@ -21,6 +21,10 @@ import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { generateStory } from '@/ai/flows/generate-story';
 
+import { decomposeGermanWord, type DecomposeOutput } from '@/ai/flows/decompose-german-word';
+import { Edit2, Save, X, Info } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+
 type GlobalPhase = 'priming' | 'recognition' | 'narrative' | 'production' | 'remedial';
 type SessionState = 'loading' | 'intro' | 'warmup' | 'active' | 'consolidation' | 'summary';
 
@@ -29,7 +33,7 @@ interface SmartSessionManagerProps {
 }
 
 export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
-    const { getDailySession, updateItemStatus, overdueCount, dailyLimit, isLoading } = useStudyQueue();
+    const { getDailySession, updateItemStatus, updateMnemonic, setAsKnown, overdueCount, dailyLimit, isLoading } = useStudyQueue();
     const [sessionQueue, setSessionQueue] = useState<StudyQueueItem[]>([]);
     const [sessionState, setSessionState] = useState<SessionState>('loading');
     const [sessionMode, setSessionMode] = useState<'learning' | 'review-only'>('learning');
@@ -58,6 +62,11 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
 
     // Warm-up State
     const [warmupIndex, setWarmupIndex] = useState(0);
+    const [isEditingMnemonic, setIsEditingMnemonic] = useState(false);
+    const [editingMnemonicValue, setEditingMnemonicValue] = useState("");
+    const [decomposition, setDecomposition] = useState<DecomposeOutput | null>(null);
+    const [isDecomposing, setIsDecomposing] = useState(false);
+
     const leeches = useMemo(() => sessionQueue.filter(w => (w.consecutiveMistakes || 0) >= 3), [sessionQueue]);
 
     useEffect(() => {
@@ -378,6 +387,25 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
         );
     }
 
+    // Decomposition Effect for Warmup
+    useEffect(() => {
+        if (sessionState !== 'warmup' || !leeches[warmupIndex]) return;
+
+        const currentLeech = leeches[warmupIndex];
+        setIsEditingMnemonic(false);
+        setEditingMnemonicValue(currentLeech.mnemonic || "");
+        setDecomposition(null);
+
+        // Decompose word if it's long (more than one word or long compound)
+        if (currentLeech.word.german.includes(' ') || currentLeech.word.german.length > 10) {
+            setIsDecomposing(true);
+            decomposeGermanWord({ german: currentLeech.word.german })
+                .then(setDecomposition)
+                .catch(err => console.error("Decomposition failed", err))
+                .finally(() => setIsDecomposing(false));
+        }
+    }, [sessionState, warmupIndex, leeches]);
+
     if (sessionState === 'warmup') {
         const currentLeech = leeches[warmupIndex];
         return (
@@ -387,14 +415,75 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                     Разминка: Вход в поток
                 </div>
                 <Card className="w-full border-2 border-red-500/20 shadow-2xl bg-red-50/30">
-                    <CardContent className="p-8 text-center space-y-4">
+                    <CardContent className="p-8 text-center space-y-6">
                         <div className="text-4xl font-black text-red-600">{formatGermanWord(currentLeech.word)}</div>
                         <div className="text-2xl italic text-slate-600 border-t pt-4">{currentLeech.word.russian}</div>
-                        {currentLeech.mnemonic && (
-                            <div className="mt-4 p-3 bg-amber-100/50 rounded-lg text-sm text-amber-900 border border-amber-200">
-                                💡 {currentLeech.mnemonic}
+
+                        {/* Word Breakdown (Decomposition) */}
+                        {isDecomposing && (
+                            <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground animate-pulse">
+                                <Loader2 className="h-3 w-3 animate-spin" /> Разбираем слово на части...
                             </div>
                         )}
+
+                        {decomposition && (
+                            <div className="bg-white/50 p-4 rounded-xl border border-dashed border-red-200 text-left space-y-2 animate-in fade-in slide-in-from-top-2">
+                                <div className="text-[10px] font-bold uppercase tracking-widest text-red-400 flex items-center gap-1">
+                                    <Info className="h-3 w-3" /> Разбор конструкции:
+                                </div>
+                                <div className="grid grid-cols-1 gap-1">
+                                    {decomposition.components.map((c, i) => (
+                                        <div key={i} className="text-sm flex justify-between gap-4">
+                                            <span className="font-bold text-slate-700">{c.word} <span className="text-[10px] text-muted-foreground font-normal">[{c.pronunciation}]</span></span>
+                                            <span className="text-slate-500">{c.translation}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Mnemonic Section with Editing */}
+                        <div className="mt-4 p-4 bg-amber-100/50 rounded-lg text-sm text-amber-900 border border-amber-200 relative group">
+                            <div className="flex justify-between items-center mb-1">
+                                <span className="text-[10px] font-bold uppercase tracking-widest opacity-50">💡 Ассоциация (Для памяти):</span>
+                                {!isEditingMnemonic && (
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        onClick={() => setIsEditingMnemonic(true)}
+                                    >
+                                        <Edit2 className="h-3 w-3" />
+                                    </Button>
+                                )}
+                            </div>
+
+                            {isEditingMnemonic ? (
+                                <div className="space-y-2">
+                                    <Input
+                                        value={editingMnemonicValue}
+                                        onChange={(e) => setEditingMnemonicValue(e.target.value)}
+                                        className="bg-white border-amber-300 focus:border-amber-500"
+                                        autoFocus
+                                    />
+                                    <div className="flex gap-1 justify-end">
+                                        <Button size="sm" variant="ghost" className="h-8 px-2" onClick={() => setIsEditingMnemonic(false)}>
+                                            <X className="h-4 w-4" />
+                                        </Button>
+                                        <Button size="sm" className="h-8 px-2 bg-amber-600 hover:bg-amber-700" onClick={() => {
+                                            updateMnemonic(currentLeech.id, editingMnemonicValue);
+                                            setIsEditingMnemonic(false);
+                                        }}>
+                                            <Save className="h-4 w-4 mr-1" /> Сохранить
+                                        </Button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="text-left italic">
+                                    {currentLeech.mnemonic || "Ассоциация пока не создана."}
+                                </div>
+                            )}
+                        </div>
                     </CardContent>
                 </Card>
                 <Button size="lg" className="w-full h-16 text-xl" onClick={() => {
@@ -516,7 +605,15 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                 {currentItem ? (
                     <>
                         {currentPhase === 'priming' && (
-                            <PrimingView key={currentItem.id} item={currentItem} onNext={() => handleNext('success')} />
+                            <PrimingView
+                                key={currentItem.id}
+                                item={currentItem}
+                                onNext={() => handleNext('success')}
+                                onMarkAsKnown={() => {
+                                    setAsKnown(currentItem.id);
+                                    handleNext('success');
+                                }}
+                            />
                         )}
                         {currentPhase === 'recognition' && (
                             <div className="space-y-4">
@@ -535,6 +632,10 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                                     key={`${currentItem.id}-${recognitionHits[currentItem.id] || 0}`}
                                     item={currentItem}
                                     onResult={handleNext}
+                                    onMarkAsKnown={() => {
+                                        setAsKnown(currentItem.id);
+                                        handleNext('success');
+                                    }}
                                     direction={(recognitionHits[currentItem.id] || 0) % 2 === 0 ? 0 : 1}
                                 />
                             </div>

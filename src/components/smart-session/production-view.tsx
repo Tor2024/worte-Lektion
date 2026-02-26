@@ -12,6 +12,7 @@ import { generateClozeWithAI, type GenerateClozeOutput } from '@/ai/flows/genera
 import { evaluateProductionWithAI, type EvaluateProductionOutput } from '@/ai/flows/evaluate-production';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
+import { SentenceScaffold } from './sentence-scaffold';
 
 interface ProductionViewProps {
     item: StudyQueueItem;
@@ -122,19 +123,13 @@ export function ProductionView({ item, storyContext, onStoryUpdate, onResult }: 
             <Card className="w-full bg-card border-2 border-primary/10 shadow-xl overflow-hidden">
                 <CardContent className="p-8 flex flex-col items-center text-center space-y-8">
 
-                    <div className="text-2xl sm:text-3xl font-medium leading-relaxed max-w-xl text-center">
-                        {parts[0]}
-                        <span className="inline-block border-b-2 border-primary mx-1 min-w-[100px] font-bold text-primary align-baseline relative top-[-2px]">
-                            {feedback ? (
-                                <span className={feedback === 'correct' ? 'text-green-600' : 'text-red-600'}>
-                                    {feedback === 'correct' ? clozeData.missingWord : userAnswer}
-                                </span>
-                            ) : (
-                                <span className="opacity-0">placeholder</span>
-                            )}
-                        </span>
-                        {parts[1]}
-                    </div>
+                    <SentenceScaffold
+                        sentenceWithBlank={clozeData.sentenceWithBlank}
+                        wordByWord={clozeData.wordByWord || []}
+                        missingWord={clozeData.missingWord}
+                        userAnswer={userAnswer}
+                        feedback={feedback}
+                    />
 
                     <div className="text-muted-foreground italic flex flex-col gap-1 items-center">
                         <div>{clozeData.translation}</div>
