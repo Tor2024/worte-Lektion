@@ -158,7 +158,7 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                     {/* Center Top: Word */}
                     <div className="mb-4 flex flex-col items-center">
                         <div className="flex flex-col items-center justify-center gap-1 text-center">
-                            <h3 className={cn("text-4xl font-black font-headline select-none break-words hyphens-auto tracking-tight leading-none", getGenderColorClass(word))}>
+                            <h3 className="text-4xl font-black font-headline select-none break-words hyphens-auto tracking-tight leading-none text-primary">
                                 {formatGermanWord(word)}
                             </h3>
                             {/* Legacy case fallback for verbs */}

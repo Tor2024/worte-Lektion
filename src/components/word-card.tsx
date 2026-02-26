@@ -91,7 +91,7 @@ export function WordCard({ word }: { word: VocabularyWord }) {
           <div className="flex justify-between items-start">
             <div className="flex flex-col gap-1">
               <div className="flex flex-col items-start gap-0.5">
-                <p className={cn("text-2xl font-bold break-words", getGenderColorClass(word))}>{getGermanDisplay()}</p>
+                <p className="text-2xl font-bold break-words text-primary">{getGermanDisplay()}</p>
 
                 {/* Legacy case fallback for verbs */}
                 {word.type === 'verb' && !((word as any).governance && (word as any).governance.length > 0) && ((word as any).preposition || (word as any).case) && (
