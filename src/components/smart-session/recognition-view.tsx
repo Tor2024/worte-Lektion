@@ -98,16 +98,19 @@ export function RecognitionView({ item, onResult, onMarkAsKnown, direction: forc
                                         <div className="flex items-center gap-2 text-lg font-black">
                                             <span className="text-primary">+ {gov.preposition}</span>
                                             <span className={cn(
-                                                "px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest",
+                                                "px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest flex items-center gap-1",
                                                 gov.case === 'Akkusativ' ? "bg-red-500/20 text-red-500 border border-red-500/30" :
                                                     gov.case === 'Dativ' ? "bg-emerald-500/20 text-green-500 border border-emerald-500/30" :
                                                         "bg-slate-500/20 text-slate-400 border border-slate-500/30"
                                             )}>
                                                 {gov.case}
+                                                <span className="opacity-60 lowercase font-medium">
+                                                    ({gov.case === 'Akkusativ' ? 'wohin?' : gov.case === 'Dativ' ? 'wo?' : ''})
+                                                </span>
                                             </span>
                                         </div>
                                         {gov.meaning && (
-                                            <div className="text-[10px] font-bold text-primary/60 italic">
+                                            <div className="text-[10px] font-bold text-slate-100 italic">
                                                 ({gov.meaning})
                                             </div>
                                         )}
@@ -121,12 +124,15 @@ export function RecognitionView({ item, onResult, onMarkAsKnown, direction: forc
                             <div className="text-lg font-black text-primary/80 tracking-tight mt-4 flex items-center gap-2">
                                 <span>+ {(word as any).preposition || ""}</span>
                                 <span className={cn(
-                                    "px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest",
+                                    "px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest flex items-center gap-1",
                                     (word as any).case === 'Akkusativ' ? "bg-red-500/20 text-red-500 border border-red-500/30" :
                                         (word as any).case === 'Dativ' ? "bg-emerald-500/20 text-green-500 border border-emerald-500/30" :
                                             "bg-slate-500/20 text-slate-400 border border-slate-500/30"
                                 )}>
                                     {(word as any).case}
+                                    <span className="opacity-60 lowercase font-medium">
+                                        ({(word as any).case === 'Akkusativ' ? 'wohin?' : (word as any).case === 'Dativ' ? 'wo?' : ''})
+                                    </span>
                                 </span>
                             </div>
                         )}

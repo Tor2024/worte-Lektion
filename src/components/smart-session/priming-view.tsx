@@ -142,21 +142,24 @@ export function PrimingView({ item, onNext, onMarkAsKnown }: PrimingViewProps) {
                                             <div className="flex items-center gap-2 text-2xl font-black">
                                                 <span className="text-primary">+ {gov.preposition}</span>
                                                 <span className={cn(
-                                                    "px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-widest",
+                                                    "px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-widest flex items-center gap-1",
                                                     gov.case === 'Akkusativ' ? "bg-red-500/20 text-red-500 border border-red-500/30" :
                                                         gov.case === 'Dativ' ? "bg-emerald-500/20 text-green-500 border border-emerald-500/30" :
                                                             "bg-slate-500/20 text-slate-400 border border-slate-500/30"
                                                 )}>
                                                     {gov.case}
+                                                    <span className="opacity-60 lowercase font-medium">
+                                                        ({gov.case === 'Akkusativ' ? 'wohin?' : gov.case === 'Dativ' ? 'wo?' : ''})
+                                                    </span>
                                                 </span>
                                             </div>
                                             {gov.meaning && (
-                                                <div className="text-sm font-bold text-primary/70 mt-1 italic">
+                                                <div className="text-sm font-bold text-slate-100 mt-1 italic">
                                                     ({gov.meaning})
                                                 </div>
                                             )}
                                             {gov.example && (
-                                                <div className="mt-2 text-xs text-muted-foreground/80 leading-relaxed border-t border-white/5 pt-2 w-full italic">
+                                                <div className="mt-2 text-xs text-white/90 leading-relaxed border-t border-white/10 pt-2 w-full italic">
                                                     &ldquo;{gov.example}&rdquo;
                                                 </div>
                                             )}
