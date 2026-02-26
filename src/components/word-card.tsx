@@ -106,7 +106,7 @@ export function WordCard({ word }: { word: VocabularyWord }) {
                 <div className="flex flex-wrap gap-1 mt-1 opacity-60 hover:opacity-100 transition-opacity">
                   {(word as any).synonyms.map((s: any, idx: number) => (
                     <span key={idx} className="text-[10px] font-medium text-muted-foreground px-1.5 py-0.5 rounded-full bg-muted/50 border border-border/50">
-                      ≈ {s.word}
+                      ≈ {s.word} ({s.translation})
                     </span>
                   ))}
                 </div>

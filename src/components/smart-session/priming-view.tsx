@@ -126,7 +126,7 @@ export function PrimingView({ item, onNext }: PrimingViewProps) {
                             <div className="mt-2 flex flex-wrap justify-center gap-1.5 opacity-60 hover:opacity-100 transition-opacity">
                                 {(word as any).synonyms.map((s: any, idx: number) => (
                                     <span key={idx} className="text-xs font-medium text-muted-foreground px-2 py-0.5 rounded-full bg-muted/50 border border-border/50">
-                                        ≈ {s.word}
+                                        ≈ {s.word} ({s.translation})
                                     </span>
                                 ))}
                             </div>
