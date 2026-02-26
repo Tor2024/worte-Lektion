@@ -161,14 +161,6 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                             <h3 className={cn("text-4xl font-black font-headline select-none break-words hyphens-auto tracking-tight leading-none", getGenderColorClass(word))}>
                                 {formatGermanWord(word)}
                             </h3>
-                            {/* Aggressive Governance Display (Option 1) */}
-                            {((word.type === 'verb' || word.type === 'adjective') && (word as any).governance && (word as any).governance.length > 0) && (
-                                <div className="text-xl font-bold text-primary/80 tracking-tight flex flex-wrap justify-center gap-1">
-                                    {(word as any).governance.map((gov: any, idx: number) => (
-                                        <span key={idx}>+ {gov.preposition} <span className="text-muted-foreground/80">{gov.case}</span></span>
-                                    ))}
-                                </div>
-                            )}
                             {/* Legacy case fallback for verbs */}
                             {word.type === 'verb' && !((word as any).governance && (word as any).governance.length > 0) && ((word as any).preposition || (word as any).case) && (
                                 <div className="text-xl font-bold text-primary/80 tracking-tight">

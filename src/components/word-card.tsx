@@ -93,14 +93,6 @@ export function WordCard({ word }: { word: VocabularyWord }) {
               <div className="flex flex-col items-start gap-0.5">
                 <p className={cn("text-2xl font-bold break-words", getGenderColorClass(word))}>{getGermanDisplay()}</p>
 
-                {/* Aggressive Governance Display */}
-                {((word.type === 'verb' || word.type === 'adjective') && (word as any).governance && (word as any).governance.length > 0) && (
-                  <div className="text-sm font-bold text-primary/80 flex flex-wrap gap-1 leading-none">
-                    {(word as any).governance.map((gov: any, idx: number) => (
-                      <span key={idx}>+ {gov.preposition} <span className="text-muted-foreground/80">{gov.case}</span></span>
-                    ))}
-                  </div>
-                )}
                 {/* Legacy case fallback for verbs */}
                 {word.type === 'verb' && !((word as any).governance && (word as any).governance.length > 0) && ((word as any).preposition || (word as any).case) && (
                   <div className="text-sm font-bold text-primary/80 leading-none">

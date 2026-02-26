@@ -4,7 +4,7 @@
 import { StudyQueueItem } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { formatGermanWord } from '@/lib/german-utils';
+import { formatGermanWord, getGenderColorClass } from '@/lib/german-utils';
 import { BrainCircuit, Check, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState, useMemo, useEffect } from 'react';
@@ -84,8 +84,24 @@ export function RecognitionView({ item, onResult, direction: forcedDirection }: 
                     <div className="text-sm font-bold text-primary/60 mb-4 uppercase tracking-widest">
                         {direction === 0 ? "Понимаете ли вы это слово?" : "Как это будет по-немецки?"}
                     </div>
-                    <div className="text-5xl font-black text-white mb-6 tracking-tighter">
-                        {direction === 0 ? formatGermanWord(word) : word.russian}
+
+                    <div className="flex flex-col items-center gap-1 mb-6">
+                        <div className={cn("text-5xl font-black tracking-tighter", direction === 0 ? getGenderColorClass(word) : "text-white h-[60px]")}>
+                            {direction === 0 ? formatGermanWord(word) : word.russian}
+                        </div>
+                        {direction === 0 && ((word.type === 'verb' || word.type === 'adjective') && (word as any).governance && (word as any).governance.length > 0) && (
+                            <div className="text-lg font-bold text-primary/80 tracking-tight flex flex-wrap justify-center gap-1 mt-1">
+                                {(word as any).governance.map((gov: any, idx: number) => (
+                                    <span key={idx}>+ {gov.preposition} <span className="opacity-70">{gov.case}</span></span>
+                                ))}
+                            </div>
+                        )}
+                        {/* Legacy case fallback for verbs */}
+                        {direction === 0 && word.type === 'verb' && !((word as any).governance && (word as any).governance.length > 0) && ((word as any).preposition || (word as any).case) && (
+                            <div className="text-lg font-bold text-primary/80 tracking-tight mt-1">
+                                + {[(word as any).preposition, (word as any).case].filter(Boolean).join(' ')}
+                            </div>
+                        )}
                     </div>
                     <div className="flex items-center gap-4">
                         <div className="h-[2px] w-12 bg-gradient-to-r from-transparent to-primary/40" />

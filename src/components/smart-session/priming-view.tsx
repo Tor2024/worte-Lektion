@@ -5,7 +5,7 @@ import { StudyQueueItem } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { SpeakButton } from '@/components/speak-button';
-import { formatGermanWord, getGenderColorClass } from '@/lib/german-utils';
+import { formatGermanWord, getGenderColorClass, getRussianType } from '@/lib/german-utils';
 import { BrainCircuit, Siren } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
@@ -94,15 +94,43 @@ export function PrimingView({ item, onNext }: PrimingViewProps) {
                 <CardContent className="p-10 flex flex-col items-center text-center space-y-6">
 
                     <div className="space-y-4">
-                        <div className={cn("text-6xl font-black tracking-tight", getGenderColorClass(word))}>
-                            {formatGermanWord(word)}
+                        <div className="flex flex-col gap-0 items-center justify-center">
+                            <div className={cn("text-6xl font-black tracking-tight", getGenderColorClass(word))}>
+                                {formatGermanWord(word)}
+                            </div>
+                            {/* Specific Governance Display for Verbs and Adjectives */}
+                            {((word.type === 'verb' || word.type === 'adjective') && (word as any).governance && (word as any).governance.length > 0) && (
+                                <div className="text-xl font-bold text-primary/80 tracking-tight flex flex-wrap justify-center gap-1 mt-2">
+                                    {(word as any).governance.map((gov: any, idx: number) => (
+                                        <span key={idx}>+ {gov.preposition} <span className="text-muted-foreground/80">{gov.case}</span></span>
+                                    ))}
+                                </div>
+                            )}
+                            {/* Legacy case fallback for verbs */}
+                            {word.type === 'verb' && !((word as any).governance && (word as any).governance.length > 0) && ((word as any).preposition || (word as any).case) && (
+                                <div className="text-xl font-bold text-primary/80 tracking-tight mt-2">
+                                    + {[(word as any).preposition, (word as any).case].filter(Boolean).join(' ')}
+                                </div>
+                            )}
                         </div>
+
                         <div className="flex flex-col items-center gap-1">
-                            <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">B2 Beruf Focus</div>
+                            <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">{getRussianType(word.type)}</div>
                             <div className="text-3xl text-foreground font-black italic">
                                 {word.russian}
                             </div>
                         </div>
+
+                        {/* Synonyms (Unobtrusive & Non-Italic) */}
+                        {(word as any).synonyms && (word as any).synonyms.length > 0 && (
+                            <div className="mt-2 flex flex-wrap justify-center gap-1.5 opacity-60 hover:opacity-100 transition-opacity">
+                                {(word as any).synonyms.map((s: any, idx: number) => (
+                                    <span key={idx} className="text-xs font-medium text-muted-foreground px-2 py-0.5 rounded-full bg-muted/50 border border-border/50">
+                                        ≈ {s.word}
+                                    </span>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex gap-4">
