@@ -107,9 +107,9 @@ export function PrimingView({ item, onNext, onMarkAsKnown }: PrimingViewProps) {
         <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="flex flex-col items-center space-y-8"
+            className="flex flex-col items-center space-y-4"
         >
-            <div className="flex items-center gap-3 text-muted-foreground uppercase text-xs tracking-widest font-bold">
+            <div className="flex items-center gap-3 text-muted-foreground uppercase text-[10px] tracking-[0.2em] font-bold">
                 <BrainCircuit className="h-4 w-4" />
                 <span>Фаза 1: Загрузка Образа</span>
                 {(item.consecutiveMistakes || 0) >= 3 && (
@@ -125,41 +125,41 @@ export function PrimingView({ item, onNext, onMarkAsKnown }: PrimingViewProps) {
             </div>
 
             <Card className="w-full bg-card border-none shadow-2xl overflow-hidden relative">
-                <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-purple-500" />
-                <CardContent className="p-10 flex flex-col items-center text-center space-y-6">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500" />
+                <CardContent className="p-6 sm:p-8 flex flex-col items-center text-center space-y-4">
 
-                    <div className="space-y-4">
+                    <div className="space-y-3 w-full">
                         <div className="flex flex-col gap-0 items-center justify-center">
-                            <div className="text-6xl font-black tracking-tight text-primary">
+                            <div className="text-5xl font-black tracking-tight text-primary">
                                 {formatGermanWord(word)}
                             </div>
                             {/* Specific Governance Display for Verbs and Adjectives */}
                             {/* Governance Section (Rektion) */}
                             {(word.type === 'verb' || word.type === 'adjective') && (word as any).governance && (word as any).governance.length > 0 && (
-                                <div className="flex flex-col items-center gap-3 mt-4 w-full">
+                                <div className="flex flex-col items-center gap-2 mt-2 w-full">
                                     {(word as any).governance.map((gov: any, idx: number) => (
-                                        <div key={idx} className="flex flex-col items-center bg-white/5 p-4 rounded-2xl border border-white/10 w-full max-w-sm">
-                                            <div className="flex items-center gap-2 text-2xl font-black">
+                                        <div key={idx} className="flex flex-col items-center bg-primary/5 p-3 rounded-xl border border-primary/10 w-full max-w-sm">
+                                            <div className="flex items-center gap-2 text-xl font-black">
                                                 <span className="text-primary">+ {gov.preposition}</span>
                                                 <span className={cn(
-                                                    "px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-widest flex items-center gap-1",
-                                                    gov.case === 'Akkusativ' ? "bg-red-500/20 text-red-500 border border-red-500/30" :
-                                                        gov.case === 'Dativ' ? "bg-emerald-500/20 text-green-500 border border-emerald-500/30" :
-                                                            "bg-slate-500/20 text-slate-400 border border-slate-500/30"
+                                                    "px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest flex items-center gap-1",
+                                                    gov.case === 'Akkusativ' ? "bg-red-500/20 text-red-600 border border-red-500/30" :
+                                                        gov.case === 'Dativ' ? "bg-emerald-500/20 text-emerald-600 border border-emerald-500/30" :
+                                                            "bg-slate-500/20 text-slate-500 border border-slate-500/30"
                                                 )}>
                                                     {gov.case}
-                                                    <span className="opacity-60 lowercase font-medium">
+                                                    <span className="opacity-60 lowercase font-medium text-[8px]">
                                                         ({gov.case === 'Akkusativ' ? 'wohin?' : gov.case === 'Dativ' ? 'wo?' : ''})
                                                     </span>
                                                 </span>
                                             </div>
                                             {gov.meaning && (
-                                                <div className="text-sm font-bold text-slate-100 mt-1 italic">
+                                                <div className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mt-1 italic">
                                                     ({gov.meaning})
                                                 </div>
                                             )}
                                             {gov.example && (
-                                                <div className="mt-2 text-xs text-white/90 leading-relaxed border-t border-white/10 pt-2 w-full italic">
+                                                <div className="mt-1 text-[10px] text-muted-foreground leading-relaxed border-t border-primary/10 pt-1 w-full italic">
                                                     &ldquo;{gov.example}&rdquo;
                                                 </div>
                                             )}
@@ -184,9 +184,9 @@ export function PrimingView({ item, onNext, onMarkAsKnown }: PrimingViewProps) {
                             )}
                         </div>
 
-                        <div className="flex flex-col items-center gap-1">
-                            <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">{getRussianType(word.type)}</div>
-                            <div className="text-3xl text-foreground font-black italic">
+                        <div className="flex flex-col items-center gap-0">
+                            <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50">{getRussianType(word.type)}</div>
+                            <div className="text-2xl text-foreground font-black italic">
                                 {word.russian}
                             </div>
                         </div>
@@ -253,22 +253,22 @@ export function PrimingView({ item, onNext, onMarkAsKnown }: PrimingViewProps) {
                         <VerbFamilyTree data={verbFamily} currentVerb={formatGermanWord(word)} />
                     )}
 
-                    {/* Context Example */}
+                    {/* Context Example (Compact) */}
                     {'example' in word && (
-                        <div className="bg-muted/50 p-6 rounded-xl text-lg relative mt-4">
-                            <span className="text-4xl absolute -top-4 -left-2 opacity-10">❝</span>
+                        <div className="bg-primary/5 p-4 rounded-xl text-md relative mt-2 w-full max-w-sm border border-primary/10">
+                            <span className="text-2xl absolute -top-3 -left-1 opacity-10">❝</span>
                             <p
-                                className="italic text-foreground/80 leading-relaxed max-w-sm"
+                                className="italic text-foreground/70 leading-relaxed text-sm"
                                 dangerouslySetInnerHTML={{ __html: word.example }}
                             />
                         </div>
                     )}
 
-                    {/* Verb Conjugations */}
+                    {/* Verb Conjugations (Compact) */}
                     {word.type === 'verb' && (word as any).conjugations && (
-                        <div className="w-full max-w-sm mt-4 p-4 bg-primary/5 rounded-xl border border-primary/10">
-                            <h4 className="text-xs font-bold uppercase tracking-widest text-primary/60 mb-3">Спряжение (Präsens)</h4>
-                            <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                        <div className="w-full max-w-sm mt-2 p-3 bg-primary/5 rounded-xl border border-primary/10">
+                            <h4 className="text-[9px] font-bold uppercase tracking-widest text-primary/40 mb-2">Спряжение (Präsens)</h4>
+                            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
                                 <div className="flex justify-between border-b border-primary/10 pb-1">
                                     <span className="text-muted-foreground">ich</span>
                                     <span className="font-bold">{(word as any).conjugations.ich}</span>
@@ -297,8 +297,8 @@ export function PrimingView({ item, onNext, onMarkAsKnown }: PrimingViewProps) {
                         </div>
                     )}
 
-                    {/* Semantic Bridge: Synonyms & Collocations */}
-                    <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                    {/* Semantic Bridge: Synonyms & Collocations (Compact) */}
+                    <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
                         {(word as any).synonyms && (word as any).synonyms.length > 0 && (
                             <div className="p-4 bg-blue-50/50 rounded-xl border border-blue-100 text-left">
                                 <h4 className="text-[10px] font-bold uppercase tracking-widest text-blue-400 mb-2">Синонимы</h4>

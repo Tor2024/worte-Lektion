@@ -109,19 +109,19 @@ export function ProductionView({ item, storyContext, onStoryUpdate, onResult }: 
         <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="flex flex-col items-center space-y-8"
+            className="flex flex-col items-center space-y-4"
         >
-            <div className="flex items-center gap-2 text-muted-foreground uppercase text-xs tracking-widest">
+            <div className="flex items-center gap-2 text-muted-foreground uppercase text-[10px] tracking-[0.2em] font-bold">
                 <BrainCircuit className="h-4 w-4" /> Фаза 3: Активный Контекст
                 {(item.consecutiveMistakes || 0) >= 3 && (
-                    <div className="ml-4 px-2 py-0.5 bg-red-100 text-red-600 rounded-full text-[10px] font-black animate-pulse flex items-center gap-1 border border-red-200">
+                    <div className="ml-4 px-2 py-0.5 bg-red-100 text-red-600 rounded-full text-[8px] font-black animate-pulse flex items-center gap-1 border border-red-200">
                         <Siren className="h-3 w-3" /> LEECH PROTECTION
                     </div>
                 )}
             </div>
 
             <Card className="w-full bg-card border-2 border-primary/10 shadow-xl overflow-hidden">
-                <CardContent className="p-8 flex flex-col items-center text-center space-y-8">
+                <CardContent className="p-6 flex flex-col items-center text-center space-y-6">
 
                     <SentenceScaffold
                         sentenceWithBlank={clozeData.sentenceWithBlank}
@@ -131,12 +131,12 @@ export function ProductionView({ item, storyContext, onStoryUpdate, onResult }: 
                         feedback={feedback}
                     />
 
-                    <div className="text-muted-foreground italic flex flex-col gap-1 items-center">
-                        <div>{clozeData.translation}</div>
-                        {clozeData.hint && <div className="text-xs bg-muted px-2 py-1 rounded text-primary">{clozeData.hint}</div>}
+                    <div className="text-muted-foreground italic flex flex-col gap-1 items-center text-sm">
+                        <div className="opacity-80">{clozeData.translation}</div>
+                        {clozeData.hint && <div className="text-[10px] bg-primary/5 border border-primary/10 px-2 py-0.5 rounded text-primary">{clozeData.hint}</div>}
                         {(item.mnemonic || (item.consecutiveMistakes || 0) >= 3) && (
                             <div className={cn(
-                                "mt-2 p-2 rounded text-[10px] italic max-w-xs border shadow-sm",
+                                "mt-1 p-2 rounded text-[9px] italic max-w-xs border shadow-sm",
                                 (item.consecutiveMistakes || 0) >= 3
                                     ? "bg-amber-100 border-amber-400 text-amber-900"
                                     : "bg-amber-50 border-amber-200 text-amber-800"
