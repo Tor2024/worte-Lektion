@@ -305,6 +305,16 @@ export default function FolderDetailsPage({ params }: { params: Promise<{ folder
                             userWord={userWord}
                             reverse={reverseMode}
                             onRefresh={() => handleRefreshWord(userWord)}
+                            onTranslationSelect={(translation) => {
+                                const updatedWord = {
+                                    ...userWord,
+                                    word: {
+                                        ...userWord.word,
+                                        russian: translation
+                                    }
+                                };
+                                updateWordInFolder(folderId, updatedWord);
+                            }}
                         />
 
                         <Button

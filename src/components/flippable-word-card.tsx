@@ -19,9 +19,10 @@ interface FlippableWordCardProps {
     className?: string;
     reverse?: boolean;
     onRefresh?: () => Promise<void>; // Added onRefresh prop
+    onTranslationSelect?: (translation: string) => void;
 }
 
-export function FlippableWordCard({ userWord, className, reverse = false, onRefresh }: FlippableWordCardProps) {
+export function FlippableWordCard({ userWord, className, reverse = false, onRefresh, onTranslationSelect }: FlippableWordCardProps) {
     const [isFlipped, setIsFlipped] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false); // Added isRefreshing state
 
@@ -86,6 +87,40 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
         }
     };
 
+    const renderTranslationSelector = (className = "text-xl font-medium text-foreground/80 font-headline italic") => {
+        if (!word.allTranslations) {
+            // Include default size only if no specific size is in className
+            const defaultClasses = className.includes("text-") ? className : cn("text-3xl font-bold font-headline select-none text-center leading-tight", className);
+            return <p className={defaultClasses}>{word.russian}</p>;
+        }
+
+        return (
+            <div className="flex flex-wrap justify-center gap-2 mt-2 w-full">
+                {word.allTranslations.split(/[;,]+/).map(t => t.trim()).filter(Boolean).map((translation, idx) => {
+                    const isSelected = translation.toLowerCase() === word.russian.toLowerCase();
+                    return (
+                        <button
+                            key={idx}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                if (!isSelected) onTranslationSelect?.(translation);
+                            }}
+                            className={cn(
+                                "text-sm font-medium px-3 py-1.5 rounded-full transition-all border",
+                                isSelected
+                                    ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                                    : "bg-muted/50 text-muted-foreground border-transparent hover:bg-muted hover:text-foreground cursor-pointer"
+                            )}
+                            title={isSelected ? "Главный перевод" : "Сделать главным переводом"}
+                        >
+                            {translation}
+                        </button>
+                    );
+                })}
+            </div>
+        );
+    };
+
     // Front Content (Default: DE, Reverse: RU)
     const renderFrontContent = () => {
         if (reverse) {
@@ -96,9 +131,7 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                         <Badge variant="outline" className="opacity-40 text-[10px] uppercase tracking-widest mb-3">
                             {getRussianType(word.type)} (RU → DE)
                         </Badge>
-                        <h3 className="text-3xl font-bold font-headline select-none text-center leading-tight">
-                            {word.russian}
-                        </h3>
+                        {renderTranslationSelector()}
                     </div>
 
                     {(userWord.context || userWord.contextTranslation) && (
@@ -189,173 +222,178 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                         )}
                     </div>
 
-                    {/* Middle: Rich Verb Details */}
-                    {word.type === 'verb' && (
-                        <div className="w-full flex-grow flex flex-col gap-2">
-                            {/* Conjugation Table (Präsens) */}
-                            {(word as any)?.conjugations ? (
-                                <div className="bg-white/50 dark:bg-black/20 p-3 rounded-xl border border-black/5 dark:border-white/10 text-xs shadow-sm">
-                                    <span className="font-bold text-muted-foreground text-[10px] block mb-2 text-center uppercase tracking-widest">Präsens (Настоящее)</span>
-                                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-left px-2">
-                                        <div className="flex justify-between border-b border-black/5 pb-1"><span className="opacity-50">ich</span> <span className="font-semibold text-foreground/90">{(word as any).conjugations?.ich || '-'}</span></div>
-                                        <div className="flex justify-between border-b border-black/5 pb-1"><span className="opacity-50">wir</span> <span className="font-semibold text-foreground/90">{(word as any).conjugations?.wir || '-'}</span></div>
-                                        <div className="flex justify-between border-b border-black/5 pb-1"><span className="opacity-50">du</span> <span className="font-semibold text-foreground/90">{(word as any).conjugations?.du || '-'}</span></div>
-                                        <div className="flex justify-between border-b border-black/5 pb-1"><span className="opacity-50">ihr</span> <span className="font-semibold text-foreground/90">{(word as any).conjugations?.ihr || '-'}</span></div>
-                                        <div className="flex justify-between pb-1"><span className="opacity-50">er/sie</span> <span className="font-semibold text-foreground/90">{(word as any).conjugations?.er_sie_es || '-'}</span></div>
-                                        <div className="flex justify-between pb-1"><span className="opacity-50">sie</span> <span className="font-semibold text-foreground/90">{(word as any).conjugations?.sie_Sie || '-'}</span></div>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="text-sm text-muted-foreground italic text-center">
-                                    {(word as any)?.conjugation || '-'}
+                    {/* Middle Scrollable Section: Verb Details, Adjectives, Prepositions, Context */}
+                    <div className="w-full flex-grow overflow-y-auto pr-1 my-2 min-h-0 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
+                        <div className="flex flex-col gap-3 pb-2 pt-1 h-full">
+
+                            {/* Middle: Rich Verb Details */}
+                            {word.type === 'verb' && (
+                                <div className="w-full flex-grow flex flex-col gap-2">
+                                    {/* Conjugation Table (Präsens) */}
+                                    {(word as any)?.conjugations ? (
+                                        <div className="bg-white/50 dark:bg-black/20 p-3 rounded-xl border border-black/5 dark:border-white/10 text-xs shadow-sm">
+                                            <span className="font-bold text-muted-foreground text-[10px] block mb-2 text-center uppercase tracking-widest">Präsens (Настоящее)</span>
+                                            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-left px-2">
+                                                <div className="flex justify-between border-b border-black/5 pb-1"><span className="opacity-50">ich</span> <span className="font-semibold text-foreground/90">{(word as any).conjugations?.ich || '-'}</span></div>
+                                                <div className="flex justify-between border-b border-black/5 pb-1"><span className="opacity-50">wir</span> <span className="font-semibold text-foreground/90">{(word as any).conjugations?.wir || '-'}</span></div>
+                                                <div className="flex justify-between border-b border-black/5 pb-1"><span className="opacity-50">du</span> <span className="font-semibold text-foreground/90">{(word as any).conjugations?.du || '-'}</span></div>
+                                                <div className="flex justify-between border-b border-black/5 pb-1"><span className="opacity-50">ihr</span> <span className="font-semibold text-foreground/90">{(word as any).conjugations?.ihr || '-'}</span></div>
+                                                <div className="flex justify-between pb-1"><span className="opacity-50">er/sie</span> <span className="font-semibold text-foreground/90">{(word as any).conjugations?.er_sie_es || '-'}</span></div>
+                                                <div className="flex justify-between pb-1"><span className="opacity-50">sie</span> <span className="font-semibold text-foreground/90">{(word as any).conjugations?.sie_Sie || '-'}</span></div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="text-sm text-muted-foreground italic text-center">
+                                            {(word as any)?.conjugation || '-'}
+                                        </div>
+                                    )}
+
+                                    {/* Other Tenses Block */}
+                                    {(word as any)?.verbTenses && (
+                                        <div className="bg-white/30 dark:bg-black/10 p-3 rounded-xl border border-black/5 dark:border-white/5 text-xs text-left">
+                                            <div className="grid grid-cols-1 gap-1.5">
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <span className="opacity-60 w-24">Perfekt:</span>
+                                                    <span className="font-bold text-foreground truncate">{(word as any)?.perfektForm || '-'}</span>
+                                                </div>
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <span className="opacity-60 w-24">Präteritum:</span>
+                                                    <span className="font-medium text-foreground truncate">{(word as any).verbTenses?.praeteritum || '-'}</span>
+                                                </div>
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <span className="opacity-60 w-24">Futur I:</span>
+                                                    <span className="font-medium text-foreground truncate">{(word as any).verbTenses?.futur1 || '-'}</span>
+                                                </div>
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <span className="opacity-60 w-24">Futur II:</span>
+                                                    <span className="font-medium text-foreground truncate">{(word as any).verbTenses?.futur2 || '-'}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Governance List - NEW */}
+                                    {(word as any)?.governance && (word as any).governance.length > 0 && (
+                                        <div className="w-full mt-2 flex flex-col gap-2">
+                                            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest text-center mb-1">Управление (Rektion)</div>
+                                            {(word as any).governance.map((gov: any, idx: number) => (
+                                                <div key={idx} className="bg-primary/5 dark:bg-primary/10 p-3 rounded-lg border border-primary/10 text-left">
+                                                    <div className="flex flex-wrap items-center gap-1.5 mb-1">
+                                                        <span className="font-bold text-primary">{word.german}</span>
+                                                        <Badge variant="secondary" className="bg-primary/20 text-primary hover:bg-primary/30 text-[10px] px-1.5 py-0 h-5">
+                                                            {gov.preposition} + {gov.case}
+                                                        </Badge>
+                                                        <span className="text-muted-foreground mx-1">→</span>
+                                                        <span
+                                                            className="text-sm font-medium prose prose-slate dark:prose-invert max-w-none inline"
+                                                            dangerouslySetInnerHTML={{ __html: gov.meaning }}
+                                                        />
+                                                    </div>
+                                                    <div
+                                                        className="text-xs text-muted-foreground italic leading-relaxed prose prose-slate dark:prose-invert max-w-none"
+                                                        dangerouslySetInnerHTML={{ __html: gov.example }}
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
                                 </div>
                             )}
 
-                            {/* Other Tenses Block */}
-                            {(word as any)?.verbTenses && (
-                                <div className="bg-white/30 dark:bg-black/10 p-3 rounded-xl border border-black/5 dark:border-white/5 text-xs text-left">
-                                    <div className="grid grid-cols-1 gap-1.5">
-                                        <div className="flex items-center justify-between gap-2">
-                                            <span className="opacity-60 w-24">Perfekt:</span>
-                                            <span className="font-bold text-foreground truncate">{(word as any)?.perfektForm || '-'}</span>
+                            {word.type === 'adjective' && (
+                                <div className="w-full flex-grow flex flex-col gap-3">
+                                    {/* Rich Adjective Governance if exists */}
+                                    {(word as any)?.governance && (word as any).governance.length > 0 && (
+                                        <div className="w-full flex flex-col gap-2">
+                                            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest text-center mb-1">Управление (Rektion)</div>
+                                            {(word as any).governance.map((gov: any, idx: number) => (
+                                                <div key={idx} className="bg-primary/5 dark:bg-primary/10 p-3 rounded-lg border border-primary/10 text-left">
+                                                    <div className="flex flex-wrap items-center gap-1.5 mb-1">
+                                                        <Badge variant="secondary" className="bg-primary/20 text-primary hover:bg-primary/30 text-[10px] px-1.5 py-0 h-5">
+                                                            {gov.preposition} + {gov.case}
+                                                        </Badge>
+                                                        <span className="text-sm font-medium">{gov.meaning}</span>
+                                                    </div>
+                                                    <p className="text-xs text-muted-foreground italic leading-relaxed">{gov.example}</p>
+                                                </div>
+                                            ))}
                                         </div>
-                                        <div className="flex items-center justify-between gap-2">
-                                            <span className="opacity-60 w-24">Präteritum:</span>
-                                            <span className="font-medium text-foreground truncate">{(word as any).verbTenses?.praeteritum || '-'}</span>
-                                        </div>
-                                        <div className="flex items-center justify-between gap-2">
-                                            <span className="opacity-60 w-24">Futur I:</span>
-                                            <span className="font-medium text-foreground truncate">{(word as any).verbTenses?.futur1 || '-'}</span>
-                                        </div>
-                                        <div className="flex items-center justify-between gap-2">
-                                            <span className="opacity-60 w-24">Futur II:</span>
-                                            <span className="font-medium text-foreground truncate">{(word as any).verbTenses?.futur2 || '-'}</span>
+                                    )}
+
+                                    {/* Adjective Comparison (Degrees) */}
+                                    <div className="bg-white/50 dark:bg-black/20 p-4 rounded-xl border border-black/5 dark:border-white/10 text-xs shadow-sm mt-auto">
+                                        <span className="font-bold text-muted-foreground text-[10px] block mb-3 text-center uppercase tracking-widest">Graduierung (Степени сравнения)</span>
+                                        <div className="flex justify-between items-center px-2">
+                                            <div className="flex flex-col items-center gap-1">
+                                                <span className="opacity-40 text-[9px] uppercase">Positiv</span>
+                                                <span className="font-semibold text-foreground/80">{word.german}</span>
+                                            </div>
+                                            <ArrowRight className="h-3 w-3 opacity-20" />
+                                            <div className="flex flex-col items-center gap-1">
+                                                <span className="opacity-40 text-[9px] uppercase">Komparativ</span>
+                                                <span className="font-bold text-primary">{(word as any).comparative || '-'}</span>
+                                            </div>
+                                            <ArrowRight className="h-3 w-3 opacity-20" />
+                                            <div className="flex flex-col items-center gap-1">
+                                                <span className="opacity-40 text-[9px] uppercase">Superlativ</span>
+                                                <span className="font-bold text-primary">{(word as any).superlative || '-'}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             )}
 
-                            {/* Governance List - NEW */}
-                            {(word as any)?.governance && (word as any).governance.length > 0 && (
-                                <div className="w-full mt-2 flex flex-col gap-2">
-                                    <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest text-center mb-1">Управление (Rektion)</div>
-                                    {(word as any).governance.map((gov: any, idx: number) => (
-                                        <div key={idx} className="bg-primary/5 dark:bg-primary/10 p-3 rounded-lg border border-primary/10 text-left">
-                                            <div className="flex flex-wrap items-center gap-1.5 mb-1">
-                                                <span className="font-bold text-primary">{word.german}</span>
-                                                <Badge variant="secondary" className="bg-primary/20 text-primary hover:bg-primary/30 text-[10px] px-1.5 py-0 h-5">
-                                                    {gov.preposition} + {gov.case}
-                                                </Badge>
-                                                <span className="text-muted-foreground mx-1">→</span>
-                                                <span
-                                                    className="text-sm font-medium prose prose-slate dark:prose-invert max-w-none inline"
-                                                    dangerouslySetInnerHTML={{ __html: gov.meaning }}
+                            {word.type === 'preposition' && (
+                                <div className="w-full flex-grow flex flex-col items-center justify-center gap-6">
+                                    <div className="p-6 bg-primary/5 rounded-3xl border-2 border-primary/10 text-center w-full max-w-[200px]">
+                                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] block mb-3">Kasus (Падеж)</span>
+                                        <Badge className="bg-primary text-primary-foreground text-2xl py-2 px-6 shadow-md hover:bg-primary">
+                                            {(word as any).case}
+                                        </Badge>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Satzbau (Word Order) - Shown for ANY word that has the structure field (Conj, Prep, Adverbs) */}
+                            {(word as any).structure && (
+                                <div className="w-full flex-grow flex flex-col items-center justify-center gap-4">
+                                    <div className="p-5 bg-primary/5 rounded-3xl border-2 border-primary/10 text-center w-full shadow-inner">
+                                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] block mb-2">Satzbau (Порядок слов)</span>
+                                        <div className="text-xl font-black text-primary tracking-tight mb-3">
+                                            {(word as any).structure}
+                                        </div>
+
+                                        {(word as any).structureExample && (
+                                            <div className="mt-2 p-3 bg-white/40 dark:bg-black/20 rounded-xl border border-primary/5">
+                                                <div
+                                                    className="text-sm font-medium text-foreground/90 italic leading-relaxed max-w-none [&_b]:text-primary [&_b]:font-black [&_b]:not-italic [&_b]:px-0.5"
+                                                    dangerouslySetInnerHTML={{ __html: (word as any).structureExample }}
                                                 />
                                             </div>
-                                            <div
-                                                className="text-xs text-muted-foreground italic leading-relaxed prose prose-slate dark:prose-invert max-w-none"
-                                                dangerouslySetInnerHTML={{ __html: gov.example }}
-                                            />
-                                        </div>
-                                    ))}
+                                        )}
+                                        <div className="text-[10px] text-muted-foreground mt-2 italic font-medium opacity-60">Тут важно следить за глаголом</div>
+                                    </div>
                                 </div>
                             )}
 
-                        </div>
-                    )}
-
-                    {word.type === 'adjective' && (
-                        <div className="w-full flex-grow flex flex-col gap-3">
-                            {/* Rich Adjective Governance if exists */}
-                            {(word as any)?.governance && (word as any).governance.length > 0 && (
-                                <div className="w-full flex flex-col gap-2">
-                                    <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest text-center mb-1">Управление (Rektion)</div>
-                                    {(word as any).governance.map((gov: any, idx: number) => (
-                                        <div key={idx} className="bg-primary/5 dark:bg-primary/10 p-3 rounded-lg border border-primary/10 text-left">
-                                            <div className="flex flex-wrap items-center gap-1.5 mb-1">
-                                                <Badge variant="secondary" className="bg-primary/20 text-primary hover:bg-primary/30 text-[10px] px-1.5 py-0 h-5">
-                                                    {gov.preposition} + {gov.case}
-                                                </Badge>
-                                                <span className="text-sm font-medium">{gov.meaning}</span>
-                                            </div>
-                                            <p className="text-xs text-muted-foreground italic leading-relaxed">{gov.example}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-
-                            {/* Adjective Comparison (Degrees) */}
-                            <div className="bg-white/50 dark:bg-black/20 p-4 rounded-xl border border-black/5 dark:border-white/10 text-xs shadow-sm mt-auto">
-                                <span className="font-bold text-muted-foreground text-[10px] block mb-3 text-center uppercase tracking-widest">Graduierung (Степени сравнения)</span>
-                                <div className="flex justify-between items-center px-2">
-                                    <div className="flex flex-col items-center gap-1">
-                                        <span className="opacity-40 text-[9px] uppercase">Positiv</span>
-                                        <span className="font-semibold text-foreground/80">{word.german}</span>
-                                    </div>
-                                    <ArrowRight className="h-3 w-3 opacity-20" />
-                                    <div className="flex flex-col items-center gap-1">
-                                        <span className="opacity-40 text-[9px] uppercase">Komparativ</span>
-                                        <span className="font-bold text-primary">{(word as any).comparative || '-'}</span>
-                                    </div>
-                                    <ArrowRight className="h-3 w-3 opacity-20" />
-                                    <div className="flex flex-col items-center gap-1">
-                                        <span className="opacity-40 text-[9px] uppercase">Superlativ</span>
-                                        <span className="font-bold text-primary">{(word as any).superlative || '-'}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {word.type === 'preposition' && (
-                        <div className="w-full flex-grow flex flex-col items-center justify-center gap-6">
-                            <div className="p-6 bg-primary/5 rounded-3xl border-2 border-primary/10 text-center w-full max-w-[200px]">
-                                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] block mb-3">Kasus (Падеж)</span>
-                                <Badge className="bg-primary text-primary-foreground text-2xl py-2 px-6 shadow-md hover:bg-primary">
-                                    {(word as any).case}
-                                </Badge>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Satzbau (Word Order) - Shown for ANY word that has the structure field (Conj, Prep, Adverbs) */}
-                    {(word as any).structure && (
-                        <div className="w-full flex-grow flex flex-col items-center justify-center gap-4">
-                            <div className="p-5 bg-primary/5 rounded-3xl border-2 border-primary/10 text-center w-full shadow-inner">
-                                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] block mb-2">Satzbau (Порядок слов)</span>
-                                <div className="text-xl font-black text-primary tracking-tight mb-3">
-                                    {(word as any).structure}
-                                </div>
-
-                                {(word as any).structureExample && (
-                                    <div className="mt-2 p-3 bg-white/40 dark:bg-black/20 rounded-xl border border-primary/5">
+                            {word.type !== 'verb' && userWord.context && (
+                                <div className="mt-auto mb-1 w-full">
+                                    <div className="p-4 bg-background/30 rounded-xl border border-border/20 text-center">
                                         <div
-                                            className="text-sm font-medium text-foreground/90 italic leading-relaxed max-w-none [&_b]:text-primary [&_b]:font-black [&_b]:not-italic [&_b]:px-0.5"
-                                            dangerouslySetInnerHTML={{ __html: (word as any).structureExample }}
+                                            className="text-base text-foreground/90 italic leading-snug prose prose-slate dark:prose-invert max-w-none"
+                                            dangerouslySetInnerHTML={{ __html: `"${userWord.context}"` }}
                                         />
                                     </div>
-                                )}
-                                <div className="text-[10px] text-muted-foreground mt-2 italic font-medium opacity-60">Тут важно следить за глаголом</div>
-                            </div>
-                        </div>
-                    )}
+                                </div>
+                            )}
 
-                    {word.type !== 'verb' && userWord.context && (
-                        <div className="mt-auto mb-4 w-full">
-                            <div className="p-4 bg-background/30 rounded-xl border border-border/20 text-center">
-                                <div
-                                    className="text-base text-foreground/90 italic leading-snug prose prose-slate dark:prose-invert max-w-none"
-                                    dangerouslySetInnerHTML={{ __html: `"${userWord.context}"` }}
-                                />
-                            </div>
                         </div>
-                    )}
+                    </div>
 
                     {/* All Translations (Context) - NEW */}
                     <div className="mt-auto pt-4 w-full text-center border-t border-primary/5">
-                        <p className="text-xl font-medium text-foreground/80 font-headline italic">
-                            {word.allTranslations || word.russian}
-                        </p>
+                        {renderTranslationSelector()}
                     </div>
                 </div>
             );
@@ -446,7 +484,7 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
             return (
                 <div className="space-y-1 flex flex-col items-center">
                     <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2">{getRussianType(word.type)}</div>
-                    <h4 className="text-3xl font-black text-primary mb-1">{word.russian}</h4>
+                    {renderTranslationSelector("text-3xl font-black text-primary mb-1")}
                     {userWord.context && (
                         <div
                             className="text-sm text-muted-foreground italic text-center max-w-full break-words whitespace-normal prose prose-slate dark:prose-invert"

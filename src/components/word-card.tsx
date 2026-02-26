@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 import { SpeakButton } from '@/components/speak-button';
 import { formatGermanWord, getGenderColorClass, getGermanType, getRussianType } from '@/lib/german-utils';
 
-export function WordCard({ word }: { word: VocabularyWord }) {
+export function WordCard({ word, onTranslationSelect }: { word: VocabularyWord, onTranslationSelect?: (translation: string) => void }) {
   const [isFlipped, setIsFlipped] = useState(false);
 
   // Reset flip state when the word changes
@@ -21,6 +21,40 @@ export function WordCard({ word }: { word: VocabularyWord }) {
   const handleFlip = () => setIsFlipped(!isFlipped);
 
   const getGermanDisplay = () => formatGermanWord(word);
+
+  const renderTranslationSelector = (className = "text-lg font-medium text-foreground/70 italic leading-snug") => {
+    if (!word.allTranslations) {
+      const defaultClasses = className.includes("text-") ? className : cn("text-3xl font-black text-primary leading-none", className);
+      return <p className={defaultClasses}>{word.russian}</p>;
+    }
+
+    return (
+      <div className="flex flex-wrap justify-center gap-2 mt-2 w-full">
+        {word.allTranslations.split(/[;,]+/).map(t => t.trim()).filter(Boolean).map((translation, idx) => {
+          const isSelected = translation.toLowerCase() === word.russian.toLowerCase();
+          return (
+            <button
+              key={idx}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (!isSelected && onTranslationSelect) onTranslationSelect(translation);
+              }}
+              className={cn(
+                "text-sm font-medium px-3 py-1.5 rounded-full transition-all border",
+                isSelected
+                  ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                  : "bg-muted/50 text-muted-foreground border-transparent hover:bg-muted hover:text-foreground",
+                onTranslationSelect && !isSelected ? "cursor-pointer" : "cursor-default"
+              )}
+              title={onTranslationSelect ? (isSelected ? "Главный перевод" : "Сделать главным переводом") : undefined}
+            >
+              {translation}
+            </button>
+          );
+        })}
+      </div>
+    );
+  };
 
   const renderDetails = () => {
     switch (word.type) {
@@ -124,14 +158,14 @@ export function WordCard({ word }: { word: VocabularyWord }) {
             </div>
           </div>
           <Separator className="my-3" />
-          <div className="text-sm space-y-1">
-            {renderDetails()}
-          </div>
-          {/* All Translations (Context) - NEW */}
-          <div className="mt-4 pt-3 border-t border-primary/10">
-            <p className="text-lg font-medium text-foreground/70 italic leading-snug">
-              {word.allTranslations || word.russian}
-            </p>
+          <div className="flex-grow overflow-y-auto min-h-0 pr-1 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
+            <div className="text-sm space-y-1 pb-2">
+              {renderDetails()}
+            </div>
+            {/* All Translations (Context) - NEW */}
+            <div className="mt-2 pt-3 border-t border-primary/10">
+              {renderTranslationSelector()}
+            </div>
           </div>
         </div>
         <div className="mt-2 flex items-center justify-end gap-1 text-xs text-muted-foreground">
@@ -148,9 +182,7 @@ export function WordCard({ word }: { word: VocabularyWord }) {
           <div className="flex justify-between items-start">
             <div>
               <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">B2 Beruf Focus</div>
-              <p className="text-3xl font-black text-primary leading-none">
-                {word.russian}
-              </p>
+              {renderTranslationSelector("text-3xl font-black text-primary leading-none")}
               <div className="flex items-center gap-2">
                 <p className="text-lg text-muted-foreground">{getGermanDisplay()}</p>
                 <SpeakButton text={getGermanDisplay()} size="icon" className="h-6 w-6" />
@@ -159,8 +191,10 @@ export function WordCard({ word }: { word: VocabularyWord }) {
             <Badge variant="outline">{getRussianType(word.type)}</Badge>
           </div>
           <Separator className="my-3" />
-          <div className="text-sm space-y-1">
-            {renderDetails()}
+          <div className="flex-grow overflow-y-auto min-h-0 pr-1 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
+            <div className="text-sm space-y-1 pb-2">
+              {renderDetails()}
+            </div>
           </div>
         </div>
         <div className="mt-2 flex items-center justify-end gap-1 text-xs text-muted-foreground">
