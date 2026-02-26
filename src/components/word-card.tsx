@@ -8,7 +8,7 @@ import { useState, useEffect } from 'react';
 import { RefreshCw, HelpCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SpeakButton } from '@/components/speak-button';
-import { formatGermanWord } from '@/lib/german-utils';
+import { formatGermanWord, getGenderColorClass, getGermanType, getRussianType } from '@/lib/german-utils';
 
 export function WordCard({ word }: { word: VocabularyWord }) {
   const [isFlipped, setIsFlipped] = useState(false);
@@ -21,31 +21,6 @@ export function WordCard({ word }: { word: VocabularyWord }) {
   const handleFlip = () => setIsFlipped(!isFlipped);
 
   const getGermanDisplay = () => formatGermanWord(word);
-
-  const getRussianType = (type: VocabularyWord['type']) => {
-    switch (type) {
-      case 'noun': return 'существительное';
-      case 'verb': return 'глагол';
-      case 'adjective': return 'прилагательное';
-      case 'conjunction': return 'союз';
-      case 'preposition': return 'предлог';
-      case 'other': return 'другое';
-      default: return type;
-    }
-  };
-
-  const getGermanType = (type: VocabularyWord['type']) => {
-    switch (type) {
-      case 'noun': return 'Nomen';
-      case 'verb': return 'Verb';
-      case 'adjective': return 'Adjektiv';
-      case 'conjunction': return 'Konjunktion';
-      case 'preposition': return 'Präposition';
-      case 'other': return 'Andere';
-      default: return type;
-    }
-  };
-
 
   const renderDetails = () => {
     switch (word.type) {
@@ -115,8 +90,37 @@ export function WordCard({ word }: { word: VocabularyWord }) {
         <div className="flex-1">
           <div className="flex justify-between items-start">
             <div className="flex flex-col gap-1">
-              <p className="text-2xl font-bold">{getGermanDisplay()}</p>
-              <SpeakButton text={getGermanDisplay()} size="sm" variant="secondary" className="w-fit h-7 px-2" showText />
+              <div className="flex flex-col items-start gap-0.5">
+                <p className={cn("text-2xl font-bold break-words", getGenderColorClass(word))}>{getGermanDisplay()}</p>
+
+                {/* Aggressive Governance Display */}
+                {((word.type === 'verb' || word.type === 'adjective') && (word as any).governance && (word as any).governance.length > 0) && (
+                  <div className="text-sm font-bold text-primary/80 flex flex-wrap gap-1 leading-none">
+                    {(word as any).governance.map((gov: any, idx: number) => (
+                      <span key={idx}>+ {gov.preposition} <span className="text-muted-foreground/80">{gov.case}</span></span>
+                    ))}
+                  </div>
+                )}
+                {/* Legacy case fallback for verbs */}
+                {word.type === 'verb' && !((word as any).governance && (word as any).governance.length > 0) && ((word as any).preposition || (word as any).case) && (
+                  <div className="text-sm font-bold text-primary/80 leading-none">
+                    + {[(word as any).preposition, (word as any).case].filter(Boolean).join(' ')}
+                  </div>
+                )}
+              </div>
+
+              {/* Unobtrusive Synonyms block if available on the word object */}
+              {(word as any).synonyms && (word as any).synonyms.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-1 opacity-60 hover:opacity-100 transition-opacity">
+                  {(word as any).synonyms.map((s: any, idx: number) => (
+                    <span key={idx} className="text-[10px] font-medium text-muted-foreground px-1.5 py-0.5 rounded-full bg-muted/50 border border-border/50">
+                      ≈ {s.word}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              <SpeakButton text={getGermanDisplay()} size="sm" variant="secondary" className="w-fit h-7 px-2 mt-1" showText />
             </div>
             <div className="flex flex-col items-end gap-2">
               <Badge variant="secondary">{getGermanType(word.type)}</Badge>

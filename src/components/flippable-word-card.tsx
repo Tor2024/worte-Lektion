@@ -6,7 +6,7 @@ import { UserVocabularyWord } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { SpeakButton } from '@/components/speak-button';
-import { formatGermanWord, isWordStandardized, getGenderColorClass } from '@/lib/german-utils';
+import { formatGermanWord, isWordStandardized, getGenderColorClass, getGermanType, getRussianType } from '@/lib/german-utils';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { RotateCcw, Volume2, Clock, BrainCircuit, ShieldAlert, HelpCircle, CheckCircle, ArrowRight } from 'lucide-react';
@@ -94,7 +94,7 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                 <div className="flex flex-col items-center justify-center h-full gap-6 w-full">
                     <div className="flex flex-col items-center">
                         <Badge variant="outline" className="opacity-40 text-[10px] uppercase tracking-widest mb-3">
-                            {word.type} (RU → DE)
+                            {getRussianType(word.type)} (RU → DE)
                         </Badge>
                         <h3 className="text-3xl font-bold font-headline select-none text-center leading-tight">
                             {word.russian}
@@ -152,14 +152,30 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
 
                     {/* Top: Meta Badge */}
                     <Badge variant="outline" className="opacity-40 text-[10px] uppercase tracking-widest mb-4">
-                        {word.type}
+                        {getGermanType(word.type)}
                     </Badge>
 
                     {/* Center Top: Word */}
                     <div className="mb-4 flex flex-col items-center">
-                        <h3 className={cn("text-4xl font-black font-headline select-none text-center break-words hyphens-auto tracking-tight leading-none", getGenderColorClass(word))}>
-                            {formatGermanWord(word)}
-                        </h3>
+                        <div className="flex flex-col items-center justify-center gap-1 text-center">
+                            <h3 className={cn("text-4xl font-black font-headline select-none break-words hyphens-auto tracking-tight leading-none", getGenderColorClass(word))}>
+                                {formatGermanWord(word)}
+                            </h3>
+                            {/* Aggressive Governance Display (Option 1) */}
+                            {((word.type === 'verb' || word.type === 'adjective') && (word as any).governance && (word as any).governance.length > 0) && (
+                                <div className="text-xl font-bold text-primary/80 tracking-tight flex flex-wrap justify-center gap-1">
+                                    {(word as any).governance.map((gov: any, idx: number) => (
+                                        <span key={idx}>+ {gov.preposition} <span className="text-muted-foreground/80">{gov.case}</span></span>
+                                    ))}
+                                </div>
+                            )}
+                            {/* Legacy case fallback for verbs */}
+                            {word.type === 'verb' && !((word as any).governance && (word as any).governance.length > 0) && ((word as any).preposition || (word as any).case) && (
+                                <div className="text-xl font-bold text-primary/80 tracking-tight">
+                                    + {[(word as any).preposition, (word as any).case].filter(Boolean).join(' ')}
+                                </div>
+                            )}
+                        </div>
                         {word.type === 'noun' && (
                             <div className="text-base text-muted-foreground font-medium mt-1">
                                 {(word as any)?.plural ? `Pl: die ${(word as any).plural}` : 'Singular only'}
@@ -168,6 +184,17 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                         <div className="mt-2" onClick={(e) => e.stopPropagation()}>
                             <SpeakButton text={formatGermanWord(word)} variant="ghost" size="sm" className="h-8 w-8 text-muted-foreground/50 hover:text-primary hover:bg-primary/10" />
                         </div>
+
+                        {/* Synonyms (Unobtrusive & Non-Italic) */}
+                        {userWord.synonyms && userWord.synonyms.length > 0 && (
+                            <div className="mt-2 flex flex-wrap justify-center gap-1.5 opacity-60 hover:opacity-100 transition-opacity">
+                                {userWord.synonyms.map((s, idx) => (
+                                    <span key={idx} className="text-xs font-medium text-muted-foreground px-2 py-0.5 rounded-full bg-muted/50 border border-border/50">
+                                        ≈ {s.word}
+                                    </span>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     {/* Middle: Rich Verb Details */}
@@ -242,14 +269,6 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                                 </div>
                             )}
 
-                            {/* Legacy Case - Show only if no governance list */}
-                            {!((word as any)?.governance && (word as any).governance.length > 0) && ((word as any)?.preposition || (word as any)?.case) && (
-                                <div className="mt-auto pt-2 text-center">
-                                    <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-primary/10 text-primary font-bold text-sm shadow-sm ring-1 ring-primary/20">
-                                        {[(word as any)?.preposition ? `+ ${(word as any).preposition}` : null, (word as any)?.case ? `+ ${(word as any).case}` : null].filter(Boolean).join(' ')}
-                                    </div>
-                                </div>
-                            )}
                         </div>
                     )}
 
@@ -434,7 +453,7 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
             // RU Back
             return (
                 <div className="space-y-1 flex flex-col items-center">
-                    <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2">B2 Beruf Focus</div>
+                    <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2">{getRussianType(word.type)}</div>
                     <h4 className="text-3xl font-black text-primary mb-1">{word.russian}</h4>
                     {userWord.context && (
                         <div

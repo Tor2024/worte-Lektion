@@ -134,23 +134,24 @@ export function useStudyQueue() {
         }
 
         // Session 1-2: Normal learning mode
-        const MAIN_LIMIT = 25;      // Reduced from 40 for cognitive safety
-        const OVERDUE_LIMIT = 15;   // Reduced from 40 to prevent "overdue avalanches"
-        const NEW_WORD_LIMIT = 7;   // Target quota for sustainable growth
+        const DAILY_LIMIT = 70;      // Increased for 3000-word goal
 
         const LEVEL_PRIORITY: Record<string, number> = {
             'Beruf': 100, 'B2': 90, 'B1': 80, 'A2': 70, 'A1': 60, 'A0': 50
         };
 
-        // 1. Get overdue words (past due date) - these are EXTRA, not counted in main limit
+        // 1. Get ALL overdue words (past due date)
         const overdueWords = queueToProcess
             .filter((item: StudyQueueItem) =>
                 item.status !== 'new' && item.nextReviewNum < now
             )
-            .sort((a, b) => (a.nextReviewNum || 0) - (b.nextReviewNum || 0))
-            .slice(0, OVERDUE_LIMIT);
+            .sort((a, b) => (a.nextReviewNum || 0) - (b.nextReviewNum || 0));
 
-        // 2. Get words due TODAY (not overdue)
+        // 2. Dynamic new word limit based on backlog
+        const isBacklogCritical = overdueWords.length > 100;
+        const NEW_WORD_LIMIT = isBacklogCritical ? 12 : 25; // Target quota for sustainable growth (3000 words by July 1)
+
+        // 3. Get words due TODAY (not overdue)
         const todayEnd = new Date(now);
         todayEnd.setHours(23, 59, 59, 999);
 
@@ -162,16 +163,31 @@ export function useStudyQueue() {
             )
             .sort((a, b) => (a.nextReviewNum || 0) - (b.nextReviewNum || 0));
 
-        // 3. Get new words with a strict quota
+        // 4. Get new words with quota
         const newWords = queueToProcess
             .filter((item: StudyQueueItem) => item.status === 'new')
             .slice(0, NEW_WORD_LIMIT);
 
-        // Selection: Fill main limit with due-today, then supplement with new words up to limit
-        const mainPool = [...dueTodayWords, ...newWords].slice(0, MAIN_LIMIT);
+        // 5. Build the session pool dynamically up to DAILY_LIMIT (70)
+        let mainPool: StudyQueueItem[] = [...newWords];
 
-        // Final session: main pool + overdue
-        let finalItems = [...mainPool, ...overdueWords];
+        // How much space left for review words?
+        let remainingSlots = DAILY_LIMIT - mainPool.length;
+
+        // Add due today first (current flow)
+        const dueTodayToAdd = dueTodayWords.slice(0, remainingSlots);
+        mainPool = [...mainPool, ...dueTodayToAdd];
+        remainingSlots -= dueTodayToAdd.length;
+
+        // If still space, aggressively pack in overdue words
+        if (remainingSlots > 0) {
+            const overdueToAdd = overdueWords.slice(0, remainingSlots);
+            mainPool = [...mainPool, ...overdueToAdd];
+            remainingSlots -= overdueToAdd.length;
+        }
+
+        // Final session
+        let finalItems = [...mainPool];
 
         // CRITICAL FIX: Deduplicate items by ID to strictly prevent repeats in the same session
         const uniqueMap = new Map();
@@ -194,7 +210,6 @@ export function useStudyQueue() {
 
         const sortedLevels = Object.keys(levelGroups).map(Number).sort((a, b) => b - a);
         const finalSelection: StudyQueueItem[] = [];
-        const MAX_ITEMS = MAIN_LIMIT + OVERDUE_LIMIT;
 
         for (const level of sortedLevels) {
             const itemsInLevel = levelGroups[level];
@@ -220,12 +235,12 @@ export function useStudyQueue() {
                         finalSelection.push(typeGroups[type][idx]);
                         groupIterators[type]++;
                         hasItems = true;
-                        if (finalSelection.length >= MAX_ITEMS) break;
+                        if (finalSelection.length >= DAILY_LIMIT) break;
                     }
                 }
-                if (finalSelection.length >= MAX_ITEMS) break;
+                if (finalSelection.length >= DAILY_LIMIT) break;
             }
-            if (finalSelection.length >= MAX_ITEMS) break;
+            if (finalSelection.length >= DAILY_LIMIT) break;
         }
         return { items: finalSelection, mode: 'learning' as SessionMode, sessionNumber };
     }, [localQueue]);
@@ -317,8 +332,8 @@ export function useStudyQueue() {
         const learningCount = localQueue.filter((i: StudyQueueItem) => i.status === 'learning' || i.status === 'leech').length;
         const reviewCount = localQueue.filter((i: StudyQueueItem) => i.status === 'review').length;
 
-        // Global limit: 40 words per session (sustainable goal)
-        const dailyLimit = 40;
+        // Global limit: 70 words per session (sustainable goal for 3000 words deadline)
+        const dailyLimit = 70;
         const availableTotal = Math.min(localQueue.length, dailyLimit);
 
         return {

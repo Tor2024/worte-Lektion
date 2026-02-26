@@ -28,7 +28,28 @@ export function formatGermanWord(word: VocabularyWord): string {
 }
 
 export function getGenderColorClass(word: VocabularyWord): string {
-    // User requested original "pleasant dark blue" (text-primary) for ALL words
+    if (word.type === 'noun') {
+        const article = (word as any).article;
+        switch (article) {
+            case 'der': return 'text-blue-600 dark:text-blue-400';
+            case 'die': return 'text-rose-700 dark:text-rose-500';
+            case 'das': return 'text-emerald-700 dark:text-emerald-500';
+            default: return 'text-primary';
+        }
+    } else if (word.type === 'verb') {
+        return 'text-amber-800 dark:text-amber-600';
+    } else if (word.type === 'adjective') {
+        return 'text-indigo-600 dark:text-indigo-400';
+    } else if (word.type === 'conjunction') {
+        return 'text-purple-600 dark:text-purple-400';
+    } else if (word.type === 'preposition') {
+        return 'text-yellow-600 dark:text-yellow-500';
+    } else if (word.type === 'adverb') {
+        return 'text-cyan-600 dark:text-cyan-400';
+    } else if (word.type === 'other') {
+        return 'text-slate-500 dark:text-slate-400';
+    }
+
     return 'text-primary';
 }
 
@@ -100,4 +121,30 @@ export function isWordStandardized(userWord: UserVocabularyWord): boolean {
 
     // Adverbs and other types are considered standardized if basic checks pass
     return true;
+}
+
+export function getRussianType(type: VocabularyWord['type']): string {
+    switch (type) {
+        case 'noun': return 'Существительное';
+        case 'verb': return 'Глагол';
+        case 'adjective': return 'Прилагательное';
+        case 'conjunction': return 'Союз';
+        case 'preposition': return 'Предлог';
+        case 'adverb': return 'Наречие';
+        case 'other': return 'Частица / Другое';
+        default: return type;
+    }
+}
+
+export function getGermanType(type: VocabularyWord['type']): string {
+    switch (type) {
+        case 'noun': return 'Nomen';
+        case 'verb': return 'Verb';
+        case 'adjective': return 'Adjektiv';
+        case 'conjunction': return 'Konjunktion';
+        case 'preposition': return 'Präposition';
+        case 'adverb': return 'Adverb';
+        case 'other': return 'Partikel / Sonstiges';
+        default: return type;
+    }
 }
