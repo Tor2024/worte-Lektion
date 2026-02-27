@@ -140,7 +140,11 @@ export function PrimingView({ item, onNext, onMarkAsKnown }: PrimingViewProps) {
                                     {(word as any).governance.map((gov: any, idx: number) => (
                                         <div key={idx} className="flex flex-col items-center bg-primary/5 p-3 rounded-xl border border-primary/10 w-full max-w-sm">
                                             <div className="flex items-center gap-2 text-xl font-black">
-                                                <span className="text-primary">+ {gov.preposition}</span>
+                                                {gov.preposition === "без предлога" && gov.case === 'Akkusativ' && (word.german.toLowerCase().includes('sich') || gov.meaning?.toLowerCase().includes('возвратн')) ? (
+                                                    <span className="text-primary">+ sich</span>
+                                                ) : (
+                                                    <span className="text-primary">+ {gov.preposition}</span>
+                                                )}
                                                 <span className={cn(
                                                     "px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest flex items-center gap-1",
                                                     gov.case === 'Akkusativ' ? "bg-red-500/20 text-red-600 border border-red-500/30" :
@@ -149,8 +153,11 @@ export function PrimingView({ item, onNext, onMarkAsKnown }: PrimingViewProps) {
                                                 )}>
                                                     {gov.case}
                                                     {gov.preposition && gov.preposition !== "без предлога" && (
-                                                        <span className="opacity-60 lowercase font-medium text-[8px]">
-                                                            ({gov.case === 'Akkusativ' ? 'wohin?' : gov.case === 'Dativ' ? 'wo?' : ''})
+                                                        <span className={cn(
+                                                            "lowercase font-bold text-[8px]",
+                                                            gov.case === 'Akkusativ' ? "text-red-700/70" : "text-emerald-700/70"
+                                                        )}>
+                                                            ({gov.case === 'Akkusativ' ? 'wohin?' : 'wo?'})
                                                         </span>
                                                     )}
                                                 </span>
