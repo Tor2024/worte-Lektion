@@ -679,7 +679,7 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                                         )}
                                     </div>
 
-                                    <div className="text-xl leading-relaxed italic text-[#2c1810] font-serif font-medium drop-shadow-sm relative z-0">
+                                    <div className="text-xl leading-relaxed text-[#2c1810] font-sans font-medium drop-shadow-sm relative z-0">
                                         {isNarrativeGenerating ? (
                                             <div className="flex flex-col items-center justify-center py-12 space-y-4 text-[#2c1810]/40">
                                                 <Loader2 className="h-10 w-10 animate-spin" />

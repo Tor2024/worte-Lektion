@@ -41,7 +41,11 @@ const renderPrompt = (input: GenerateStoryInput) => {
   - German Text (with bolded keywords)
   - Russian Translation
   - List of keywords actually used.
-  - wordMap: A JSON object where keys are **EVERY single unique word** used in the German Title and Story, and values are their Russian translations. No word should be skipped. Contextual translation is preferred.
+  - wordMap: A JSON object where keys are **EVERY single unique word** used in the German Title and Story, and values are their Russian translations. 
+    CRITICAL: The wordMap MUST contain every single unique word present in the generated storyTitle and storyText. 
+    This includes articles (der, die, das), prepositions, conjunctions, and complex compound words.
+    The goal is that ANY word the user hovers over MUST have a translation.
+    Contextual translation for each word is mandatory.
   
   Return JSON matching the schema.`;
 };

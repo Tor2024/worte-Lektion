@@ -35,9 +35,11 @@ export function InteractiveText({ text, wordMap }: InteractiveTextProps) {
                         if (fragment.match(/^\s+$/)) return <span key={`${i}-${j}`}>{fragment}</span>;
 
                         // Split by non-alphabetic characters to isolate words from punctuation
-                        const tokens = fragment.split(/([^a-zA-ZäöüÄÖÜß]+)/);
+                        // Allow hyphens within words if they are surrounded by letters
+                        const tokens = fragment.split(/([^a-zA-ZäöüÄÖÜß-]+)/);
                         return tokens.map((token, k) => {
-                            if (token.match(/^[a-zA-ZäöüÄÖÜß]+$/)) {
+                            // Only treat as a word if it contains at least one letter
+                            if (token.match(/[a-zA-ZäöüÄÖÜß]/) && token.match(/^[a-zA-ZäöüÄÖÜß-]+$/)) {
                                 return <InteractiveWord key={`${i}-${j}-${k}`} word={token} wordMap={wordMap} />;
                             }
                             return <span key={`${i}-${j}-${k}`}>{token}</span>;
