@@ -94,32 +94,31 @@ export function RecognitionView({ item, onResult, onMarkAsKnown, direction: forc
                         {((word.type === 'verb' || word.type === 'adjective') && (word as any).governance && (word as any).governance.length > 0) && (
                             <div className="flex flex-col items-center gap-1.5 mt-2 w-full max-w-[280px]">
                                 {(word as any).governance.map((gov: any, idx: number) => (
-                                    <div key={idx} className="flex flex-col items-center bg-primary/10 py-1.5 px-3 rounded-xl border border-primary/20 w-full transition-colors hover:bg-primary/20">
-                                        <div className="flex items-center gap-2 text-md font-black">
+                                    <div key={idx} className="flex flex-col items-center bg-white/10 py-2 px-4 rounded-2xl border border-white/20 w-full transition-all hover:bg-white/20 shadow-lg">
+                                        <div className="flex items-center gap-3 text-lg font-black">
                                             {gov.preposition === "без предлога" && gov.case === 'Akkusativ' && (word.german.toLowerCase().includes('sich') || gov.meaning?.toLowerCase().includes('возвратн')) ? (
-                                                <span className="text-secondary tracking-tighter text-[10px]">+ sich</span>
+                                                <span className="text-secondary tracking-tighter text-xs">+ sich</span>
                                             ) : (
-                                                <span className="text-primary">+ {gov.preposition}</span>
+                                                <span className="text-white">+ {gov.preposition}</span>
                                             )}
                                             <span className={cn(
-                                                "px-1 py-0.5 rounded text-[7px] font-black uppercase tracking-widest flex items-center gap-1",
-                                                gov.case === 'Akkusativ' ? "bg-red-500/20 text-red-400 border border-red-500/30" :
-                                                    gov.case === 'Dativ' ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" :
-                                                        "bg-slate-500/20 text-slate-400 border border-slate-500/30"
+                                                "px-2 py-1 rounded-md text-[10px] font-extrabold uppercase tracking-tighter flex items-center gap-1 shadow-sm",
+                                                gov.case === 'Akkusativ' ? "bg-red-600 text-white" :
+                                                    gov.case === 'Dativ' ? "bg-emerald-600 text-white" :
+                                                        gov.case === 'Nominativ' ? "bg-blue-600 text-white" :
+                                                            gov.case === 'Genitiv' ? "bg-amber-600 text-white" :
+                                                                "bg-slate-700 text-white"
                                             )}>
                                                 {gov.case}
                                                 {gov.preposition && gov.preposition !== "без предлога" && (
-                                                    <span className={cn(
-                                                        "lowercase font-bold text-[7px]",
-                                                        gov.case === 'Akkusativ' ? "text-red-700/70" : "text-emerald-700/70"
-                                                    )}>
-                                                        ({gov.case === 'Akkusativ' ? 'wohin?' : 'wo?'})
+                                                    <span className="ml-1 lowercase font-bold text-[9px] opacity-80 border-l border-white/30 pl-1">
+                                                        {gov.case === 'Akkusativ' ? 'wohin?' : 'wo?'}
                                                     </span>
                                                 )}
                                             </span>
                                         </div>
                                         {gov.meaning && (
-                                            <div className="text-[9px] font-bold text-slate-300 italic">
+                                            <div className="text-[10px] font-bold text-slate-200 italic mt-1 bg-black/20 px-2 py-0.5 rounded-full">
                                                 ({gov.meaning})
                                             </div>
                                         )}
@@ -129,24 +128,24 @@ export function RecognitionView({ item, onResult, onMarkAsKnown, direction: forc
                         )}
 
                         {/* Legacy case fallback for verbs */}
-                        {word.type === 'verb' && !((word as any).governance && (word as any).governance.length > 0) && ((word as any).preposition || (word as any).case) && (
-                            <div className="text-lg font-black text-primary/80 tracking-tight mt-4 flex items-center gap-2">
-                                <span>+ {(word as any).preposition || ""}</span>
-                                <span className={cn(
-                                    "px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest flex items-center gap-1",
-                                    (word as any).case === 'Akkusativ' ? "bg-red-500/20 text-red-500 border border-red-500/30" :
-                                        (word as any).case === 'Dativ' ? "bg-emerald-500/20 text-green-500 border border-emerald-500/30" :
-                                            "bg-slate-500/20 text-slate-400 border border-slate-500/30"
-                                )}>
-                                    {(word as any).case}
-                                    {((word as any).case === 'Akkusativ' || (word as any).case === 'Dativ') && (word as any).preposition && (
-                                        <span className="opacity-60 lowercase font-medium">
-                                            ({(word as any).case === 'Akkusativ' ? 'wohin?' : 'wo?'})
-                                        </span>
-                                    )}
-                                </span>
-                            </div>
-                        )}
+                        <div className="text-xl font-black text-white tracking-tight mt-4 flex items-center gap-3 bg-white/5 p-3 rounded-2xl border border-white/10">
+                            <span>+ {(word as any).preposition || ""}</span>
+                            <span className={cn(
+                                "px-2 py-1 rounded-md text-[10px] font-extrabold uppercase tracking-tighter shadow-sm",
+                                (word as any).case === 'Akkusativ' ? "bg-red-600 text-white" :
+                                    (word as any).case === 'Dativ' ? "bg-emerald-600 text-white" :
+                                        (word as any).case === 'Nominativ' ? "bg-blue-600 text-white" :
+                                            (word as any).case === 'Genitiv' ? "bg-amber-600 text-white" :
+                                                "bg-slate-700 text-white"
+                            )}>
+                                {(word as any).case}
+                                {((word as any).case === 'Akkusativ' || (word as any).case === 'Dativ') && (word as any).preposition && (
+                                    <span className="ml-1 lowercase font-bold text-[9px] opacity-80 border-l border-white/30 pl-1">
+                                        {(word as any).case === 'Akkusativ' ? 'wohin?' : 'wo?'}
+                                    </span>
+                                )}
+                            </span>
+                        </div>
                     </div>
                     <div className="flex items-center gap-4">
                         <div className="h-[2px] w-12 bg-gradient-to-r from-transparent to-primary/40" />

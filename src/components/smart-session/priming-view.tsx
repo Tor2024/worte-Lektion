@@ -138,37 +138,36 @@ export function PrimingView({ item, onNext, onMarkAsKnown }: PrimingViewProps) {
                             {(word.type === 'verb' || word.type === 'adjective') && (word as any).governance && (word as any).governance.length > 0 && (
                                 <div className="flex flex-col items-center gap-2 mt-2 w-full">
                                     {(word as any).governance.map((gov: any, idx: number) => (
-                                        <div key={idx} className="flex flex-col items-center bg-primary/5 p-3 rounded-xl border border-primary/10 w-full max-w-sm">
-                                            <div className="flex items-center gap-2 text-xl font-black">
+                                        <div key={idx} className="flex flex-col items-center bg-primary/10 p-4 rounded-2xl border-2 border-primary/20 w-full max-w-sm shadow-xl">
+                                            <div className="flex items-center gap-3 text-2xl font-black">
                                                 {gov.preposition === "без предлога" && gov.case === 'Akkusativ' && (word.german.toLowerCase().includes('sich') || gov.meaning?.toLowerCase().includes('возвратн')) ? (
-                                                    <span className="text-primary">+ sich</span>
+                                                    <span className="text-primary tracking-tighter">+ sich</span>
                                                 ) : (
                                                     <span className="text-primary">+ {gov.preposition}</span>
                                                 )}
                                                 <span className={cn(
-                                                    "px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest flex items-center gap-1",
-                                                    gov.case === 'Akkusativ' ? "bg-red-500/20 text-red-600 border border-red-500/30" :
-                                                        gov.case === 'Dativ' ? "bg-emerald-500/20 text-emerald-600 border border-emerald-500/30" :
-                                                            "bg-slate-500/20 text-slate-500 border border-slate-500/30"
+                                                    "px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-tight flex items-center gap-1 shadow-md",
+                                                    gov.case === 'Akkusativ' ? "bg-red-600 text-white" :
+                                                        gov.case === 'Dativ' ? "bg-emerald-600 text-white" :
+                                                            gov.case === 'Nominativ' ? "bg-blue-600 text-white" :
+                                                                gov.case === 'Genitiv' ? "bg-amber-600 text-white" :
+                                                                    "bg-slate-700 text-white"
                                                 )}>
                                                     {gov.case}
                                                     {gov.preposition && gov.preposition !== "без предлога" && (
-                                                        <span className={cn(
-                                                            "lowercase font-bold text-[8px]",
-                                                            gov.case === 'Akkusativ' ? "text-red-700/70" : "text-emerald-700/70"
-                                                        )}>
-                                                            ({gov.case === 'Akkusativ' ? 'wohin?' : 'wo?'})
+                                                        <span className="ml-1 opacity-80 border-l border-white/30 pl-2 lowercase font-bold">
+                                                            {gov.case === 'Akkusativ' ? 'wohin?' : 'wo?'}
                                                         </span>
                                                     )}
                                                 </span>
                                             </div>
                                             {gov.meaning && (
-                                                <div className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mt-1 italic">
+                                                <div className="text-xs font-bold text-slate-700 dark:text-slate-300 mt-2 italic bg-primary/5 px-3 py-1 rounded-full">
                                                     ({gov.meaning})
                                                 </div>
                                             )}
                                             {gov.example && (
-                                                <div className="mt-1 text-[10px] text-muted-foreground leading-relaxed border-t border-primary/10 pt-1 w-full italic">
+                                                <div className="mt-2 text-xs text-muted-foreground leading-relaxed border-t border-primary/10 pt-2 w-full italic">
                                                     &ldquo;{gov.example}&rdquo;
                                                 </div>
                                             )}
@@ -178,19 +177,24 @@ export function PrimingView({ item, onNext, onMarkAsKnown }: PrimingViewProps) {
                             )}
 
                             {/* Legacy case fallback for verbs */}
-                            {word.type === 'verb' && !((word as any).governance && (word as any).governance.length > 0) && ((word as any).preposition || (word as any).case) && (
-                                <div className="text-2xl font-black text-primary/80 tracking-tight mt-4 flex items-center gap-2">
-                                    <span>+ {(word as any).preposition || ""}</span>
-                                    <span className={cn(
-                                        "px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-widest",
-                                        (word as any).case === 'Akkusativ' ? "bg-red-500/20 text-red-500 border border-red-500/30" :
-                                            (word as any).case === 'Dativ' ? "bg-emerald-500/20 text-green-500 border border-emerald-500/30" :
-                                                "bg-slate-500/20 text-slate-400 border border-slate-500/30"
-                                    )}>
-                                        {(word as any).case}
-                                    </span>
-                                </div>
-                            )}
+                            <div className="text-3xl font-black text-primary tracking-tight mt-6 flex items-center gap-4 bg-primary/5 p-4 rounded-2xl border-2 border-primary/10 shadow-lg">
+                                <span>+ {(word as any).preposition || ""}</span>
+                                <span className={cn(
+                                    "px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-tight flex items-center gap-1 shadow-md",
+                                    (word as any).case === 'Akkusativ' ? "bg-red-600 text-white" :
+                                        (word as any).case === 'Dativ' ? "bg-emerald-600 text-white" :
+                                            (word as any).case === 'Nominativ' ? "bg-blue-600 text-white" :
+                                                (word as any).case === 'Genitiv' ? "bg-amber-600 text-white" :
+                                                    "bg-slate-700 text-white"
+                                )}>
+                                    {(word as any).case}
+                                    {((word as any).case === 'Akkusativ' || (word as any).case === 'Dativ') && (word as any).preposition && (
+                                        <span className="ml-1 opacity-80 border-l border-white/30 pl-2 lowercase font-bold">
+                                            {(word as any).case === 'Akkusativ' ? 'wohin?' : 'wo?'}
+                                        </span>
+                                    )}
+                                </span>
+                            </div>
                         </div>
 
                         <div className="flex flex-col items-center gap-0">
