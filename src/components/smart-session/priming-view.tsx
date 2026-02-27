@@ -148,9 +148,11 @@ export function PrimingView({ item, onNext, onMarkAsKnown }: PrimingViewProps) {
                                                             "bg-slate-500/20 text-slate-500 border border-slate-500/30"
                                                 )}>
                                                     {gov.case}
-                                                    <span className="opacity-60 lowercase font-medium text-[8px]">
-                                                        ({gov.case === 'Akkusativ' ? 'wohin?' : gov.case === 'Dativ' ? 'wo?' : ''})
-                                                    </span>
+                                                    {gov.preposition && gov.preposition !== "без предлога" && (
+                                                        <span className="opacity-60 lowercase font-medium text-[8px]">
+                                                            ({gov.case === 'Akkusativ' ? 'wohin?' : gov.case === 'Dativ' ? 'wo?' : ''})
+                                                        </span>
+                                                    )}
                                                 </span>
                                             </div>
                                             {gov.meaning && (

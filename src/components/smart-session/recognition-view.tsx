@@ -104,9 +104,11 @@ export function RecognitionView({ item, onResult, onMarkAsKnown, direction: forc
                                                         "bg-slate-500/20 text-slate-400 border border-slate-500/30"
                                             )}>
                                                 {gov.case}
-                                                <span className="opacity-60 lowercase font-medium text-[7px]">
-                                                    ({gov.case === 'Akkusativ' ? 'wohin?' : gov.case === 'Dativ' ? 'wo?' : ''})
-                                                </span>
+                                                {gov.preposition && gov.preposition !== "без предлога" && (
+                                                    <span className="opacity-60 lowercase font-medium text-[7px]">
+                                                        ({gov.case === 'Akkusativ' ? 'wohin?' : gov.case === 'Dativ' ? 'wo?' : ''})
+                                                    </span>
+                                                )}
                                             </span>
                                         </div>
                                         {gov.meaning && (
@@ -130,9 +132,11 @@ export function RecognitionView({ item, onResult, onMarkAsKnown, direction: forc
                                             "bg-slate-500/20 text-slate-400 border border-slate-500/30"
                                 )}>
                                     {(word as any).case}
-                                    <span className="opacity-60 lowercase font-medium">
-                                        ({(word as any).case === 'Akkusativ' ? 'wohin?' : (word as any).case === 'Dativ' ? 'wo?' : ''})
-                                    </span>
+                                    {((word as any).case === 'Akkusativ' || (word as any).case === 'Dativ') && (word as any).preposition && (
+                                        <span className="opacity-60 lowercase font-medium">
+                                            ({(word as any).case === 'Akkusativ' ? 'wohin?' : 'wo?'})
+                                        </span>
+                                    )}
                                 </span>
                             </div>
                         )}
