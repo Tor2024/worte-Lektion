@@ -222,9 +222,30 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                     words: germanWords,
                     topic: "Beruf und Alltag (Focus on learning context)"
                 });
+
+                // ENHANCEMENT: Pre-seed wordMap with keywords from currentBatchWords
+                // This ensures that even if AI misses them or returns empty map, keywords always have tooltips.
+                const enrichedWordMap = { ...data.wordMap };
+                currentBatchWords.forEach(w => {
+                    const german = w.word.german.toLowerCase().trim();
+                    if (!enrichedWordMap[german]) {
+                        enrichedWordMap[german] = w.word.russian;
+                    }
+                    // Handle words with articles like "die Reinigung"
+                    const parts = german.split(/\s+/);
+                    parts.forEach(p => {
+                        if (p.length > 2 && !enrichedWordMap[p]) {
+                            enrichedWordMap[p] = w.word.russian;
+                        }
+                    });
+                });
+
                 setBatchStories(prev => ({
                     ...prev,
-                    [currentBatchIndex]: data as GenerateStoryOutput
+                    [currentBatchIndex]: {
+                        ...data,
+                        wordMap: enrichedWordMap
+                    } as GenerateStoryOutput
                 }));
             } catch (err) {
                 console.error("Failed to generate batch story", err);
@@ -233,6 +254,7 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                     [currentBatchIndex]: {
                         story: "Не удалось сгенерировать историю, но мы продолжим дрилл!",
                         title: "Ошибка синхронизации",
+                        russianTitle: "Error sync",
                         russianTranslation: "Failed to generate story",
                         usedWords: [],
                         wordMap: {}

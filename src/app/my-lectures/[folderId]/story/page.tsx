@@ -92,7 +92,7 @@ export default function StoryPage({ params }: { params: Promise<{ folderId: stri
                             <div className="flex justify-between items-start mb-6">
                                 <div>
                                     <h2 className="text-2xl font-bold text-primary">{story.title}</h2>
-                                    <p className="text-sm text-muted-foreground">{story.japaneseTitle}</p> {/* Reuse field for Russian title */}
+                                    <p className="text-sm text-muted-foreground">{story.russianTitle}</p>
                                 </div>
                                 <SpeakButton text={story.story} />
                             </div>

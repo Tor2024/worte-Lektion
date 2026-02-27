@@ -13,42 +13,45 @@ export type GenerateStoryInput = z.infer<typeof GenerateStoryInputSchema>;
 
 const GenerateStoryOutputSchema = z.object({
     title: z.string().describe('Title of the story in German.'),
-    japaneseTitle: z.string().optional().describe('Russian title translation.'),
+    russianTitle: z.string().describe('Russian title translation.'),
     story: z.string().describe('The generated German story (B2 level).'),
     russianTranslation: z.string().describe('Full Russian translation of the story.'),
-    usedWords: z.array(z.string()).describe('List of words from the input that were successfully used.'),
-    wordMap: z.record(z.string(), z.string()).describe('A mapping of EVERY unique word in the story to its Russian translation.'),
+    usedWords: z.array(z.string()).describe('List of keywords from the input that were successfully used.'),
+    wordMap: z.record(z.string(), z.string()).describe('A mapping of individual German words to Russian translations.'),
 });
 
 export type GenerateStoryOutput = z.infer<typeof GenerateStoryOutputSchema>;
 
 const renderPrompt = (input: GenerateStoryInput) => {
-    return `You are a creative German language tutor.
+    return `You are a creative German language tutor (Native German level).
   
-  **Task:** Write a short, engaging story (approx. 150-200 words) at **B2 level**.
+  **Task:** Write a short, engaging story (approx. 120-150 words) at **B2 level** for a language student.
   
   **Constraints:**
-  1. You MUST use as many of the following words as possible naturally in the text:
+  1. You MUST use as many of the following words as possible:
      ${input.words.map(w => `- ${w}`).join('\n')}
   
-  2. **Topic:** ${input.topic || 'General / Everyday Life / Professional Context'}
-  3. The story should be coherent and interesting (Beruf/Professional focus if possible).
-  4. Highlight the used words in the German text by wrapping them in **markdown bold** (e.g., **Entscheidung**).
+  2. **Topic:** ${input.topic || 'Professional / Office / Career context'}
+  3. Wrap the words from the input list in **markdown bold** (e.g., **Entscheidung**).
   
-  **Output:**
+  **Output Requirements:**
   - German Title
   - Russian Title
   - German Text (with bolded keywords)
   - Russian Translation
-  - List of keywords actually used.
-  - wordMap: A JSON object where keys are **EVERY single unique word** used in the German Title and Story, and values are their Russian translations. 
-    CRITICAL: Each key MUST be a **single word** (one token). Do NOT group words like "der Aufzug". Create separate entries for "der" and "Aufzug".
-    CRITICAL: The wordMap MUST contain every single unique word present in the generated storyTitle and storyText. 
-    This includes articles (der, die, das), prepositions, conjunctions, and inflected forms of verbs.
-    The goal is that ANY word the user hovers over MUST have a translation.
-    Contextual translation for each word as used in the sentence is mandatory.
-  
-  Return JSON matching the schema.`;
+  - usedWords: list of input words used.
+  - wordMap: A full vocabulary map for the story.
+    
+    CRITICAL RULES for wordMap:
+    - Every key MUST be a **single word** (no phrases like "der Mann").
+    - Every significant word in the story (Title + Story) MUST be included. 
+    - Include: nouns, verbs (as used in the text), adjectives, prepositions, and articles.
+    - Example: if story contains "Der schnelle Hund rennt", the wordMap must be:
+      {"Der": "Этот (арт.)", "schnelle": "быстрый", "Hund": "собака", "rennt": "бежит"}
+    - Do NOT skip small words like "und", "в", "на".
+    - The goal is 100% coverage so that EVERY word can be hovered.
+
+  Important: Return a valid JSON object.`;
 };
 
 const generateStoryFlow = ai.defineFlow(
