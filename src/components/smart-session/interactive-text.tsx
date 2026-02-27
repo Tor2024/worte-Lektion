@@ -52,8 +52,16 @@ export function InteractiveText({ text, wordMap }: InteractiveTextProps) {
 }
 
 function InteractiveWord({ word, wordMap, isBold }: { word: string; wordMap: Record<string, string>; isBold?: boolean }) {
-    // Try both absolute match and lowercase match
-    const translation = wordMap[word] || wordMap[word.toLowerCase()];
+    // 1. Normalize the search word: strip punctuation and whitespace
+    const cleanWord = word.replace(/[.,!?;:()\"\'-]$|^[.,!?;:()\"\' -]/g, '').trim();
+
+    // 2. Multi-stage lookup in the wordMap
+    const translation =
+        wordMap[word] ||
+        wordMap[word.toLowerCase()] ||
+        wordMap[cleanWord] ||
+        wordMap[cleanWord.toLowerCase()] ||
+        Object.entries(wordMap).find(([k]) => k.toLowerCase().trim() === cleanWord.toLowerCase())?.[1];
 
     if (!translation) {
         return (
@@ -67,10 +75,11 @@ function InteractiveWord({ word, wordMap, isBold }: { word: string; wordMap: Rec
     }
 
     return (
-        <Tooltip delayDuration={100}>
+        <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
                 <span className={cn(
-                    "cursor-help transition-all duration-200 border-b border-transparent hover:border-[#2c1810]/30 hover:bg-[#2c1810]/5",
+                    "cursor-help transition-all duration-200 border-b border-transparent tabular-nums",
+                    "hover:border-[#2c1810]/40 hover:bg-[#2c1810]/5 active:bg-[#2c1810]/10",
                     isBold ? "font-black text-primary underline decoration-primary/50 underline-offset-4" : "text-inherit"
                 )}>
                     {word}
@@ -78,11 +87,12 @@ function InteractiveWord({ word, wordMap, isBold }: { word: string; wordMap: Rec
             </TooltipTrigger>
             <TooltipContent
                 side="top"
-                className="bg-[#2c1810] text-[#f4ecd8] border-[#d6c7a1]/20 shadow-2xl px-3 py-1.5 text-xs font-medium animate-in zoom-in-95 duration-200"
+                sideOffset={5}
+                className="z-[100] bg-[#2c1810] text-[#f4ecd8] border-[#d6c7a1]/20 shadow-2xl px-3 py-1.5 text-xs font-medium animate-in zoom-in-95 duration-200"
             >
-                <div className="flex flex-col gap-0.5">
+                <div className="flex flex-col gap-0.5 items-center text-center">
                     <span className="opacity-50 text-[9px] uppercase tracking-widest font-bold">Перевод</span>
-                    {translation}
+                    <span className="font-sans">{translation}</span>
                 </div>
             </TooltipContent>
         </Tooltip>
