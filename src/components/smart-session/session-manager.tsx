@@ -670,13 +670,18 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                                             Контекстная прелюдия
                                         </div>
                                         {!isNarrativeGenerating && batchStories[currentBatchIndex] && (
-                                            <SpeakButton
-                                                text={batchStories[currentBatchIndex].story}
-                                                size="sm"
-                                                variant="secondary"
-                                                className="bg-white/80 hover:bg-white text-[#2c1810] shadow-xl transition-all rounded-full h-9 px-4 border border-[#d6c7a1]"
-                                                showText
-                                            />
+                                            <div className="flex items-center gap-2">
+                                                <SpeakButton
+                                                    text={batchStories[currentBatchIndex].story}
+                                                    size="sm"
+                                                    variant="secondary"
+                                                    className="bg-white/80 hover:bg-white text-[#2c1810] shadow-xl transition-all rounded-full h-9 px-4 border border-[#d6c7a1]"
+                                                    showText
+                                                />
+                                                <span className="text-[10px] text-[#2c1810]/40 font-mono">
+                                                    [{Object.keys(batchStories[currentBatchIndex].wordMap).length}w]
+                                                </span>
+                                            </div>
                                         )}
                                     </div>
 

@@ -51,14 +51,19 @@ export function InteractiveText({ text, wordMap }: InteractiveTextProps) {
 function InteractiveWord({ word, wordMap, isBold }: { word: string; wordMap: Record<string, string>; isBold?: boolean }) {
     // 1. Normalize the search word: strip punctuation and whitespace
     const cleanWord = word.replace(/[.,!?;:()\"\'-]$|^[.,!?;:()\"\' -]/g, '').trim();
+    const lowerClean = cleanWord.toLowerCase();
 
     // 2. Multi-stage lookup in the wordMap
     const translation =
         wordMap[word] ||
         wordMap[word.toLowerCase()] ||
         wordMap[cleanWord] ||
-        wordMap[cleanWord.toLowerCase()] ||
-        Object.entries(wordMap).find(([k]) => k.toLowerCase().trim() === cleanWord.toLowerCase())?.[1];
+        wordMap[lowerClean] ||
+        // Check if the word is PART of a phrase key (e.g. key is "der Aufzug", word is "Aufzug")
+        Object.entries(wordMap).find(([k]) => {
+            const kNorm = k.toLowerCase().trim();
+            return kNorm === lowerClean || kNorm.split(/\s+/).includes(lowerClean);
+        })?.[1];
 
     if (!translation) {
         return (
