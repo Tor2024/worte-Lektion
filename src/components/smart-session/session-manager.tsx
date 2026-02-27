@@ -59,7 +59,7 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
     const [results, setResults] = useState<Record<string, 'success' | 'fail'>>({});
 
     // Narrative Anchoring: Story for each batch
-    const [batchStories, setBatchStories] = useState<Record<number, GenerateStoryOutput>>({});
+    const [batchStories, setBatchStories] = useState<Record<number, GenerateStoryOutput & { wordMap: Record<string, string> }>>({});
     const [isNarrativeGenerating, setIsNarrativeGenerating] = useState(false);
 
     // Warm-up State
@@ -223,9 +223,19 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                     topic: "Beruf und Alltag (Focus on learning context)"
                 });
 
-                // ENHANCEMENT: Pre-seed wordMap with keywords from currentBatchWords
-                // This ensures that even if AI misses them or returns empty map, keywords always have tooltips.
-                const enrichedWordMap = { ...data.wordMap };
+                // ENHANCEMENT: Rebuild the wordMap from the new vocabulary array format
+                const enrichedWordMap: Record<string, string> = {};
+
+                // 1. Add AI-generated vocabulary
+                if (data.vocabulary && Array.isArray(data.vocabulary)) {
+                    data.vocabulary.forEach(item => {
+                        if (item.g && item.r) {
+                            enrichedWordMap[item.g] = item.r;
+                        }
+                    });
+                }
+
+                // 2. Pre-seed/Fallback with keywords from currentBatchWords
                 currentBatchWords.forEach(w => {
                     const german = w.word.german.toLowerCase().trim();
                     if (!enrichedWordMap[german]) {
@@ -234,8 +244,9 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                     // Handle words with articles like "die Reinigung"
                     const parts = german.split(/\s+/);
                     parts.forEach(p => {
-                        if (p.length > 2 && !enrichedWordMap[p]) {
-                            enrichedWordMap[p] = w.word.russian;
+                        const pLower = p.toLowerCase();
+                        if (p.length > 2 && !enrichedWordMap[pLower]) {
+                            enrichedWordMap[pLower] = w.word.russian;
                         }
                     });
                 });
@@ -245,7 +256,7 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                     [currentBatchIndex]: {
                         ...data,
                         wordMap: enrichedWordMap
-                    } as GenerateStoryOutput
+                    }
                 }));
             } catch (err) {
                 console.error("Failed to generate batch story", err);
@@ -257,10 +268,12 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                         russianTitle: "Error sync",
                         russianTranslation: "Failed to generate story",
                         usedWords: [],
+                        vocabulary: [],
                         wordMap: {}
                     }
                 }));
-            } finally {
+            }
+            finally {
                 setIsNarrativeGenerating(false);
             }
         };

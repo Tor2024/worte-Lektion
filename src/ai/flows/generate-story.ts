@@ -12,48 +12,42 @@ const GenerateStoryInputSchema = z.object({
 export type GenerateStoryInput = z.infer<typeof GenerateStoryInputSchema>;
 
 const GenerateStoryOutputSchema = z.object({
-    title: z.string().describe('Title of the story in German.'),
-    russianTitle: z.string().describe('Russian title translation.'),
-    story: z.string().describe('The generated German story (B2 level).'),
-    russianTranslation: z.string().describe('Full Russian translation of the story.'),
-    usedWords: z.array(z.string()).describe('List of keywords from the input that were successfully used.'),
-    wordMap: z.record(z.string(), z.string()).describe('A mapping of individual German words to Russian translations.'),
+    title: z.string().describe('German title.'),
+    russianTitle: z.string().describe('Russian title.'),
+    story: z.string().describe('German story (max 100 words).'),
+    russianTranslation: z.string().describe('Full Russian translation.'),
+    usedWords: z.array(z.string()).describe('Keywords from input used in story.'),
+    vocabulary: z.array(z.object({
+        g: z.string().describe('German word'),
+        r: z.string().describe('Russian translation')
+    })).describe('List of EVERY single word in the story with its translation.'),
 });
 
 export type GenerateStoryOutput = z.infer<typeof GenerateStoryOutputSchema>;
 
 const renderPrompt = (input: GenerateStoryInput) => {
-    return `You are a high-level German linguist and tutor.
+    return `You are a German teacher.
   
   **TASK:**
-  1. Write a short German story (120-150 words) at B2 level using these keywords: [${input.words.join(', ')}].
-  2. BOLD the keywords in the text like this: **Wort**.
-  3. Provide a Russian translation for the entire story.
-  4. **CRITICAL:** Create a JSON object "wordMap" containing EVERY unique word found in your German title and story.
-
-  **WORDMAP RULES:**
-  - KEYS: Single German words only (no phrases). Case-sensitive as they appear in the text.
-  - VALUES: Accurate Russian translations for that specific word in its context.
-  - COVERAGE: 100%. Every single word (articles, prepositions, nouns, verbs) MUST be in the map.
+  1. Write a short German story (approx 80-100 words) using these keywords: [${input.words.join(', ')}].
+  2. BOLD the keywords (e.g., **Wort**).
+  3. Translate the story into Russian.
+  4. **CRITICAL:** Fill the 'vocabulary' array with EVERY single word used in the story.
   
-  **EXAMPLE STRUCTURE:**
-  If text is "Der Hund schläft.", wordMap MUST be:
-  {
-    "Der": "Этот (артикль)",
-    "Hund": "собака",
-    "schläft": "спит"
-  }
-
-  **OUTPUT SCHEMA:**
-  Return a JSON object with:
-  - title (German)
-  - russianTitle (Russian)
-  - story (German text with **bold**)
-  - russianTranslation (Russian)
-  - usedWords (array)
-  - wordMap (The vocabulary map)
-
-  DO NOT SKIP WORDS. The user relies on this for hover translations. If wordMap is incomplete, the student cannot learn.`;
+  **VOCABULARY RULES:**
+  - One German word per item.
+  - No phrases.
+  - Include ALL words: articles, prepositions, nouns, verbs, etc.
+  
+  **STRUCTURE EXAMPLE:**
+  If story is "Der Hund spielt.", vocabulary MUST be:
+  [
+    {"g": "Der", "r": "Этот"},
+    {"g": "Hund", "r": "собака"},
+    {"g": "spielt", "r": "играет"}
+  ]
+  
+  Return a valid JSON object. Do not skip any words.`;
 };
 
 const generateStoryFlow = ai.defineFlow(
