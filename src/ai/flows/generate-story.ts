@@ -23,35 +23,37 @@ const GenerateStoryOutputSchema = z.object({
 export type GenerateStoryOutput = z.infer<typeof GenerateStoryOutputSchema>;
 
 const renderPrompt = (input: GenerateStoryInput) => {
-    return `You are a creative German language tutor (Native German level).
+    return `You are a high-level German linguist and tutor.
   
-  **Task:** Write a short, engaging story (approx. 120-150 words) at **B2 level** for a language student.
-  
-  **Constraints:**
-  1. You MUST use as many of the following words as possible:
-     ${input.words.map(w => `- ${w}`).join('\n')}
-  
-  2. **Topic:** ${input.topic || 'Professional / Office / Career context'}
-  3. Wrap the words from the input list in **markdown bold** (e.g., **Entscheidung**).
-  
-  **Output Requirements:**
-  - German Title
-  - Russian Title
-  - German Text (with bolded keywords)
-  - Russian Translation
-  - usedWords: list of input words used.
-  - wordMap: A full vocabulary map for the story.
-    
-    CRITICAL RULES for wordMap:
-    - Every key MUST be a **single word** (no phrases like "der Mann").
-    - Every significant word in the story (Title + Story) MUST be included. 
-    - Include: nouns, verbs (as used in the text), adjectives, prepositions, and articles.
-    - Example: if story contains "Der schnelle Hund rennt", the wordMap must be:
-      {"Der": "Этот (арт.)", "schnelle": "быстрый", "Hund": "собака", "rennt": "бежит"}
-    - Do NOT skip small words like "und", "в", "на".
-    - The goal is 100% coverage so that EVERY word can be hovered.
+  **TASK:**
+  1. Write a short German story (120-150 words) at B2 level using these keywords: [${input.words.join(', ')}].
+  2. BOLD the keywords in the text like this: **Wort**.
+  3. Provide a Russian translation for the entire story.
+  4. **CRITICAL:** Create a JSON object "wordMap" containing EVERY unique word found in your German title and story.
 
-  Important: Return a valid JSON object.`;
+  **WORDMAP RULES:**
+  - KEYS: Single German words only (no phrases). Case-sensitive as they appear in the text.
+  - VALUES: Accurate Russian translations for that specific word in its context.
+  - COVERAGE: 100%. Every single word (articles, prepositions, nouns, verbs) MUST be in the map.
+  
+  **EXAMPLE STRUCTURE:**
+  If text is "Der Hund schläft.", wordMap MUST be:
+  {
+    "Der": "Этот (артикль)",
+    "Hund": "собака",
+    "schläft": "спит"
+  }
+
+  **OUTPUT SCHEMA:**
+  Return a JSON object with:
+  - title (German)
+  - russianTitle (Russian)
+  - story (German text with **bold**)
+  - russianTranslation (Russian)
+  - usedWords (array)
+  - wordMap (The vocabulary map)
+
+  DO NOT SKIP WORDS. The user relies on this for hover translations. If wordMap is incomplete, the student cannot learn.`;
 };
 
 const generateStoryFlow = ai.defineFlow(
