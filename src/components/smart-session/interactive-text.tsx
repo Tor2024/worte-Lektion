@@ -21,33 +21,30 @@ export function InteractiveText({ text, wordMap }: InteractiveTextProps) {
     const parts = text.split(/(\*\*.*?\*\*)/);
 
     return (
-        <TooltipProvider>
-            <div className="leading-relaxed">
-                {parts.map((part, i) => {
-                    if (part.startsWith('**') && part.endsWith('**')) {
-                        const word = part.slice(2, -2);
-                        return <InteractiveWord key={i} word={word} wordMap={wordMap} isBold />;
-                    }
+        <div className="leading-relaxed">
+            {parts.map((part, i) => {
+                if (part.startsWith('**') && part.endsWith('**')) {
+                    const word = part.slice(2, -2);
+                    return <InteractiveWord key={i} word={word} wordMap={wordMap} isBold />;
+                }
 
-                    // For non-bolded text, split by whitespace, but keep whitespace
-                    const fragments = part.split(/(\s+)/);
-                    return fragments.map((fragment, j) => {
-                        if (fragment.match(/^\s+$/)) return <span key={`${i}-${j}`}>{fragment}</span>;
+                // For non-bolded text, split by whitespace, but keep whitespace
+                const fragments = part.split(/(\s+)/);
+                return fragments.map((fragment, j) => {
+                    if (fragment.match(/^\s+$/)) return <span key={`${i}-${j}`}>{fragment}</span>;
 
-                        // Split by non-alphabetic characters to isolate words from punctuation
-                        // Allow hyphens within words if they are surrounded by letters
-                        const tokens = fragment.split(/([^a-zA-ZäöüÄÖÜß-]+)/);
-                        return tokens.map((token, k) => {
-                            // Only treat as a word if it contains at least one letter
-                            if (token.match(/[a-zA-ZäöüÄÖÜß]/) && token.match(/^[a-zA-ZäöüÄÖÜß-]+$/)) {
-                                return <InteractiveWord key={`${i}-${j}-${k}`} word={token} wordMap={wordMap} />;
-                            }
-                            return <span key={`${i}-${j}-${k}`}>{token}</span>;
-                        });
+                    // Split by non-alphabetic characters to isolate words from punctuation
+                    const tokens = fragment.split(/([^a-zA-ZäöüÄÖÜß-]+)/);
+                    return tokens.map((token, k) => {
+                        // Only treat as a word if it contains at least one letter
+                        if (token.match(/[a-zA-ZäöüÄÖÜß]/) && token.match(/^[a-zA-ZäöüÄÖÜß-]+$/)) {
+                            return <InteractiveWord key={`${i}-${j}-${k}`} word={token} wordMap={wordMap} />;
+                        }
+                        return <span key={`${i}-${j}-${k}`}>{token}</span>;
                     });
-                })}
-            </div>
-        </TooltipProvider>
+                });
+            })}
+        </div>
     );
 }
 
@@ -77,11 +74,14 @@ function InteractiveWord({ word, wordMap, isBold }: { word: string; wordMap: Rec
     return (
         <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
-                <span className={cn(
-                    "cursor-help transition-all duration-200 border-b border-transparent tabular-nums",
-                    "hover:border-[#2c1810]/40 hover:bg-[#2c1810]/5 active:bg-[#2c1810]/10",
-                    isBold ? "font-black text-primary underline decoration-primary/50 underline-offset-4" : "text-inherit"
-                )}>
+                <span
+                    title={translation}
+                    className={cn(
+                        "cursor-help transition-all duration-200 tabular-nums border-b border-dotted border-[#2c1810]/20",
+                        "hover:border-[#2c1810]/60 hover:bg-[#2c1810]/5 active:bg-[#2c1810]/10",
+                        isBold ? "font-black text-primary underline decoration-primary/50 underline-offset-4" : "text-inherit"
+                    )}
+                >
                     {word}
                 </span>
             </TooltipTrigger>
@@ -90,9 +90,9 @@ function InteractiveWord({ word, wordMap, isBold }: { word: string; wordMap: Rec
                 sideOffset={5}
                 className="z-[100] bg-[#2c1810] text-[#f4ecd8] border-[#d6c7a1]/20 shadow-2xl px-3 py-1.5 text-xs font-medium animate-in zoom-in-95 duration-200"
             >
-                <div className="flex flex-col gap-0.5 items-center text-center">
+                <div className="flex flex-col gap-0.5 items-center text-center max-w-[200px]">
                     <span className="opacity-50 text-[9px] uppercase tracking-widest font-bold">Перевод</span>
-                    <span className="font-sans">{translation}</span>
+                    <span className="font-sans leading-tight">{translation}</span>
                 </div>
             </TooltipContent>
         </Tooltip>

@@ -21,6 +21,7 @@ import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { generateStory, type GenerateStoryOutput } from '@/ai/flows/generate-story';
 import { InteractiveText } from './interactive-text';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 import { decomposeGermanWord, type DecomposeOutput } from '@/ai/flows/decompose-german-word';
 import { Edit2, Save, X, Info } from 'lucide-react';
@@ -688,12 +689,14 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                                                 </span>
                                             </div>
                                         ) : batchStories[currentBatchIndex] ? (
-                                            <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-                                                <InteractiveText
-                                                    text={batchStories[currentBatchIndex].story}
-                                                    wordMap={batchStories[currentBatchIndex].wordMap}
-                                                />
-                                            </div>
+                                            <TooltipProvider delayDuration={0}>
+                                                <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+                                                    <InteractiveText
+                                                        text={batchStories[currentBatchIndex].story}
+                                                        wordMap={batchStories[currentBatchIndex].wordMap}
+                                                    />
+                                                </div>
+                                            </TooltipProvider>
                                         ) : (
                                             <div className="text-center py-12 text-[#2c1810]/40 italic text-sm font-sans">
                                                 История не найдена.
