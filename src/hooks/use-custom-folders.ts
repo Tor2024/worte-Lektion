@@ -66,16 +66,54 @@ export function useCustomFolders() {
         storage.setCustomFolders(nextFolders);
     }, []);
 
-    const updateWordInFolder = useCallback(async (folderId: string, updatedWord: UserVocabularyWord) => {
-        const nextFolders = storage.getCustomFolders().map((f: any) => {
-            if (f.id === folderId) {
-                return { ...f, words: f.words.map((w: any) => w.id === updatedWord.id ? updatedWord : w) };
-            }
-            return f;
-        });
+    const updateWordInFolder = useCallback(async (folderId: string, updatedWord: UserVocabularyWord, globalSync: boolean = true) => {
+        const currentFolders = storage.getCustomFolders();
+        let nextFolders;
+
+        if (globalSync) {
+            // Update ALL instances of this word across ALL folders
+            nextFolders = currentFolders.map((f: any) => ({
+                ...f,
+                words: f.words.map((w: any) =>
+                    w.word.german === updatedWord.word.german ? { ...updatedWord, id: w.id } : w
+                )
+            }));
+        } else {
+            // Update only in specific folder
+            nextFolders = currentFolders.map((f: any) => {
+                if (f.id === folderId) {
+                    return { ...f, words: f.words.map((w: any) => w.id === updatedWord.id ? updatedWord : w) };
+                }
+                return f;
+            });
+        }
+
         setLocalFolders(nextFolders);
         storage.setCustomFolders(nextFolders);
     }, []);
+
+    const searchWords = useCallback((query: string) => {
+        if (!query.trim()) return [];
+        const normalizedQuery = query.toLowerCase().trim();
+        const results: { word: UserVocabularyWord, folderName: string, folderId: string }[] = [];
+
+        localFolders.forEach(folder => {
+            folder.words.forEach(userWord => {
+                if (
+                    userWord.word.german.toLowerCase().includes(normalizedQuery) ||
+                    userWord.word.russian.toLowerCase().includes(normalizedQuery)
+                ) {
+                    results.push({
+                        word: userWord,
+                        folderName: folder.name,
+                        folderId: folder.id
+                    });
+                }
+            });
+        });
+
+        return results;
+    }, [localFolders]);
 
     const removeWordFromFolder = useCallback(async (folderId: string, wordId: string) => {
         const nextFolders = storage.getCustomFolders().map((f: any) => {
@@ -96,6 +134,7 @@ export function useCustomFolders() {
         getFolder,
         addWordToFolder,
         updateWordInFolder,
-        removeWordFromFolder
-    }), [localFolders, isInitialLoadDone, createFolder, deleteFolder, getFolder, addWordToFolder, updateWordInFolder, removeWordFromFolder]);
+        removeWordFromFolder,
+        searchWords
+    }), [localFolders, isInitialLoadDone, createFolder, deleteFolder, getFolder, addWordToFolder, updateWordInFolder, removeWordFromFolder, searchWords]);
 }

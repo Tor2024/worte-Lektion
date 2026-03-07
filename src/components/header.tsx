@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Button } from './ui/button';
 import { Languages } from 'lucide-react';
 import { UserMenu } from './user-menu';
+import { GlobalSearch } from './global-search';
 
 const Header = () => {
   return (
@@ -23,7 +24,8 @@ const Header = () => {
             </Link>
           </nav>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-6">
+          <GlobalSearch />
           <UserMenu />
         </div>
       </div>
