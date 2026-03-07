@@ -90,24 +90,22 @@ export function RecognitionView({ item, onResult, onMarkAsKnown, direction: forc
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
                 <div className="absolute -right-10 -top-10 w-40 h-40 bg-primary/10 blur-3xl rounded-full group-hover:bg-primary/20 transition-colors" />
 
-                {/* Verb Prepositions Badges (Top Left) */}
+                {/* Prepositions/Governance Badges (Top Left) */}
                 {(() => {
-                    const verbPrepositions = word.type === 'verb'
-                        ? Array.from(new Set(
-                            [
-                                ...((word as any).governance || []).map((g: any) => g.preposition),
-                                (word as any).preposition
-                            ].filter(Boolean)
-                                .map(p => String(p).trim())
-                                .filter(p => p !== '' && p !== '-' && p.toLowerCase() !== 'без предлога')
-                        ))
-                        : [];
+                    const prepositions = Array.from(new Set(
+                        [
+                            ...((word as any).governance || []).map((g: any) => g.preposition),
+                            (word as any).preposition
+                        ].filter(Boolean)
+                            .map(p => String(p).trim())
+                            .filter(p => p !== '' && p !== '-' && p.toLowerCase() !== 'без предлога')
+                    ));
 
-                    if (verbPrepositions.length === 0) return null;
+                    if (prepositions.length === 0) return null;
 
                     return (
                         <div className="absolute top-4 left-4 flex flex-col items-start gap-1.5 z-20">
-                            {verbPrepositions.map((prep, idx) => (
+                            {prepositions.map((prep, idx) => (
                                 <Badge
                                     key={idx}
                                     variant="outline"
@@ -191,6 +189,14 @@ export function RecognitionView({ item, onResult, onMarkAsKnown, direction: forc
                         <p className="text-muted-foreground text-sm font-medium">Выберите правильный вариант</p>
                         <div className="h-[2px] w-12 bg-gradient-to-l from-transparent to-primary/40" />
                     </div>
+
+                    {/* Mnemonic for Leech words */}
+                    {(item.mnemonic || ((item.consecutiveMistakes || 0) >= 3 && (word as any).mnemonic)) && (
+                        <div className="mt-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg text-xs italic text-amber-200/80 w-full max-w-sm text-center">
+                            <span className="font-bold uppercase text-[9px] block mb-1 opacity-70 text-amber-400">💡 Мнемоника (ассоциация):</span>
+                            &ldquo;{item.mnemonic || (word as any).mnemonic}&rdquo;
+                        </div>
+                    )}
                 </CardContent>
             </Card>
 

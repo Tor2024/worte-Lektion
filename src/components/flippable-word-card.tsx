@@ -156,24 +156,22 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
         } else {
             // DE Front
 
-            // Extract unique prepositions for verbs
-            const verbPrepositions = word.type === 'verb'
-                ? Array.from(new Set(
-                    [
-                        ...((word as any).governance || []).map((g: any) => g.preposition),
-                        (word as any).preposition
-                    ].filter(Boolean)
-                        .map(p => String(p).trim())
-                        .filter(p => p !== '' && p !== '-' && p.toLowerCase() !== 'без предлога')
-                ))
-                : [];
+            // Extract unique prepositions for ANY type with governance or simple preposition
+            const prepositions = Array.from(new Set(
+                [
+                    ...((word as any).governance || []).map((g: any) => g.preposition),
+                    (word as any).preposition
+                ].filter(Boolean)
+                    .map(p => String(p).trim())
+                    .filter(p => p !== '' && p !== '-' && p.toLowerCase() !== 'без предлога')
+            ));
 
             return (
                 <div className="flex flex-col items-center w-full h-full relative">
-                    {/* Verb Prepositions Badges (Top Left) */}
-                    {verbPrepositions.length > 0 && (
+                    {/* Prepositions Badges (Top Left) */}
+                    {prepositions.length > 0 && (
                         <div className="absolute top-2 left-4 flex flex-col items-start gap-1.5 z-20">
-                            {verbPrepositions.map((prep, idx) => (
+                            {prepositions.map((prep, idx) => (
                                 <Badge
                                     key={idx}
                                     variant="outline"
