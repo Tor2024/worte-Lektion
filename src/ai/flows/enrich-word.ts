@@ -50,7 +50,7 @@ const EnrichedWordSchema = z.object({
     comparative: z.string().optional().describe('For adjectives: comparative form (e.g. "stärker").'),
     superlative: z.string().optional().describe('For adjectives: superlative form (e.g. "am stärksten").'),
     // Conjunction & Structure specifics
-    structure: z.string().optional().describe('Verb position/sentence structure (e.g. "Verb am Ende", "Verb an Position 2", "Inversion"). Important for words like während, bevor, deshalb.'),
+    structure: z.string().optional().describe('Verb position/sentence structure (e.g. "Глагол в конце (Nebensatz)", "Инверсия (Глагол на 2-й позиции)"). This must be in RUSSIAN. Important for words like während, bevor, deshalb.'),
     structureExample: z.string().optional().describe('A German example sentence demonstrating the word order. Highlight the verb using <b> tags (e.g., "Ich lerne Deutsch, <b>weil</b> es Spaß <b>macht</b>").'),
     // Common
     example: z.string().describe('A simple example sentence using the word in context.'),
