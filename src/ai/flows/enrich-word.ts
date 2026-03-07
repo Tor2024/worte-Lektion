@@ -103,13 +103,12 @@ const renderPrompt = (input: WordEnrichmentInput) => {
   5. If it is a **Noun**:
      - Provide article, plural form.
   6. Если слово влияет на порядок слов (союзы, наречия, частицы):
-     - Опишите позицию глагола в поле 'structure' на РУССКОМ, используя ТОЛЬКО один из этих вариантов:
-       1. "Глагол на 1-м месте" (Frage, Imperativ)
-       2. "Глагол на 2-м месте" (Hauptsatz, Inversion)
-       3. "Глагол в конце" (Nebensatz)
-       4. "Позиция 0 (ADUSO)" (und, aber, oder, sondern, denn)
+     - Опишите позицию глагола относительно подлежащего в поле 'structure' на РУССКОМ. Используйте только:
+       1. "Глагол на 1-м месте" (Для Deshalb, Dann, Trotzdem - когда глагол идет СРАЗУ после этого слова, перед подлежащим).
+       2. "Глагол на 2-м месте" (Для Denn, Und, Aber - когда порядок слов обычный: сначала 'кто', потом глагол).
+       3. "Глагол в конце" (Для Weil, Dass, Wenn - придаточное предложение).
      - **CRITICAL**: Предоставьте 'structureExample' (немецкий), где ключевое слово и глагол(ы) выделены тегом <b>. 
-     - **CLARITY**: Пример должен быть коротким, естественным и наглядно показывать правило.
+     - **CLARITY**: Пример должен быть коротким и НАГЛЯДНО показывать позицию. Избегайте лишних запятых и вставок.
   7. If it is an **Adjective**:
      - Provide **comparative** and **superlative** forms.
   8. Provide 2-3 **Synonyms** and 1-2 **Antonyms** with Russian translations. Ensure translations for synonyms are concise.
