@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useStudyQueue } from '@/hooks/use-study-queue';
+import { useSettings } from '@/hooks/use-settings';
 import { StudyQueueItem } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { storage } from '@/lib/storage';
@@ -36,6 +37,7 @@ interface SmartSessionManagerProps {
 
 export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
     const { getDailySession, updateItemStatus, updateMnemonic, setAsKnown, overdueCount, dailyLimit, isLoading } = useStudyQueue();
+    const { settings } = useSettings();
     const [sessionQueue, setSessionQueue] = useState<StudyQueueItem[]>([]);
     const [sessionState, setSessionState] = useState<SessionState>('loading');
     const [sessionMode, setSessionMode] = useState<'learning' | 'review-only'>('learning');
@@ -355,9 +357,32 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
             }
         }
         else if (currentPhase === 'narrative') {
-            // One click for the whole batch story, move to production
-            setCurrentPhase('production');
-            setPhaseIndex(0);
+            if (settings.productionMode === 'skip') {
+                // Skip Production: Auto-Succeed all words in the batch
+                const updatedResults: Record<string, 'success' | 'fail'> = { ...results };
+                currentBatchWords.forEach(w => {
+                    const finalResult = results[w.id] === 'fail' ? 'fail' : 'success';
+                    updatedResults[w.id] = finalResult;
+                    updateItemStatus(w.id, finalResult as 'success' | 'fail');
+                });
+                setResults(updatedResults);
+
+                // Move to next batch, start with priming
+                if (currentBatchIndex < totalBatches - 1) {
+                    setCurrentBatchIndex(i => i + 1);
+                    setCurrentPhase('priming');
+                    setPhaseIndex(0);
+                    // Clear refresh flags for the new batch
+                    setRefreshWords(new Set());
+                } else {
+                    // All batches finished, move to consolidation
+                    setSessionState('consolidation');
+                }
+            } else {
+                // One click for the whole batch story, move to production
+                setCurrentPhase('production');
+                setPhaseIndex(0);
+            }
         }
         else if (currentPhase === 'production') {
             const finalResult = result === 'fail' ? 'fail' : (results[currentItem.id] === 'fail' ? 'fail' : 'success');
@@ -608,7 +633,7 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
             case 'priming': return 'Фаза 1: Знакомство';
             case 'recognition': return 'Фаза 2: Дрилл (x2)';
             case 'narrative': return 'Контекстная прелюдия';
-            case 'production': return 'Фаза 3: Контекст';
+            case 'production': return 'Фаза 3: Контекст (Письмо)';
             default: return '';
         }
     };
@@ -745,7 +770,7 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                                     </div>
                                 </div>
                                 <Button size="lg" className="w-full h-16 text-xl bg-[#2c1810] hover:bg-[#3d2419] text-[#f4ecd8] rounded-2xl shadow-xl transition-all active:scale-[0.98]" onClick={() => handleNext('success')}>
-                                    К упражнениям →
+                                    {settings.productionMode === 'skip' ? "Продолжить →" : "К упражнениям →"}
                                 </Button>
                             </div>
                         )}
@@ -756,6 +781,7 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                                 storyContext={batchStories[currentBatchIndex]?.story || ""}
                                 onStoryUpdate={updateBatchStory}
                                 onResult={handleNext}
+                                mode={settings.productionMode}
                             />
                         )}
                     </>

@@ -3,10 +3,13 @@ import { Button } from '@/components/ui/button';
 import { Volume2, VolumeX, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { cleanTextForSpeech } from '@/lib/german-utils';
+import { useRef } from 'react';
 
 interface SpeakButtonProps {
     text: string;
     lang?: string;
+    secondaryText?: string;
+    secondaryLang?: string;
     gender?: VoiceGender;
     className?: string;
     size?: 'sm' | 'default' | 'lg' | 'icon';
@@ -17,6 +20,8 @@ interface SpeakButtonProps {
 export function SpeakButton({
     text,
     lang = 'de-DE',
+    secondaryText,
+    secondaryLang = 'ru-RU',
     gender,
     className,
     size = 'icon',
@@ -24,16 +29,26 @@ export function SpeakButton({
     showText = false
 }: SpeakButtonProps) {
     const { speak, stop, isSpeaking } = useSpeech();
+    const sequenceIdRef = useRef<number>(0);
 
-    const handleClick = (e: React.MouseEvent) => {
+    const handleClick = async (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
         if (isSpeaking) {
+            sequenceIdRef.current++;
             stop();
         } else {
-            // Clean markdown bold/italic characters before speaking
+            const currentId = ++sequenceIdRef.current;
             const cleanedText = cleanTextForSpeech(text);
-            speak(cleanedText, lang, gender);
+            await speak(cleanedText, lang, gender);
+
+            if (secondaryText && currentId === sequenceIdRef.current) {
+                await new Promise(r => setTimeout(r, 400));
+                if (currentId === sequenceIdRef.current) {
+                    const cleanedSecondary = cleanTextForSpeech(secondaryText);
+                    await speak(cleanedSecondary, secondaryLang, gender);
+                }
+            }
         }
     };
 

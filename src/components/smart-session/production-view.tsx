@@ -19,9 +19,10 @@ interface ProductionViewProps {
     storyContext?: string;
     onStoryUpdate?: (sentence: string) => void;
     onResult: (result: 'success' | 'fail') => void;
+    mode?: 'full' | 'cloze' | 'skip';
 }
 
-export function ProductionView({ item, storyContext, onStoryUpdate, onResult }: ProductionViewProps) {
+export function ProductionView({ item, storyContext, onStoryUpdate, onResult, mode = 'full' }: ProductionViewProps) {
     const { word } = item;
     const [isLoading, setIsLoading] = useState(true);
     const [clozeData, setClozeData] = useState<GenerateClozeOutput | null>(null);
@@ -60,6 +61,27 @@ export function ProductionView({ item, storyContext, onStoryUpdate, onResult }: 
         const normalizedCorrect = clozeData.missingWord.trim().toLowerCase();
 
         let isCorrect = normalizedUser === normalizedCorrect;
+
+        if (mode === 'cloze' && !isCorrect && normalizedUser.length > 0) {
+            // Lenient matching: Ignore articles and common endings, check if roots match
+            const cleanStr = (s: string) => {
+                let text = s.toLowerCase().trim();
+                text = text.replace(/^(der|die|das|ein|eine|einen|einem|einer|eines)\s+/g, '').trim();
+                // strip simple ends: e, en, st, t for verb/adjective matching
+                text = text.replace(/(en|st|e|t)$/, '');
+                return text;
+            };
+
+            const cleanUser = cleanStr(normalizedUser);
+            const cleanCorrect = cleanStr(normalizedCorrect);
+            const cleanBase = cleanStr(word.german);
+
+            if (cleanUser === cleanCorrect || cleanUser === cleanBase) {
+                isCorrect = true;
+            } else if (cleanUser.length > 2 && (cleanCorrect.includes(cleanUser) || cleanBase.includes(cleanUser) || cleanUser.includes(cleanCorrect))) {
+                isCorrect = true;
+            }
+        }
 
         // Multi-answer check
         if (!isCorrect && clozeData.acceptedAnswers && clozeData.acceptedAnswers.length > 0) {

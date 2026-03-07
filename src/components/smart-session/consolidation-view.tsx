@@ -8,6 +8,7 @@ import { formatGermanWord } from '@/lib/german-utils';
 import { BrainCircuit, Check, X, Trophy } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useMemo, useEffect } from 'react';
+import { useSpeech } from '@/hooks/use-speech';
 import { commonWords } from '@/lib/common-words';
 import { cn } from '@/lib/utils';
 
@@ -21,8 +22,15 @@ export function ConsolidationView({ items, onComplete }: ConsolidationViewProps)
     const [selectedOption, setSelectedOption] = useState<string | null>(null);
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
     const [score, setScore] = useState(0);
+    const { speak, isLoaded } = useSpeech();
 
     const currentItem = items[currentIndex];
+
+    // Play Russian word on load
+    useEffect(() => {
+        if (!isLoaded || !currentItem) return;
+        speak(currentItem.word.russian, 'ru-RU');
+    }, [speak, currentItem, isLoaded]);
 
     const options = useMemo(() => {
         if (!currentItem) return [];
@@ -62,6 +70,7 @@ export function ConsolidationView({ items, onComplete }: ConsolidationViewProps)
         setIsCorrect(correct);
 
         if (correct) {
+            speak(formatGermanWord(currentItem.word), 'de-DE');
             setScore(s => s + 1);
         }
 

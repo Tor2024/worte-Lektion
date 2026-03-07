@@ -9,9 +9,19 @@ const KEYS = {
     KNOWN_WORDS: 'knownWords',
     EXAM_TEXTS: 'custom_exam_texts',
     DAILY_SESSION: 'deutsch-daily-session-v1',
+    SETTINGS: 'deutsch-app-settings-v1',
 } as const;
 
 export type ProgressData = { [key: string]: number };
+
+export interface AppSettings {
+    productionMode: 'full' | 'cloze' | 'skip';
+}
+
+const defaultSettings: AppSettings = {
+    productionMode: 'full'
+};
+
 
 export const storage = {
     isCloudSyncEnabled: (): boolean => false,
@@ -126,6 +136,35 @@ export const storage = {
             console.warn('LS Write Error', e);
         }
     },
+    getSettings: (): AppSettings => {
+        if (typeof window === 'undefined') return defaultSettings;
+        try {
+            const item = window.localStorage.getItem(KEYS.SETTINGS);
+            if (item) {
+                const parsed = JSON.parse(item);
+                // Migration from old setting
+                if (parsed.skipProductionPhase === true) {
+                    parsed.productionMode = 'skip';
+                } else if (parsed.skipProductionPhase === false && !parsed.productionMode) {
+                    parsed.productionMode = 'full';
+                }
+                return { ...defaultSettings, ...parsed };
+            }
+            return defaultSettings;
+        } catch (e) {
+            return defaultSettings;
+        }
+    },
+    setSettings: (settings: AppSettings) => {
+        if (typeof window === 'undefined') return;
+        try {
+            const json = JSON.stringify(settings);
+            window.localStorage.setItem(KEYS.SETTINGS, json);
+            window.dispatchEvent(new StorageEvent('storage', { key: KEYS.SETTINGS, newValue: json }));
+        } catch (e) {
+            console.warn('LS Write Error', e);
+        }
+    },
 
     // Daily session tracking (reset at 4:00 AM)
     getDailySessionData: (): DailySessionData => {
@@ -199,6 +238,64 @@ export const storage = {
 
         // 3. Trigger reload for hooks to pick up changes
         window.location.reload();
+    },
+
+    // Data Management
+    exportData: () => {
+        if (typeof window === 'undefined') return;
+        const data: Record<string, any> = {};
+        for (const [keyName, keyValue] of Object.entries(KEYS)) {
+            const item = window.localStorage.getItem(keyValue);
+            if (item) {
+                try {
+                    data[keyValue] = JSON.parse(item);
+                } catch {
+                    // Ignore parsing errors for individual keys
+                }
+            }
+        }
+
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const date = new Date().toISOString().split('T')[0];
+        a.download = `deutsch-backup-${date}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    },
+
+    importData: async (file: File): Promise<boolean> => {
+        if (typeof window === 'undefined') return false;
+        try {
+            const text = await file.text();
+            const data = JSON.parse(text);
+
+            // Validate that we have at least one recognized key before importing
+            const validKeys = Object.values(KEYS);
+            const importedKeys = Object.keys(data);
+            const hasValidKeys = importedKeys.some(key => validKeys.includes(key as any));
+
+            if (!hasValidKeys) {
+                return false;
+            }
+
+            // Restore data
+            for (const [key, value] of Object.entries(data)) {
+                if (validKeys.includes(key as any)) {
+                    window.localStorage.setItem(key, JSON.stringify(value));
+                }
+            }
+
+            // Reload to apply
+            window.location.reload();
+            return true;
+        } catch (error) {
+            console.error("Failed to import data", error);
+            return false;
+        }
     }
 };
 

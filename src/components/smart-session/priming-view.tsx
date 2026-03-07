@@ -217,7 +217,7 @@ export function PrimingView({ item, onNext, onMarkAsKnown }: PrimingViewProps) {
                     </div>
 
                     <div className="flex gap-4">
-                        <SpeakButton text={formatGermanWord(word)} size="lg" />
+                        <SpeakButton text={formatGermanWord(word)} secondaryText={word.russian} size="lg" />
                     </div>
 
                     {/* Word Breakdown (Decomposition) */}

@@ -31,8 +31,11 @@ export function RecognitionView({ item, onResult, onMarkAsKnown, direction: forc
         [item.id, forcedDirection]);
 
     useEffect(() => {
-        if (isLoaded && direction === 0) {
-            speak(formatGermanWord(word));
+        if (!isLoaded) return;
+        if (direction === 0) {
+            speak(formatGermanWord(word), 'de-DE');
+        } else {
+            speak(word.russian, 'ru-RU');
         }
     }, [speak, word, isLoaded, direction]);
 
@@ -57,8 +60,12 @@ export function RecognitionView({ item, onResult, onMarkAsKnown, direction: forc
         const correct = option === correctValue;
         setIsCorrect(correct);
 
-        if (correct && direction === 1) {
-            speak(formatGermanWord(word));
+        if (correct) {
+            if (direction === 0) {
+                speak(word.russian, 'ru-RU');
+            } else {
+                speak(formatGermanWord(word), 'de-DE');
+            }
         }
 
         setTimeout(() => {
