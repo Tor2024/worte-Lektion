@@ -126,10 +126,41 @@ export function PrimingView({ item, onNext, onMarkAsKnown }: PrimingViewProps) {
 
             <Card className="w-full bg-card border-none shadow-2xl overflow-hidden relative">
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500" />
-                <CardContent className="p-6 sm:p-8 flex flex-col items-center text-center space-y-4">
+
+                {/* Verb Prepositions Badges (Top Left) */}
+                {(() => {
+                    const verbPrepositions = word.type === 'verb'
+                        ? Array.from(new Set(
+                            [
+                                ...((word as any).governance || []).map((g: any) => g.preposition),
+                                (word as any).preposition
+                            ].filter(Boolean)
+                                .map(p => String(p).trim())
+                                .filter(p => p !== '' && p !== '-' && p.toLowerCase() !== 'без предлога')
+                        ))
+                        : [];
+
+                    if (verbPrepositions.length === 0) return null;
+
+                    return (
+                        <div className="absolute top-4 left-4 flex flex-col items-start gap-1.5 z-20">
+                            {verbPrepositions.map((prep, idx) => (
+                                <Badge
+                                    key={idx}
+                                    variant="outline"
+                                    className="flex items-center gap-1.5 px-3 py-1 text-xs font-black uppercase tracking-widest bg-red-500/10 text-red-600 border-red-300 shadow-sm"
+                                >
+                                    {String(prep)}
+                                </Badge>
+                            ))}
+                        </div>
+                    );
+                })()}
+
+                <CardContent className="p-6 sm:p-8 flex flex-col items-center text-center space-y-4 relative z-10">
 
                     <div className="space-y-3 w-full">
-                        <div className="flex flex-col gap-0 items-center justify-center">
+                        <div className="flex flex-col gap-0 items-center justify-center pt-2">
                             <div className="text-5xl font-black tracking-tight text-primary">
                                 {formatGermanWord(word)}
                             </div>

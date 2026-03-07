@@ -10,6 +10,7 @@ import { motion } from 'framer-motion';
 import { useState, useMemo, useEffect } from 'react';
 import { useSpeech } from '@/hooks/use-speech';
 import { commonWords } from '@/lib/common-words';
+import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 interface RecognitionViewProps {
@@ -88,7 +89,37 @@ export function RecognitionView({ item, onResult, onMarkAsKnown, direction: forc
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
                 <div className="absolute -right-10 -top-10 w-40 h-40 bg-primary/10 blur-3xl rounded-full group-hover:bg-primary/20 transition-colors" />
 
-                <CardContent className="p-6 sm:p-8 flex flex-col items-center text-center relative z-10">
+                {/* Verb Prepositions Badges (Top Left) */}
+                {(() => {
+                    const verbPrepositions = word.type === 'verb'
+                        ? Array.from(new Set(
+                            [
+                                ...((word as any).governance || []).map((g: any) => g.preposition),
+                                (word as any).preposition
+                            ].filter(Boolean)
+                                .map(p => String(p).trim())
+                                .filter(p => p !== '' && p !== '-' && p.toLowerCase() !== 'без предлога')
+                        ))
+                        : [];
+
+                    if (verbPrepositions.length === 0) return null;
+
+                    return (
+                        <div className="absolute top-4 left-4 flex flex-col items-start gap-1.5 z-20">
+                            {verbPrepositions.map((prep, idx) => (
+                                <Badge
+                                    key={idx}
+                                    variant="outline"
+                                    className="flex items-center gap-1.5 px-3 py-1 text-xs font-black uppercase tracking-widest bg-red-500/10 text-red-600 border-red-300 shadow-sm"
+                                >
+                                    {String(prep)}
+                                </Badge>
+                            ))}
+                        </div>
+                    );
+                })()}
+
+                <CardContent className="p-6 sm:p-8 flex flex-col items-center text-center relative z-10 pt-10">
                     <div className="text-[10px] font-bold text-primary/60 mb-2 uppercase tracking-widest">
                         {direction === 0 ? "Понимаете ли вы это слово?" : "Как это будет по-немецки?"}
                     </div>
