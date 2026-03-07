@@ -64,9 +64,9 @@ const EnrichedWordSchema = z.object({
         translation: z.string().describe('Russian translation of the synonym')
     })).optional().describe('List of 1-2 antonyms with translations (if applicable).'),
     collocations: z.array(z.object({
-        phrase: z.string().describe('A common fixed phrase or Nomen-Verb-Verbindung (e.g. "eine Rolle spielen").'),
-        translation: z.string().describe('Russian translation of the phrase.')
-    })).optional().describe('List of 2-3 common collocations or fixed phrases.'),
+        phrase: z.string().describe('A VERY SHORT (2-3 words max) professional anchor phrase (e.g. "die Belastbarkeit prüfen").'),
+        translation: z.string().describe('Russian translation of the anchor phrase.')
+    })).optional().describe('Exactly 2-3 common collocations or fixed phrases to serve as memory anchors.'),
     governance: z.array(GovernanceSchema).optional().describe('List of normative prepositions and cases for verbs and adjectives.'),
 });
 

@@ -75,12 +75,11 @@ export function RecognitionView({ item, onResult, onMarkAsKnown, direction: forc
                 sequence.push({ text: formatGermanWord(word), lang: 'de-DE' });
             }
 
-            // 2. The Example Phrase (if exists)
-            if ('example' in word && word.example) {
-                sequence.push({ text: word.example, lang: 'de-DE' });
-            }
-            if ('exampleMeaning' in word && (word as any).exampleMeaning) {
-                sequence.push({ text: (word as any).exampleMeaning, lang: 'ru-RU' });
+            // 2. The Anchor Phrase (Collocation) instead of full sentence
+            const firstCollocation = (word as any).collocations?.[0];
+            if (firstCollocation) {
+                sequence.push({ text: firstCollocation.phrase, lang: 'de-DE' });
+                sequence.push({ text: firstCollocation.translation, lang: 'ru-RU' });
             }
 
             await speakSequence(sequence);
@@ -123,20 +122,18 @@ export function RecognitionView({ item, onResult, onMarkAsKnown, direction: forc
                             </div>
                         </div>
 
-                        {'example' in word && word.example && (
+                        {/* Anchor Phrase (Collocation) instead of full sentence in Phase 2 */}
+                        {(word as any).collocations && (word as any).collocations.length > 0 && (
                             <div className="w-full pt-6 border-t border-white/10 space-y-3">
-                                <Badge variant="outline" className="bg-green-500/10 text-green-400 border-green-500/20 text-[10px] uppercase font-black px-3">
-                                    B2 Beruf Phrase
+                                <Badge variant="outline" className="bg-amber-500/10 text-amber-400 border-amber-500/20 text-[10px] uppercase font-black px-3">
+                                    Лексический якорь
                                 </Badge>
-                                <p
-                                    className="text-xl md:text-2xl font-bold text-white leading-tight tracking-tight text-left pl-4 border-l-4 border-green-500/50"
-                                    dangerouslySetInnerHTML={{ __html: word.example }}
-                                />
-                                {'exampleMeaning' in word && (word as any).exampleMeaning && (
-                                    <p className="text-md text-slate-400 italic text-left pl-4">
-                                        — {(word as any).exampleMeaning}
-                                    </p>
-                                )}
+                                <p className="text-2xl md:text-3xl font-bold text-white leading-tight tracking-tight text-left pl-4 border-l-4 border-amber-500/50">
+                                    {(word as any).collocations[0].phrase}
+                                </p>
+                                <p className="text-md text-slate-400 italic text-left pl-4">
+                                    — {(word as any).collocations[0].translation}
+                                </p>
                             </div>
                         )}
 
