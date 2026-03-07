@@ -72,11 +72,14 @@ export function AiTheoryExpander({ title, initialHtml }: AiTheoryExpanderProps) 
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.3 }}
                 >
-                    <div className="overflow-x-auto overflow-hidden rounded-xl border-border/10">
+                    <div className="overflow-x-auto rounded-xl border-border/10">
                         <div
                             className={cn(
                                 "prose prose-slate dark:prose-invert !max-w-none w-full",
-                                "prose-table:w-full prose-table:min-w-[600px] prose-th:px-4 prose-th:py-3 prose-td:px-4 prose-td:py-3",
+                                // Hard reset for nested AI layout containers that might have fixed widths
+                                "[&_div]:max-w-none [&_div]:w-full [&_section]:w-full [&_section]:max-w-none",
+                                // Table layout fixes
+                                "prose-table:w-full prose-table:min-w-[700px] prose-th:px-4 prose-th:py-3 prose-td:px-4 prose-td:py-3",
                                 "prose-table:border-collapse prose-table:border prose-table:border-border",
                                 "prose-th:bg-muted/50 prose-th:font-black prose-th:uppercase prose-th:text-[10px] prose-th:tracking-widest",
                                 "prose-td:border prose-td:border-border prose-td:align-top",

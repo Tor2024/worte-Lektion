@@ -641,24 +641,38 @@ export const curriculum: Curriculum = {
             <div class="space-y-6">
               <section>
                 <h2 class="font-headline text-2xl font-bold mb-4">Possessivartikel (Мой, твой, наш)</h2>
-                <p class="mb-4">Притяжательные местоимения показывают принадлежность. В Nominativ они меняются в зависимости от рода <strong>следующего</strong> слова.</p>
+                <p class="mb-4 text-muted-foreground">Притяжательные местоимения показывают принадлежность. В Nominativ они меняются в зависимости от рода <strong>следующего</strong> слова.</p>
                 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                  <div class="bg-card p-4 rounded-xl border">
-                    <h3 class="font-bold text-center border-b pb-2 mb-2">Maskulin (Der)</h3>
-                    <p class="text-center"><em>Das ist <strong>mein</strong> Vater.</em></p>
-                    <p class="text-center text-sm text-muted-foreground mt-1">(нет окончания)</p>
-              <div class="bg-card p-6 rounded-xl border shadow-sm">
+                  <div class="bg-card p-4 rounded-xl border shadow-sm">
+                    <h3 class="font-bold text-center border-b pb-2 mb-2 text-primary">Maskulin (Der)</h3>
+                    <p class="text-center italic mt-2">Das ist <strong>mein</strong> Vater.</p>
+                    <p class="text-center text-[10px] text-muted-foreground mt-1 uppercase tracking-tighter">(нет окончания)</p>
+                  </div>
+                  <div class="bg-card p-4 rounded-xl border shadow-sm">
+                    <h3 class="font-bold text-center border-b pb-2 mb-2 text-primary">Feminin (Die)</h3>
+                    <p class="text-center italic mt-2">Das ist <strong>meine</strong> Mutter.</p>
+                    <p class="text-center text-[10px] text-muted-foreground mt-1 uppercase tracking-tighter">(окончание -e)</p>
+                  </div>
+                  <div class="bg-card p-4 rounded-xl border shadow-sm">
+                    <h3 class="font-bold text-center border-b pb-2 mb-2 text-primary">Neutrum (Das)</h3>
+                    <p class="text-center italic mt-2">Das ist <strong>mein</strong> Kind.</p>
+                    <p class="text-center text-[10px] text-muted-foreground mt-1 uppercase tracking-tighter">(нет окончания)</p>
+                  </div>
+                </div>
+              </section>
+
+              <div class="bg-card p-6 rounded-xl border shadow-sm border-primary/20 bg-primary/5">
                 <h2 class="font-headline text-2xl font-bold mb-4 flex items-center gap-2">
-                  <span class="text-primary">👨‍👩‍👧‍👦</span> Моя семья (Possessivartikel)
+                  <span class="text-primary text-xl">👨‍👩‍👧‍👦</span> Моя семья (Possessivartikel)
                 </h2>
-                <p class="text-lg mb-4 text-muted-foreground">
+                <p class="mb-4 text-muted-foreground text-sm">
                   Чтобы сказать "мой", "твой" и т.д., мы используем притяжательные местоимения. Они стоят перед существительным.
                 </p>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
-                  <div class="border p-4 rounded-lg bg-muted/50">
-                    <h3 class="font-bold mb-2">Nominativ (Кто? Что?)</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div class="border p-4 rounded-lg bg-background/50">
+                    <h3 class="font-bold mb-3 border-b pb-1 text-sm uppercase tracking-wider">Nominativ (Кто? Что?)</h3>
                     <ul class="space-y-2 text-sm italic">
                       <li><strong>mein</strong> Vater / <strong>meine</strong> Mutter</li>
                       <li><strong>dein</strong> Bruder / <strong>deine</strong> Schwester</li>
@@ -666,14 +680,14 @@ export const curriculum: Curriculum = {
                       <li><strong>ihr</strong> Opa / <strong>ihre</strong> Oma</li>
                     </ul>
                   </div>
-                  <div class="p-4 bg-primary/5 border border-primary/20 rounded-lg">
+                  <div class="p-4 bg-primary/10 border border-primary/20 rounded-lg flex flex-col justify-center">
                     <h3 class="font-bold mb-2 text-primary text-sm">Правило окончания:</h3>
-                    <p class="text-xs">Если слово женского рода (die) или во множественном числе, добавляем окончание <strong>-e</strong>:</p>
-                    <div class="mt-2 text-lg font-mono text-center">mein<strong>e</strong>, dein<strong>e</strong>...</div>
+                    <p class="text-xs text-muted-foreground">Если слово женского рода (die) или во множественном числе, добавляем окончание <strong>-e</strong>:</p>
+                    <div class="mt-3 text-2xl font-mono text-center font-bold text-primary italic">mein<strong>e</strong>, dein<strong>e</strong>...</div>
                   </div>
                 </div>
 
-                <div class="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                <div class="mt-6 p-3 bg-muted rounded-lg border border-dashed text-center">
                   <p class="text-sm italic">"<strong>Meine</strong> Mutter ist Ärztin. <strong>Mein</strong> Bruder spielt Fußball."</p>
                 </div>
               </div>
