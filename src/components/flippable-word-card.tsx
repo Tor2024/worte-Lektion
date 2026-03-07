@@ -154,9 +154,35 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
             );
         } else {
             // DE Front
+
+            // Extract unique prepositions for verbs
+            const verbPrepositions = word.type === 'verb'
+                ? Array.from(new Set(
+                    [
+                        ...((word as any).governance || []).map((g: any) => g.preposition),
+                        (word as any).preposition
+                    ].filter(Boolean)
+                ))
+                : [];
+
             return (
                 <div className="flex flex-col items-center w-full h-full relative">
-                    {/* SRS Status Badge */}
+                    {/* Verb Prepositions Badges (Top Left) */}
+                    {verbPrepositions.length > 0 && (
+                        <div className="absolute top-2 left-4 flex flex-col items-start gap-1 z-20">
+                            {verbPrepositions.map((prep, idx) => (
+                                <Badge
+                                    key={idx}
+                                    variant="outline"
+                                    className="flex items-center gap-1.5 px-2 py-0.5 text-[10px] h-6 font-bold uppercase tracking-tight bg-red-500/10 text-red-600 border-red-200 shadow-sm"
+                                >
+                                    {String(prep)}
+                                </Badge>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* SRS Status Badge (Top Right) */}
                     <div className="absolute top-2 right-12 flex flex-col items-end gap-1 z-20">
                         <Badge
                             variant="outline"
@@ -194,10 +220,10 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                             <h3 className="text-4xl font-black font-headline select-none break-words hyphens-auto tracking-tight leading-none text-primary">
                                 {formatGermanWord(word)}
                             </h3>
-                            {/* Legacy case fallback for verbs */}
-                            {word.type === 'verb' && !((word as any).governance && (word as any).governance.length > 0) && ((word as any).preposition || (word as any).case) && (
+                            {/* Legacy case fallback for verbs (only show cases here since prepositions are now shown as badges) */}
+                            {word.type === 'verb' && !((word as any).governance && (word as any).governance.length > 0) && (word as any).case && (
                                 <div className="text-xl font-bold text-primary/80 tracking-tight">
-                                    + {[(word as any).preposition, (word as any).case].filter(Boolean).join(' ')}
+                                    + {(word as any).case}
                                 </div>
                             )}
                         </div>
