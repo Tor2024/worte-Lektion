@@ -24,6 +24,7 @@ export function formatGermanWord(word: VocabularyWord): string {
         }
     }
 
+    // ... replaced by new component approach. Let's keep formatGermanWord as is, and create a React component for visual display.
     return word.german;
 }
 

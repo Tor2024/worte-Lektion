@@ -13,6 +13,7 @@ import { RotateCcw, Volume2, Clock, BrainCircuit, ShieldAlert, HelpCircle, Check
 import { Button } from '@/components/ui/button';
 import { useStudyQueue } from '@/hooks/use-study-queue';
 import { formatRelativeTime } from '@/lib/utils';
+import { FormattedGermanWord } from './formatted-german-word';
 
 interface FlippableWordCardProps {
     userWord: UserVocabularyWord;
@@ -220,7 +221,7 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                     <div className="mb-4 flex flex-col items-center">
                         <div className="flex flex-col items-center justify-center gap-1 text-center">
                             <h3 className="text-4xl font-black font-headline select-none break-words hyphens-auto tracking-tight leading-none text-primary">
-                                {formatGermanWord(word)}
+                                <FormattedGermanWord word={word} />
                             </h3>
                             {/* Legacy case fallback for verbs (only show cases here since prepositions are now shown as badges) */}
                             {word.type === 'verb' && !((word as any).governance && (word as any).governance.length > 0) && (word as any).case && (
@@ -443,7 +444,7 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
             return (
                 <div className="flex flex-col items-center gap-4">
                     <h3 className="text-2xl font-bold font-headline select-none text-primary">
-                        {formatGermanWord(word)}
+                        <FormattedGermanWord word={word} />
                     </h3>
                     {word.type === 'noun' && (
                         <div className="text-sm text-muted-foreground">

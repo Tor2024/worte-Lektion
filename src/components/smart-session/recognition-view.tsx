@@ -12,6 +12,7 @@ import { useSpeech } from '@/hooks/use-speech';
 import { commonWords } from '@/lib/common-words';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { FormattedGermanWord } from '../formatted-german-word';
 
 interface RecognitionViewProps {
     item: StudyQueueItem;
@@ -126,7 +127,7 @@ export function RecognitionView({ item, onResult, onMarkAsKnown, direction: forc
 
                     <div className="flex flex-col items-center gap-1 mb-4">
                         <div className="text-4xl font-black tracking-tighter text-white h-[48px] flex items-center">
-                            {direction === 0 ? formatGermanWord(word) : word.russian}
+                            {direction === 0 ? <FormattedGermanWord word={word} /> : word.russian}
                         </div>
                         {/* Governance Section (Rektion) as Hint */}
                         {((word.type === 'verb' || word.type === 'adjective') && (word as any).governance && (word as any).governance.length > 0) && (

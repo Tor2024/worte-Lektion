@@ -16,6 +16,7 @@ import { decomposeGermanWord, type DecomposeOutput } from '@/ai/flows/decompose-
 import { getVerbFamily, type VerbFamilyOutput } from '@/ai/flows/get-verb-family';
 import { VerbFamilyTree } from './verb-family-tree';
 import { Loader2, Info, Network } from 'lucide-react';
+import { FormattedGermanWord } from '../formatted-german-word';
 
 interface PrimingViewProps {
     item: StudyQueueItem;
@@ -162,7 +163,7 @@ export function PrimingView({ item, onNext, onMarkAsKnown }: PrimingViewProps) {
                     <div className="space-y-3 w-full">
                         <div className="flex flex-col gap-0 items-center justify-center pt-2">
                             <div className="text-5xl font-black tracking-tight text-primary">
-                                {formatGermanWord(word)}
+                                <FormattedGermanWord word={word} />
                             </div>
                             {/* Specific Governance Display for Verbs and Adjectives */}
                             {/* Governance Section (Rektion) */}
