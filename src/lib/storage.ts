@@ -1,5 +1,11 @@
-
+import localforage from 'localforage';
 import { CustomFolder, SM2State, StudyQueueItem } from './types';
+
+// Configure localforage
+localforage.config({
+    name: 'DeutschApp',
+    storeName: 'learning_data'
+});
 
 const KEYS = {
     PROGRESS: 'userProgress',
@@ -22,180 +28,122 @@ const defaultSettings: AppSettings = {
     productionMode: 'full'
 };
 
+// In-memory cache for synchronous reads
+const memoryCache: Record<string, any> = {};
+let activeStorageEngine: 'LocalStorage' | 'IndexedDB' = 'LocalStorage';
 
 export const storage = {
+    getActiveEngine: () => activeStorageEngine,
+
+    initStorage: async (): Promise<void> => {
+        if (typeof window === 'undefined') return;
+
+        try {
+            // Check if indexedDB is available
+            await localforage.ready();
+
+            for (const [keyName, keyValue] of Object.entries(KEYS)) {
+                let val = await localforage.getItem(keyValue);
+
+                if (val !== null) {
+                    memoryCache[keyValue] = val;
+                } else {
+                    // Try migrating from LocalStorage
+                    const lsVal = window.localStorage.getItem(keyValue);
+                    if (lsVal) {
+                        try {
+                            const parsed = JSON.parse(lsVal);
+                            memoryCache[keyValue] = parsed;
+                            await localforage.setItem(keyValue, parsed);
+                        } catch (e) {
+                            console.error(`Failed to parse ${keyValue} during migration`, e);
+                        }
+                    }
+                }
+            }
+
+            activeStorageEngine = 'IndexedDB';
+        } catch (e) {
+            console.error("Storage initialization failed, falling back to LocalStorage", e);
+            activeStorageEngine = 'LocalStorage';
+            // Fallback: load everything from LS
+            for (const [keyName, keyValue] of Object.entries(KEYS)) {
+                const lsVal = window.localStorage.getItem(keyValue);
+                if (lsVal) {
+                    try {
+                        memoryCache[keyValue] = JSON.parse(lsVal);
+                    } catch { }
+                }
+            }
+        }
+    },
+
     isCloudSyncEnabled: (): boolean => false,
     setCloudSyncEnabled: (enabled: boolean) => {
         // No-op in local-only mode
     },
-    getProgress: (): ProgressData => {
-        if (typeof window === 'undefined') return {};
-        try {
-            const item = window.localStorage.getItem(KEYS.PROGRESS);
-            return item ? JSON.parse(item) : {};
-        } catch (e) {
-            return {};
-        }
+
+    _get: <T>(key: string, defaultValue: T): T => {
+        if (typeof window === 'undefined') return defaultValue;
+        if (memoryCache[key] !== undefined) return memoryCache[key] as T;
+        return defaultValue;
     },
-    setProgress: (data: ProgressData) => {
+
+    _set: <T>(key: string, value: T) => {
         if (typeof window === 'undefined') return;
-        try {
-            const json = JSON.stringify(data);
-            window.localStorage.setItem(KEYS.PROGRESS, json);
-            window.dispatchEvent(new StorageEvent('storage', { key: KEYS.PROGRESS, newValue: json }));
-        } catch (e) {
-            console.warn('LS Write Error', e);
+        memoryCache[key] = value;
+        const jsonString = JSON.stringify(value);
+
+        // Save to active engine
+        if (activeStorageEngine === 'IndexedDB') {
+            localforage.setItem(key, value).catch(e => console.error("IndexedDB write error", e));
+        } else {
+            try {
+                window.localStorage.setItem(key, jsonString);
+            } catch (e) {
+                console.warn('LS Write Error', e);
+            }
         }
+
+        // Dispatch event for cross-tab sync
+        window.dispatchEvent(new StorageEvent('storage', { key: key, newValue: jsonString }));
     },
-    getSRS: (): Record<string, SM2State> => {
-        if (typeof window === 'undefined') return {};
-        try {
-            const item = window.localStorage.getItem(KEYS.SRS);
-            return item ? JSON.parse(item) : {};
-        } catch (e) {
-            return {};
-        }
-    },
-    setSRS: (data: Record<string, SM2State>) => {
-        if (typeof window === 'undefined') return;
-        try {
-            window.localStorage.setItem(KEYS.SRS, JSON.stringify(data));
-        } catch (e) {
-            console.warn('LS Write Error', e);
-        }
-    },
-    getCustomFolders: (): CustomFolder[] => {
-        if (typeof window === 'undefined') return [];
-        try {
-            const item = window.localStorage.getItem(KEYS.CUSTOM_FOLDERS);
-            return item ? JSON.parse(item) : [];
-        } catch (e) {
-            return [];
-        }
-    },
-    setCustomFolders: (data: CustomFolder[]) => {
-        if (typeof window === 'undefined') return;
-        try {
-            window.localStorage.setItem(KEYS.CUSTOM_FOLDERS, JSON.stringify(data));
-            // Trigger storage event for cross-hook sync
-            window.dispatchEvent(new StorageEvent('storage', { key: KEYS.CUSTOM_FOLDERS, newValue: JSON.stringify(data) }));
-        } catch (e) {
-            console.warn('LS Write Error', e);
-        }
-    },
-    getStudyQueue: (): StudyQueueItem[] => {
-        if (typeof window === 'undefined') return [];
-        try {
-            const item = window.localStorage.getItem(KEYS.STUDY_QUEUE);
-            return item ? JSON.parse(item) : [];
-        } catch (e) {
-            return [];
-        }
-    },
-    setStudyQueue: (data: StudyQueueItem[]) => {
-        if (typeof window === 'undefined') return;
-        try {
-            const json = JSON.stringify(data);
-            window.localStorage.setItem(KEYS.STUDY_QUEUE, json);
-            window.dispatchEvent(new StorageEvent('storage', { key: KEYS.STUDY_QUEUE, newValue: json }));
-        } catch (e) {
-            console.warn('LS Write Error', e);
-        }
-    },
-    getKnownWords: (): string[] => {
-        if (typeof window === 'undefined') return [];
-        try {
-            const item = window.localStorage.getItem(KEYS.KNOWN_WORDS);
-            return item ? JSON.parse(item) : [];
-        } catch (e) {
-            return [];
-        }
-    },
-    setKnownWords: (words: string[]) => {
-        if (typeof window === 'undefined') return;
-        try {
-            window.localStorage.setItem(KEYS.KNOWN_WORDS, JSON.stringify(words));
-        } catch (e) {
-            console.warn('LS Write Error', e);
-        }
-    },
-    getExamTexts: (): any[] => {
-        if (typeof window === 'undefined') return [];
-        try {
-            const item = window.localStorage.getItem(KEYS.EXAM_TEXTS);
-            return item ? JSON.parse(item) : [];
-        } catch (e) {
-            return [];
-        }
-    },
-    setExamTexts: (texts: any[]) => {
-        if (typeof window === 'undefined') return;
-        try {
-            window.localStorage.setItem(KEYS.EXAM_TEXTS, JSON.stringify(texts));
-        } catch (e) {
-            console.warn('LS Write Error', e);
-        }
-    },
+
+    getProgress: (): ProgressData => storage._get(KEYS.PROGRESS, {}),
+    setProgress: (data: ProgressData) => storage._set(KEYS.PROGRESS, data),
+
+    getSRS: (): Record<string, SM2State> => storage._get(KEYS.SRS, {}),
+    setSRS: (data: Record<string, SM2State>) => storage._set(KEYS.SRS, data),
+
+    getCustomFolders: (): CustomFolder[] => storage._get(KEYS.CUSTOM_FOLDERS, []),
+    setCustomFolders: (data: CustomFolder[]) => storage._set(KEYS.CUSTOM_FOLDERS, data),
+
+    getStudyQueue: (): StudyQueueItem[] => storage._get(KEYS.STUDY_QUEUE, []),
+    setStudyQueue: (data: StudyQueueItem[]) => storage._set(KEYS.STUDY_QUEUE, data),
+
+    getKnownWords: (): string[] => storage._get(KEYS.KNOWN_WORDS, []),
+    setKnownWords: (words: string[]) => storage._set(KEYS.KNOWN_WORDS, words),
+
+    getExamTexts: (): any[] => storage._get(KEYS.EXAM_TEXTS, []),
+    setExamTexts: (texts: any[]) => storage._set(KEYS.EXAM_TEXTS, texts),
+
     getSettings: (): AppSettings => {
-        if (typeof window === 'undefined') return defaultSettings;
-        try {
-            const item = window.localStorage.getItem(KEYS.SETTINGS);
-            if (item) {
-                const parsed = JSON.parse(item);
-                // Migration from old setting
-                if (parsed.skipProductionPhase === true) {
-                    parsed.productionMode = 'skip';
-                } else if (parsed.skipProductionPhase === false && !parsed.productionMode) {
-                    parsed.productionMode = 'full';
-                }
-                return { ...defaultSettings, ...parsed };
-            }
-            return defaultSettings;
-        } catch (e) {
-            return defaultSettings;
-        }
+        const raw = storage._get(KEYS.SETTINGS, defaultSettings) as any;
+        if (raw.skipProductionPhase === true) raw.productionMode = 'skip';
+        else if (raw.skipProductionPhase === false && !raw.productionMode) raw.productionMode = 'full';
+        return { ...defaultSettings, ...raw };
     },
-    setSettings: (settings: AppSettings) => {
-        if (typeof window === 'undefined') return;
-        try {
-            const json = JSON.stringify(settings);
-            window.localStorage.setItem(KEYS.SETTINGS, json);
-            window.dispatchEvent(new StorageEvent('storage', { key: KEYS.SETTINGS, newValue: json }));
-        } catch (e) {
-            console.warn('LS Write Error', e);
-        }
-    },
+    setSettings: (settings: AppSettings) => storage._set(KEYS.SETTINGS, settings),
 
-    // Daily session tracking (reset at 4:00 AM)
     getDailySessionData: (): DailySessionData => {
-        if (typeof window === 'undefined') return getDefaultDailySession();
-        try {
-            const item = window.localStorage.getItem(KEYS.DAILY_SESSION);
-            if (!item) return getDefaultDailySession();
-
-            const data = JSON.parse(item) as DailySessionData;
-
-            // Check if we need to reset (new day after 4:00 AM)
-            if (shouldResetDailySession(data.lastSessionDate)) {
-                return getDefaultDailySession();
-            }
-
-            return data;
-        } catch (e) {
+        const data = storage._get(KEYS.DAILY_SESSION, getDefaultDailySession());
+        if (shouldResetDailySession(data.lastSessionDate)) {
             return getDefaultDailySession();
         }
+        return data;
     },
+    setDailySessionData: (data: DailySessionData) => storage._set(KEYS.DAILY_SESSION, data),
 
-    setDailySessionData: (data: DailySessionData) => {
-        if (typeof window === 'undefined') return;
-        try {
-            window.localStorage.setItem(KEYS.DAILY_SESSION, JSON.stringify(data));
-        } catch (e) {
-            console.warn('LS Write Error', e);
-        }
-    },
-
-    // Increment session count and save learned words
     incrementSession: (learnedWordIds: string[]): DailySessionData => {
         const current = storage.getDailySessionData();
         const updated: DailySessionData = {
@@ -207,18 +155,31 @@ export const storage = {
         return updated;
     },
 
-    // Reset everything but folders/words themselves
-    resetAllProgress: () => {
+    resetAllProgress: async () => {
         if (typeof window === 'undefined') return;
 
-        // 1. Clear Simple Keys
-        window.localStorage.removeItem(KEYS.PROGRESS);
-        window.localStorage.removeItem(KEYS.SRS);
-        window.localStorage.removeItem(KEYS.STUDY_QUEUE);
-        window.localStorage.removeItem(KEYS.KNOWN_WORDS);
-        window.localStorage.removeItem(KEYS.DAILY_SESSION);
+        delete memoryCache[KEYS.PROGRESS];
+        delete memoryCache[KEYS.SRS];
+        delete memoryCache[KEYS.STUDY_QUEUE];
+        delete memoryCache[KEYS.KNOWN_WORDS];
+        delete memoryCache[KEYS.DAILY_SESSION];
 
-        // 2. Reset Multi-Folder Data (preserves folders but resets word state)
+        if (activeStorageEngine === 'IndexedDB') {
+            await Promise.all([
+                localforage.removeItem(KEYS.PROGRESS),
+                localforage.removeItem(KEYS.SRS),
+                localforage.removeItem(KEYS.STUDY_QUEUE),
+                localforage.removeItem(KEYS.KNOWN_WORDS),
+                localforage.removeItem(KEYS.DAILY_SESSION)
+            ]);
+        } else {
+            window.localStorage.removeItem(KEYS.PROGRESS);
+            window.localStorage.removeItem(KEYS.SRS);
+            window.localStorage.removeItem(KEYS.STUDY_QUEUE);
+            window.localStorage.removeItem(KEYS.KNOWN_WORDS);
+            window.localStorage.removeItem(KEYS.DAILY_SESSION);
+        }
+
         const folders = storage.getCustomFolders();
         const resetFolders = folders.map(folder => ({
             ...folder,
@@ -236,22 +197,15 @@ export const storage = {
         }));
         storage.setCustomFolders(resetFolders);
 
-        // 3. Trigger reload for hooks to pick up changes
         window.location.reload();
     },
 
-    // Data Management
     exportData: () => {
         if (typeof window === 'undefined') return;
         const data: Record<string, any> = {};
         for (const [keyName, keyValue] of Object.entries(KEYS)) {
-            const item = window.localStorage.getItem(keyValue);
-            if (item) {
-                try {
-                    data[keyValue] = JSON.parse(item);
-                } catch {
-                    // Ignore parsing errors for individual keys
-                }
+            if (memoryCache[keyValue] !== undefined) {
+                data[keyValue] = memoryCache[keyValue];
             }
         }
 
@@ -273,7 +227,6 @@ export const storage = {
             const text = await file.text();
             const data = JSON.parse(text);
 
-            // Validate that we have at least one recognized key before importing
             const validKeys = Object.values(KEYS);
             const importedKeys = Object.keys(data);
             const hasValidKeys = importedKeys.some(key => validKeys.includes(key as any));
@@ -282,14 +235,17 @@ export const storage = {
                 return false;
             }
 
-            // Restore data
             for (const [key, value] of Object.entries(data)) {
                 if (validKeys.includes(key as any)) {
-                    window.localStorage.setItem(key, JSON.stringify(value));
+                    memoryCache[key] = value;
+                    if (activeStorageEngine === 'IndexedDB') {
+                        await localforage.setItem(key, value);
+                    } else {
+                        window.localStorage.setItem(key, JSON.stringify(value));
+                    }
                 }
             }
 
-            // Reload to apply
             window.location.reload();
             return true;
         } catch (error) {
@@ -299,11 +255,10 @@ export const storage = {
     }
 };
 
-// Types and helpers for daily session
 export interface DailySessionData {
-    lastSessionDate: number;      // Timestamp of last session
-    sessionCount: number;         // Sessions completed today (max meaningful: 2)
-    learnedTodayIds: string[];    // Word IDs learned today (for review-only mode)
+    lastSessionDate: number;
+    sessionCount: number;
+    learnedTodayIds: string[];
 }
 
 function getDefaultDailySession(): DailySessionData {
@@ -314,22 +269,18 @@ function getDefaultDailySession(): DailySessionData {
     };
 }
 
-// Check if we should reset daily session (after 4:00 AM)
 function shouldResetDailySession(lastSessionDate: number): boolean {
     if (lastSessionDate === 0) return false;
 
     const now = new Date();
     const last = new Date(lastSessionDate);
 
-    // Get today's 4:00 AM
     const todayReset = new Date(now);
     todayReset.setHours(4, 0, 0, 0);
 
-    // If current time is before 4:00 AM, use yesterday's 4:00 AM as reset point
     if (now < todayReset) {
         todayReset.setDate(todayReset.getDate() - 1);
     }
 
-    // Reset if last session was before the reset point
     return last < todayReset;
 }

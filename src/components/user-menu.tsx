@@ -11,7 +11,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, Settings, AlertCircle, RotateCcw, Download, Upload } from 'lucide-react';
+import { User, Settings, AlertCircle, RotateCcw, Download, Upload, Database } from 'lucide-react';
 import { storage } from '@/lib/storage';
 import { useState } from 'react';
 import {
@@ -72,8 +72,9 @@ export function UserMenu() {
                             <p className="text-sm font-medium leading-none">
                                 Local User
                             </p>
-                            <p className="text-xs leading-none text-muted-foreground">
-                                local-only mode
+                            <p className="text-xs leading-none text-muted-foreground flex items-center gap-1 mt-1">
+                                <Database className="h-3 w-3" />
+                                {storage.getActiveEngine() === 'IndexedDB' ? 'IndexedDB (Безлимитно)' : 'LocalStorage (Ограничено)'}
                             </p>
                         </div>
                     </DropdownMenuLabel>
