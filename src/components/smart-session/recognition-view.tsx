@@ -25,7 +25,8 @@ export function RecognitionView({ item, onResult, onMarkAsKnown, direction: forc
     const { word } = item;
     const [selectedOption, setSelectedOption] = useState<string | null>(null);
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-    const { speak, isLoaded } = useSpeech();
+    const [showSuccess, setShowSuccess] = useState(false);
+    const { speak, speakSequence, isLoaded } = useSpeech();
 
     // If forcedDirection is provided, use it. Otherwise, fallback to random (for standalone usage).
     const direction = useMemo(() =>
@@ -54,8 +55,8 @@ export function RecognitionView({ item, onResult, onMarkAsKnown, direction: forc
         return allOptions;
     }, [word, direction]);
 
-    const handleSelect = (option: string) => {
-        if (selectedOption) return;
+    const handleSelect = async (option: string) => {
+        if (selectedOption || showSuccess) return;
 
         setSelectedOption(option);
         const correctValue = direction === 0 ? word.russian : formatGermanWord(word);
@@ -63,17 +64,90 @@ export function RecognitionView({ item, onResult, onMarkAsKnown, direction: forc
         setIsCorrect(correct);
 
         if (correct) {
-            if (direction === 0) {
-                speak(word.russian, 'ru-RU');
-            } else {
-                speak(formatGermanWord(word), 'de-DE');
-            }
-        }
+            setShowSuccess(true);
 
-        setTimeout(() => {
-            onResult(correct ? 'success' : 'fail');
-        }, 1500);
+            const sequence: { text: string, lang: string }[] = [];
+
+            // 1. The word itself in opposite language
+            if (direction === 0) {
+                sequence.push({ text: word.russian, lang: 'ru-RU' });
+            } else {
+                sequence.push({ text: formatGermanWord(word), lang: 'de-DE' });
+            }
+
+            // 2. The Example Phrase (if exists)
+            if ('example' in word && word.example) {
+                sequence.push({ text: word.example, lang: 'de-DE' });
+            }
+            if ('exampleMeaning' in word && (word as any).exampleMeaning) {
+                sequence.push({ text: (word as any).exampleMeaning, lang: 'ru-RU' });
+            }
+
+            await speakSequence(sequence);
+
+            // Small wait after audio
+            await new Promise(r => setTimeout(r, 600));
+            onResult('success');
+        } else {
+            // Incorrect - small delay then next
+            setTimeout(() => {
+                onResult('fail');
+            }, 1500);
+        }
     };
+
+    if (showSuccess) {
+        return (
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex flex-col items-center justify-center space-y-6 w-full max-w-2xl px-4"
+            >
+                <div className="flex flex-col items-center gap-2 mb-4">
+                    <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(34,197,94,0.5)] animate-bounce">
+                        <Check className="h-10 w-10 text-white stroke-[4]" />
+                    </div>
+                    <h2 className="text-2xl font-black text-green-500 uppercase tracking-widest mt-2">Верно!</h2>
+                </div>
+
+                <Card className="w-full bg-slate-950 border-green-500/30 shadow-2xl overflow-hidden relative">
+                    <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent pointer-events-none" />
+                    <CardContent className="p-8 flex flex-col items-center text-center space-y-6 relative z-10">
+
+                        <div className="flex flex-col items-center gap-1">
+                            <div className="text-4xl font-black tracking-tight text-white mb-1">
+                                <FormattedGermanWord word={word} />
+                            </div>
+                            <div className="text-xl text-green-400 font-bold italic">
+                                {word.russian}
+                            </div>
+                        </div>
+
+                        {'example' in word && word.example && (
+                            <div className="w-full pt-6 border-t border-white/10 space-y-3">
+                                <Badge variant="outline" className="bg-green-500/10 text-green-400 border-green-500/20 text-[10px] uppercase font-black px-3">
+                                    B2 Beruf Phrase
+                                </Badge>
+                                <p
+                                    className="text-xl md:text-2xl font-bold text-white leading-tight tracking-tight text-left pl-4 border-l-4 border-green-500/50"
+                                    dangerouslySetInnerHTML={{ __html: word.example }}
+                                />
+                                {'exampleMeaning' in word && (word as any).exampleMeaning && (
+                                    <p className="text-md text-slate-400 italic text-left pl-4">
+                                        — {(word as any).exampleMeaning}
+                                    </p>
+                                )}
+                            </div>
+                        )}
+
+                        <div className="flex items-center gap-2 text-green-500/50 text-[10px] uppercase font-bold tracking-widest animate-pulse mt-4">
+                            <BrainCircuit className="h-3 w-3" /> Озвучка и переход к следующему слову...
+                        </div>
+                    </CardContent>
+                </Card>
+            </motion.div>
+        );
+    }
 
     return (
         <motion.div
@@ -203,7 +277,7 @@ export function RecognitionView({ item, onResult, onMarkAsKnown, direction: forc
             <div className="flex flex-col gap-4 w-full">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
                     {options.map((option, idx) => {
-                        const isTarget = option === (direction === 0 ? word.russian : word.german);
+                        const isTarget = option === (direction === 0 ? word.russian : formatGermanWord(word));
                         const isSelected = selectedOption === option;
 
                         let variant: "outline" | "default" | "destructive" | "secondary" = "outline";
@@ -224,7 +298,7 @@ export function RecognitionView({ item, onResult, onMarkAsKnown, direction: forc
                                     isSelected && !isTarget && "bg-red-600 border-red-500 text-white"
                                 )}
                                 onClick={() => handleSelect(option)}
-                                disabled={!!selectedOption}
+                                disabled={!!selectedOption || showSuccess}
                             >
                                 {option}
                                 {isSelected && (isTarget ? <Check className="absolute right-4" /> : <X className="absolute right-4" />)}

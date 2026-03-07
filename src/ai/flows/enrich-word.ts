@@ -109,6 +109,8 @@ const renderPrompt = (input: WordEnrichmentInput) => {
      - Provide **comparative** and **superlative** forms.
   8. Provide 2-3 **Synonyms** and 1-2 **Antonyms** with Russian translations. Ensure translations for synonyms are concise.
   9. Generate a default example sentence (main example) and its translation.
+     - **CRITICAL**: The example sentence must be **highly relevant to the B2 Beruf exam** (workplace context, formal communication, professional situations).
+     - It should be a phrase that can be directly used in a B2 Beruf letter or oral exam.
 
   Return ONLY valid JSON matching the schema.`;
 };

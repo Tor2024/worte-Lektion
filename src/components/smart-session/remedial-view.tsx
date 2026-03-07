@@ -1,13 +1,13 @@
 
-'use client';
-
 import { VocabularyWord } from '@/lib/types';
 import { useState, useEffect } from 'react';
 import { analyzeLeechWithAI } from '@/ai/flows/analyze-leech';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, Brain, Siren, Lightbulb, GraduationCap } from 'lucide-react';
+import { Loader2, Brain, Siren, Lightbulb, GraduationCap, Sparkles, BrainCircuit } from 'lucide-react';
 import { WordCard } from '@/components/word-card';
+import { motion } from 'framer-motion';
+import { FormattedGermanWord } from '@/components/formatted-german-word';
 
 interface RemedialViewProps {
     word: VocabularyWord;
@@ -34,73 +34,99 @@ export function RemedialView({ word, onComplete }: RemedialViewProps) {
 
     if (isLoading) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[400px] text-center space-y-4">
-                <Loader2 className="w-12 h-12 animate-spin text-red-500" />
-                <h2 className="text-xl font-bold font-headline">Анализируем ваши ошибки...</h2>
-                <p className="text-muted-foreground">Доктор AI готовит "лекарство" для слова {word.german}</p>
+            <div className="flex flex-col items-center justify-center min-h-[500px] text-center space-y-6">
+                <div className="relative">
+                    <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full scale-150 animate-pulse" />
+                    <BrainCircuit className="w-16 h-16 animate-bounce text-primary relative z-10" />
+                </div>
+                <div className="space-y-2">
+                    <h2 className="text-2xl font-black uppercase tracking-tighter">Глубокий анализ...</h2>
+                    <p className="text-muted-foreground text-sm max-w-xs mx-auto">
+                        ИИ исследует ваши нейронные связи, чтобы понять, почему <span className="text-primary font-bold">{word.german}</span> вызывает трудности.
+                    </p>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="space-y-6 max-w-2xl mx-auto">
-            <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-                <div className="flex justify-center mb-4">
-                    <div className="bg-red-100 p-3 rounded-full">
-                        <Siren className="w-8 h-8 text-red-600" />
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-8 max-w-2xl mx-auto px-4"
+        >
+            <div className="bg-slate-950 border border-primary/20 rounded-3xl p-8 text-center relative overflow-hidden shadow-2xl">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent pointer-events-none" />
+                <div className="relative z-10">
+                    <div className="flex justify-center mb-6">
+                        <div className="bg-primary/20 p-4 rounded-full border border-primary/30 shadow-inner">
+                            <Sparkles className="w-10 h-10 text-primary" />
+                        </div>
                     </div>
+                    <h1 className="text-3xl font-black text-white mb-2 uppercase tracking-tight">Клиника Ошибок</h1>
+                    <p className="text-slate-400 font-medium">Это слово — «пиявка» (Leech). Давайте деактивируем ложную ассоциацию.</p>
                 </div>
-                <h1 className="text-2xl font-bold text-red-800 mb-2">Работа над ошибками</h1>
-                <p className="text-red-600">Вы часто ошибаетесь в этом слове. Давайте вылечим его раз и навсегда.</p>
             </div>
 
-            {/* The Word Itself */}
-            <div className="transform scale-90 opacity-75">
-                <WordCard word={word} />
+            {/* The Word Itself (Large & Beautiful) */}
+            <div className="flex justify-center">
+                <div className="p-10 bg-white/5 border border-white/10 rounded-3xl shadow-xl hover:bg-white/10 transition-colors group">
+                    <div className="text-5xl font-black text-white tracking-widest group-hover:scale-105 transition-transform">
+                        <FormattedGermanWord word={word} />
+                    </div>
+                    <div className="text-xl text-primary font-bold mt-2 opacity-80">{word.russian}</div>
+                </div>
             </div>
 
-            {/* Analysis Cards */}
+            {/* Analysis Cards (Premium Layout) */}
             {analysis && (
-                <div className="grid gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <div className="grid gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
                     {/* Mnemonic */}
-                    <Card className="border-l-4 border-l-purple-500 shadow-md">
+                    <Card className="bg-slate-950 border-white/10 shadow-xl relative overflow-hidden group">
+                        <div className="absolute top-0 left-0 w-1.5 h-full bg-purple-500" />
                         <CardHeader className="pb-2">
-                            <CardTitle className="text-lg flex items-center gap-2 text-purple-700">
-                                <Brain className="w-5 h-5" />
-                                Мнемоника (Запоминалка)
+                            <CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-2 text-purple-400">
+                                <Brain className="w-4 h-4 text-purple-500" />
+                                Новая ассоциация
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-lg italic font-medium text-gray-700">"{analysis.mnemonic}"</p>
+                            <p className="text-xl italic font-serif text-slate-200 leading-relaxed group-hover:text-white transition-colors">
+                                &ldquo;{analysis.mnemonic}&rdquo;
+                            </p>
                         </CardContent>
                     </Card>
 
-                    {/* Confusion Trap */}
-                    <Card className="border-l-4 border-l-amber-500 shadow-md">
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-lg flex items-center gap-2 text-amber-700">
-                                <Siren className="w-5 h-5" />
-                                Почему это сложно?
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p>{analysis.confusionAnalysis}</p>
-                        </CardContent>
-                    </Card>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Confusion Trap */}
+                        <Card className="bg-slate-950 border-white/10 shadow-xl relative overflow-hidden">
+                            <div className="absolute top-0 left-0 w-1.5 h-full bg-amber-500" />
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2 text-amber-400">
+                                    <Siren className="w-3 h-3 text-amber-500" />
+                                    Ловушка
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-xs text-slate-400 leading-relaxed">{analysis.confusionAnalysis}</p>
+                            </CardContent>
+                        </Card>
 
-                    {/* Usage Tip */}
-                    <Card className="border-l-4 border-l-green-500 shadow-md">
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-lg flex items-center gap-2 text-green-700">
-                                <Lightbulb className="w-5 h-5" />
-                                Золотое правило
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p>{analysis.usageTip}</p>
-                        </CardContent>
-                    </Card>
+                        {/* Usage Tip */}
+                        <Card className="bg-slate-950 border-white/10 shadow-xl relative overflow-hidden">
+                            <div className="absolute top-0 left-0 w-1.5 h-full bg-emerald-500" />
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2 text-emerald-400">
+                                    <Lightbulb className="w-3 h-3 text-emerald-500" />
+                                    Принцип
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-xs text-slate-400 leading-relaxed">{analysis.usageTip}</p>
+                            </CardContent>
+                        </Card>
+                    </div>
 
                 </div>
             )}
@@ -108,11 +134,11 @@ export function RemedialView({ word, onComplete }: RemedialViewProps) {
             <Button
                 onClick={onComplete}
                 size="lg"
-                className="w-full text-lg font-bold bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white shadow-xl mt-8"
+                className="w-full h-16 text-xl font-black uppercase tracking-widest shadow-2xl active:scale-[0.98] transition-all bg-primary hover:bg-primary/90"
             >
-                <GraduationCap className="mr-2 h-6 w-6" />
-                Я понял! Запомнить
+                <GraduationCap className="mr-3 h-7 w-7" />
+                Я все осознал
             </Button>
-        </div>
+        </motion.div>
     );
 }

@@ -22,7 +22,7 @@ export function ConsolidationView({ items, onComplete }: ConsolidationViewProps)
     const [selectedOption, setSelectedOption] = useState<string | null>(null);
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
     const [score, setScore] = useState(0);
-    const { speak, isLoaded } = useSpeech();
+    const { speak, speakSequence, isLoaded } = useSpeech();
 
     const currentItem = items[currentIndex];
 
@@ -35,7 +35,6 @@ export function ConsolidationView({ items, onComplete }: ConsolidationViewProps)
     const options = useMemo(() => {
         if (!currentItem) return [];
 
-        // Use other words from the session as distractors first
         const otherSessionWords = items
             .filter(it => it.id !== currentItem.id)
             .sort(() => Math.random() - 0.5)
@@ -43,13 +42,12 @@ export function ConsolidationView({ items, onComplete }: ConsolidationViewProps)
 
         const distractors = [...otherSessionWords];
 
-        // If not enough session words, fill with commonWords
         if (distractors.length < 3) {
             const moreDistractors = commonWords
                 .filter(w => w.german !== currentItem.word.german && !distractors.some(d => d.word.german === w.german))
                 .sort(() => Math.random() - 0.5)
                 .slice(0, 3 - distractors.length)
-                .map(w => ({ word: w })); // Mock StudyQueueItem structure enough for formatGermanWord
+                .map(w => ({ word: w }));
 
             distractors.push(...(moreDistractors as any[]));
         }
@@ -61,7 +59,7 @@ export function ConsolidationView({ items, onComplete }: ConsolidationViewProps)
         return allOptions.sort(() => Math.random() - 0.5);
     }, [currentItem, items]);
 
-    const handleSelect = (option: string) => {
+    const handleSelect = async (option: string) => {
         if (selectedOption || !currentItem) return;
 
         setSelectedOption(option);
@@ -70,63 +68,65 @@ export function ConsolidationView({ items, onComplete }: ConsolidationViewProps)
         setIsCorrect(correct);
 
         if (correct) {
-            speak(formatGermanWord(currentItem.word), 'de-DE');
             setScore(s => s + 1);
+            await speak(formatGermanWord(currentItem.word), 'de-DE');
         }
 
-        setTimeout(() => {
-            if (currentIndex < items.length - 1) {
-                setCurrentIndex(i => i + 1);
-                setSelectedOption(null);
-                setIsCorrect(null);
-            } else {
-                onComplete();
-            }
-        }, 1200);
+        await new Promise(r => setTimeout(r, 800));
+
+        if (currentIndex < items.length - 1) {
+            setCurrentIndex(i => i + 1);
+            setSelectedOption(null);
+            setIsCorrect(null);
+        } else {
+            onComplete();
+        }
     };
 
     if (!currentItem) return null;
 
     return (
         <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex flex-col items-center space-y-8 w-full max-w-xl mx-auto"
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex flex-col items-center space-y-8 w-full max-w-2xl mx-auto px-4"
         >
-            <div className="w-full space-y-2">
-                <div className="flex items-center justify-between text-xs font-bold uppercase tracking-widest text-muted-foreground">
+            <div className="w-full space-y-3">
+                <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-[0.2em] text-primary/60">
                     <div className="flex items-center gap-2">
-                        <Trophy className="h-4 w-4 text-amber-500" />
-                        Финальное закрепление
+                        <Trophy className="h-3 w-3 text-amber-500" />
+                        Финальный марафон
                     </div>
                     <span>{currentIndex + 1} / {items.length}</span>
                 </div>
-                <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
+                <div className="h-1.5 w-full bg-slate-900 rounded-full overflow-hidden border border-white/5">
                     <motion.div
-                        className="h-full bg-amber-500"
+                        className="h-full bg-gradient-to-r from-primary to-primary/60 shadow-[0_0_10px_rgba(var(--primary),0.5)]"
                         initial={{ width: 0 }}
                         animate={{ width: `${((currentIndex + 1) / items.length) * 100}%` }}
                     />
                 </div>
             </div>
 
-            <Card className="w-full bg-card border-2 border-amber-500/20 shadow-2xl overflow-hidden">
-                <CardContent className="p-12 flex flex-col items-center text-center space-y-4">
-                    <div className="text-muted-foreground text-sm uppercase tracking-widest font-bold">Как это на немецком?</div>
-                    <div className="text-5xl font-black text-foreground drop-shadow-sm">
+            <Card className="w-full bg-slate-950 border-white/10 shadow-2xl overflow-hidden relative group">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
+                <CardContent className="p-10 flex flex-col items-center text-center space-y-6 relative z-10">
+                    <div className="text-primary/40 text-[10px] uppercase tracking-[0.3em] font-black">Переведите в уме</div>
+                    <div className="text-5xl font-black text-white tracking-tight drop-shadow-lg group-hover:scale-105 transition-transform duration-500">
                         {currentItem.word.russian}
                     </div>
                 </CardContent>
             </Card>
 
-            <div className="grid grid-cols-1 gap-3 w-full">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={currentIndex}
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        className="grid grid-cols-1 gap-3"
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.2 }}
+                        className="grid grid-cols-1 sm:grid-cols-2 gap-4 col-span-2"
                     >
                         {options.map((option, idx) => {
                             const isTarget = option === formatGermanWord(currentItem.word);
@@ -144,20 +144,25 @@ export function ConsolidationView({ items, onComplete }: ConsolidationViewProps)
                                     key={idx}
                                     variant={variant as any}
                                     className={cn(
-                                        "h-16 text-xl font-bold transition-all duration-200",
-                                        isTarget && selectedOption && "bg-green-600 hover:bg-green-700 text-white border-green-600 shadow-[0_0_15px_rgba(22,163,74,0.4)]",
-                                        isSelected && !isTarget && "bg-red-600 hover:bg-red-700 text-white border-red-600"
+                                        "h-20 text-xl font-bold rounded-2xl border-2 transition-all duration-300 relative overflow-hidden bg-slate-900/50",
+                                        !selectedOption && "hover:border-primary/50 hover:bg-primary/5 hover:scale-[1.02] border-white/5",
+                                        isTarget && selectedOption && "bg-green-600 border-green-500 text-white shadow-[0_0_20px_rgba(34,197,94,0.3)]",
+                                        isSelected && !isTarget && "bg-red-600 border-red-500 text-white"
                                     )}
                                     onClick={() => handleSelect(option)}
                                     disabled={!!selectedOption}
                                 >
                                     {option}
-                                    {isSelected && (isTarget ? <Check className="ml-2 h-6 w-6" /> : <X className="ml-2 h-6 w-6" />)}
+                                    {isSelected && (isTarget ? <Check className="absolute right-4 h-6 w-6 stroke-[3]" /> : <X className="absolute right-4 h-6 w-6 stroke-[3]" />)}
                                 </Button>
                             );
                         })}
                     </motion.div>
                 </AnimatePresence>
+            </div>
+
+            <div className="pt-4 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40">
+                <BrainCircuit className="h-3 w-3" /> Автоматизм и скорость реакции
             </div>
         </motion.div>
     );

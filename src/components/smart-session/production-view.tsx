@@ -5,14 +5,15 @@ import { StudyQueueItem } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { BrainCircuit, Loader2, Sparkles, Send, ArrowRight, Eye, EyeOff, PenTool, Check, Siren } from 'lucide-react';
+import { BrainCircuit, Loader2, Sparkles, Send, ArrowRight, Lightbulb, Check, PenTool } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { generateClozeWithAI, type GenerateClozeOutput } from '@/ai/flows/generate-cloze';
 import { evaluateProductionWithAI, type EvaluateProductionOutput } from '@/ai/flows/evaluate-production';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
 import { SentenceScaffold } from './sentence-scaffold';
+import { useSpeech } from '@/hooks/use-speech';
+import { FormattedGermanWord } from '@/components/formatted-german-word';
 
 interface ProductionViewProps {
     item: StudyQueueItem;
@@ -33,6 +34,9 @@ export function ProductionView({ item, storyContext, onStoryUpdate, onResult, mo
     const [showStoryContext, setShowStoryContext] = useState(false);
     const [correctionUserAnswer, setCorrectionUserAnswer] = useState('');
     const [isCorrected, setIsCorrected] = useState(false);
+
+    const [showSuccess, setShowSuccess] = useState(false);
+    const { speakSequence, isLoaded } = useSpeech();
 
     // Fetch AI context on mount
     useEffect(() => {
@@ -60,36 +64,32 @@ export function ProductionView({ item, storyContext, onStoryUpdate, onResult, mo
         const normalizedUser = userAnswer.trim().toLowerCase();
         const normalizedCorrect = clozeData.missingWord.trim().toLowerCase();
 
-        let isCorrect = normalizedUser === normalizedCorrect;
+        let isCorrectRes = normalizedUser === normalizedCorrect;
 
-        if (mode === 'cloze' && !isCorrect && normalizedUser.length > 0) {
-            // Lenient matching: Ignore articles and common endings, check if roots match
+        if (mode === 'cloze' && !isCorrectRes && normalizedUser.length > 0) {
+            // Lenient matching logic ...
             const cleanStr = (s: string) => {
                 let text = s.toLowerCase().trim();
                 text = text.replace(/^(der|die|das|ein|eine|einen|einem|einer|eines)\s+/g, '').trim();
-                // strip simple ends: e, en, st, t for verb/adjective matching
                 text = text.replace(/(en|st|e|t)$/, '');
                 return text;
             };
-
-            const cleanUser = cleanStr(normalizedUser);
-            const cleanCorrect = cleanStr(normalizedCorrect);
-            const cleanBase = cleanStr(word.german);
-
-            if (cleanUser === cleanCorrect || cleanUser === cleanBase) {
-                isCorrect = true;
-            } else if (cleanUser.length > 2 && (cleanCorrect.includes(cleanUser) || cleanBase.includes(cleanUser) || cleanUser.includes(cleanCorrect))) {
-                isCorrect = true;
-            }
+            if (cleanStr(normalizedUser) === cleanStr(normalizedCorrect)) isCorrectRes = true;
         }
 
-        // Multi-answer check
-        if (!isCorrect && clozeData.acceptedAnswers && clozeData.acceptedAnswers.length > 0) {
-            isCorrect = clozeData.acceptedAnswers.some(ans => ans.toLowerCase() === normalizedUser);
+        if (!isCorrectRes && clozeData.acceptedAnswers?.some(ans => ans.toLowerCase() === normalizedUser)) {
+            isCorrectRes = true;
         }
 
-        if (isCorrect) {
+        if (isCorrectRes) {
             setFeedback('correct');
+            setShowSuccess(true);
+
+            const sequence = [
+                { text: clozeData.sentenceWithBlank.replace('___', clozeData.missingWord), lang: 'de-DE' },
+                { text: clozeData.translation, lang: 'ru-RU' }
+            ];
+            await speakSequence(sequence);
         } else {
             setFeedback('incorrect');
             setIsEvaluating(true);
@@ -115,35 +115,69 @@ export function ProductionView({ item, storyContext, onStoryUpdate, onResult, mo
 
     if (isLoading) {
         return (
-            <div className="flex flex-col items-center justify-center p-12 space-y-4 text-center animate-pulse">
-                <Sparkles className="h-12 w-12 text-primary animate-spin" />
-                <p className="text-muted-foreground">ИИ готовит новое задание...</p>
+            <div className="flex flex-col items-center justify-center p-12 space-y-4 text-center animate-pulse min-h-[400px]">
+                <div className="relative">
+                    <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full scale-150 animate-pulse" />
+                    <Sparkles className="h-16 w-16 text-primary animate-spin relative z-10" />
+                </div>
+                <p className="text-primary/60 font-black uppercase tracking-[0.2em] text-[10px]">Нейросеть генерирует задание...</p>
             </div>
         );
     }
 
     if (!clozeData) return <div>Ошибка загрузки контекста.</div>;
 
-    // Split sentence by ___ to inject input
-    const parts = clozeData.sentenceWithBlank.split('___');
+    if (showSuccess) {
+        return (
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex flex-col items-center justify-center space-y-6 w-full max-w-2xl px-4"
+            >
+                <div className="flex flex-col items-center gap-2 mb-2">
+                    <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(34,197,94,0.5)]">
+                        <Check className="h-10 w-10 text-white stroke-[4]" />
+                    </div>
+                    <h2 className="text-2xl font-black text-green-500 uppercase tracking-widest mt-2">Закреплено!</h2>
+                </div>
+
+                <Card className="w-full bg-slate-950 border-green-500/30 shadow-2xl relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-transparent pointer-events-none" />
+                    <CardContent className="p-8 flex flex-col items-center text-center space-y-6 relative z-10">
+                        <div className="space-y-4">
+                            <p className="text-2xl md:text-3xl font-bold text-white leading-tight tracking-tight border-l-4 border-green-500/50 pl-6 text-left">
+                                {clozeData.sentenceWithBlank.replace('___', `<span class="text-green-400 underline decoration-2">${clozeData.missingWord}</span>`).split('___').join('') /* fallback if no blank */}
+                                <span dangerouslySetInnerHTML={{ __html: clozeData.sentenceWithBlank.replace('___', `<span class="text-green-400 underline decoration-2">${clozeData.missingWord}</span>`) }} />
+                            </p>
+                            <p className="text-lg text-slate-400 italic text-left pl-10">— {clozeData.translation}</p>
+                        </div>
+
+                        <div className="flex items-center gap-2 text-green-500/50 text-[10px] uppercase font-bold tracking-widest animate-pulse mt-4">
+                            <BrainCircuit className="h-3 w-3" /> Синхронизация нейронных путей...
+                        </div>
+
+                        <Button size="lg" className="w-full h-14 bg-green-600 hover:bg-green-700 font-black uppercase tracking-widest" onClick={handleContinue}>
+                            Продолжить <ArrowRight className="ml-2 h-5 w-5" />
+                        </Button>
+                    </CardContent>
+                </Card>
+            </motion.div>
+        );
+    }
 
     return (
         <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="flex flex-col items-center space-y-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col items-center space-y-4 w-full"
         >
-            <div className="flex items-center gap-2 text-muted-foreground uppercase text-[10px] tracking-[0.2em] font-bold">
-                <BrainCircuit className="h-4 w-4" /> Фаза 3: Активный Контекст
-                {(item.consecutiveMistakes || 0) >= 3 && (
-                    <div className="ml-4 px-2 py-0.5 bg-red-100 text-red-600 rounded-full text-[8px] font-black animate-pulse flex items-center gap-1 border border-red-200">
-                        <Siren className="h-3 w-3" /> LEECH PROTECTION
-                    </div>
-                )}
+            <div className="flex items-center gap-2 text-primary uppercase text-[8px] font-black tracking-[0.2em] animate-pulse">
+                <BrainCircuit className="h-3 w-3" /> Фаза 3: Активный Контекст (Синтез)
             </div>
 
-            <Card className="w-full bg-card border-2 border-primary/10 shadow-xl overflow-hidden">
-                <CardContent className="p-6 flex flex-col items-center text-center space-y-6">
+            <Card className="w-full bg-slate-950 border-primary/20 shadow-2xl relative overflow-hidden group">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
+                <CardContent className="p-8 flex flex-col items-center text-center space-y-8 relative z-10">
 
                     <SentenceScaffold
                         sentenceWithBlank={clozeData.sentenceWithBlank}
@@ -153,225 +187,111 @@ export function ProductionView({ item, storyContext, onStoryUpdate, onResult, mo
                         feedback={feedback}
                     />
 
-                    <div className="text-muted-foreground italic flex flex-col gap-1 items-center text-sm">
-                        <div className="opacity-80">{clozeData.translation}</div>
-                        {clozeData.hint && <div className="text-[10px] bg-primary/5 border border-primary/10 px-2 py-0.5 rounded text-primary">{clozeData.hint}</div>}
-                        {(item.mnemonic || (item.consecutiveMistakes || 0) >= 3) && (
-                            <div className={cn(
-                                "mt-1 p-2 rounded text-[9px] italic max-w-xs border shadow-sm",
-                                (item.consecutiveMistakes || 0) >= 3
-                                    ? "bg-amber-100 border-amber-400 text-amber-900"
-                                    : "bg-amber-50 border-amber-200 text-amber-800"
-                            )}>
-                                <b>💡 МНЕМОНИКА:</b> &ldquo;{item.mnemonic || (word as any).mnemonic || "Нет ассоциации"} &rdquo;
+                    <div className="flex flex-col gap-4 items-center w-full">
+                        <div className="text-slate-400 italic text-lg opacity-80">&ldquo;{clozeData.translation}&rdquo;</div>
+
+                        {clozeData.hint && (
+                            <div className="px-4 py-1.5 bg-primary/10 border border-primary/20 rounded-full text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                                <Lightbulb className="h-3 w-3" /> {clozeData.hint}
                             </div>
                         )}
+
+                        {!feedback && (
+                            <form onSubmit={handleSubmit} className="w-full max-w-sm flex gap-3 mt-4">
+                                <Input
+                                    autoFocus
+                                    placeholder="Впишите пропущенное слово..."
+                                    className="h-14 text-xl bg-white/5 border-white/10 text-white focus:border-primary/50 transition-all font-bold"
+                                    value={userAnswer}
+                                    onChange={(e) => setUserAnswer(e.target.value)}
+                                    autoComplete="off"
+                                />
+                                <Button size="icon" className="h-14 w-14 shadow-lg active:scale-95 transition-transform" type="submit" disabled={!userAnswer}>
+                                    <Send className="h-6 w-6" />
+                                </Button>
+                            </form>
+                        )}
                     </div>
-
-                    {!feedback && (
-                        <form onSubmit={handleSubmit} className="w-full max-w-sm flex gap-2 mt-8">
-                            <Input
-                                autoFocus
-                                placeholder="Впишите слово..."
-                                className="h-12 text-lg"
-                                value={userAnswer}
-                                onChange={(e) => setUserAnswer(e.target.value)}
-                            />
-                            <Button size="icon" className="h-12 w-12" type="submit" disabled={!userAnswer}>
-                                <Send className="h-5 w-5" />
-                            </Button>
-                        </form>
-                    )}
-
-                    {/* Story Context Visualization */}
-                    {storyContext && (
-                        <div className="w-full flex flex-col items-end gap-2">
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 px-2 text-[10px] uppercase font-bold tracking-widest text-muted-foreground hover:text-primary gap-1"
-                                onClick={() => setShowStoryContext(!showStoryContext)}
-                            >
-                                {showStoryContext ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-                                {showStoryContext ? 'Скрыть контекст' : 'Показать контекст истории'}
-                            </Button>
-
-                            <AnimatePresence>
-                                {showStoryContext && (
-                                    <motion.div
-                                        initial={{ opacity: 0, height: 0 }}
-                                        animate={{ opacity: 1, height: 'auto' }}
-                                        exit={{ opacity: 0, height: 0 }}
-                                        className="p-4 bg-muted/30 rounded-lg text-xs text-muted-foreground italic text-left w-full border border-dashed overflow-hidden"
-                                    >
-                                        <span className="font-bold uppercase tracking-widest text-[10px] block mb-1 opacity-50">Контекст истории ({word.german}):</span>
-                                        &ldquo;...{storyContext}&rdquo;
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </div>
-                    )}
-
                 </CardContent>
             </Card>
 
-            {feedback && (
-                <div className="w-full max-w-lg space-y-4 animate-in slide-in-from-bottom-4 shadow-2xl rounded-2xl overflow-hidden border">
-                    {feedback === 'correct' ? (
-                        <div className="p-6 bg-green-50 text-green-800 flex items-start gap-4 relative overflow-hidden">
-                            {/* Neural Success Background Effect */}
-                            <motion.div
-                                className="absolute inset-0 pointer-events-none opacity-20"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 0.2 }}
-                            >
-                                <svg width="100%" height="100%" viewBox="0 0 400 100">
-                                    <motion.path
-                                        d="M 0 50 Q 100 0 200 50 T 400 50"
-                                        stroke="currentColor"
-                                        strokeWidth="2"
-                                        fill="none"
-                                        initial={{ pathLength: 0 }}
-                                        animate={{ pathLength: 1 }}
-                                        transition={{ duration: 1 }}
-                                    />
-                                </svg>
-                            </motion.div>
-
-                            <div className="bg-green-100 p-2 rounded-full relative z-10">
-                                <BrainCircuit className="h-6 w-6 text-green-600 animate-pulse" />
-                            </div>
-                            <div className="relative z-10">
-                                <div className="text-xl font-black flex items-center gap-2">
-                                    Укрепление связи! <Sparkles className="h-5 w-5 text-amber-500" />
-                                </div>
-                                {userAnswer.trim().toLowerCase() !== clozeData.missingWord.toLowerCase() && (
-                                    <div className="text-sm opacity-80 mt-1">Обычно говорят: <b>{clozeData.missingWord}</b></div>
-                                )}
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="flex flex-col">
-                            {/* Correction Header */}
-                            <div className="p-6 bg-slate-50 border-b flex flex-col items-center text-center gap-3">
-                                <div className="text-xs font-bold uppercase tracking-widest text-slate-400">Коррекция</div>
-                                <div className="flex items-center gap-4 text-xl">
-                                    <span className="text-red-400 line-through decoration-2 opacity-50">{userAnswer}</span>
-                                    <ArrowRight className="h-5 w-5 text-slate-300" />
-                                    <span className="text-green-600 font-black text-2xl underline decoration-3">{clozeData.missingWord}</span>
-                                </div>
+            {/* Error Feedback Section (Enhanced) */}
+            <AnimatePresence>
+                {feedback === 'incorrect' && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        className="w-full max-w-lg space-y-4"
+                    >
+                        <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-6 space-y-6">
+                            <div className="flex items-center gap-4 text-xl justify-center">
+                                <span className="text-red-400 line-through decoration-2 opacity-50 font-bold">{userAnswer}</span>
+                                <ArrowRight className="h-5 w-5 text-slate-500" />
+                                <span className="text-white font-black text-2xl px-3 py-1 bg-red-500 shadow-lg rounded-lg">{clozeData.missingWord}</span>
                             </div>
 
-                            {/* Analysis Section */}
-                            <div className="p-6 bg-white space-y-6">
+                            <div className="space-y-4 bg-slate-900/50 p-4 rounded-xl border border-white/5">
                                 {isEvaluating ? (
-                                    <div className="flex items-center gap-2 text-primary animate-pulse py-4">
-                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                        <span className="text-sm font-bold">ИИ анализирует вашу ошибку...</span>
+                                    <div className="flex items-center gap-3 text-primary animate-pulse py-2">
+                                        <Loader2 className="h-5 w-5 animate-spin" />
+                                        <span className="text-xs font-black uppercase tracking-widest">Анализ ошибки...</span>
                                     </div>
                                 ) : dynamicEvaluation ? (
-                                    <div className="space-y-6">
-                                        {/* Word Definitions */}
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                            <div className="bg-slate-50 p-3 rounded-lg border">
-                                                <div className="text-[10px] font-bold uppercase text-slate-400 mb-1">Вариант: {userAnswer}</div>
-                                                <div className="text-sm text-slate-700">{dynamicEvaluation.userWordDefinition || "Слово не распознано"}</div>
-                                            </div>
-                                            <div className="bg-primary/5 p-3 rounded-lg border border-primary/10">
-                                                <div className="text-[10px] font-bold uppercase text-primary/60 mb-1">Ожидалось: {clozeData.missingWord}</div>
-                                                <div className="text-sm text-slate-700">{dynamicEvaluation.correctWordDefinition}</div>
-                                            </div>
-                                        </div>
-
-                                        {/* Comparison */}
-                                        <div className="space-y-2">
-                                            <div className="text-xs font-bold uppercase tracking-widest text-primary/60 flex items-center gap-2">
-                                                <BrainCircuit className="h-4 w-4" /> Почему так?
-                                            </div>
-                                            <div
-                                                className="text-slate-700 leading-relaxed prose prose-slate max-w-none text-sm"
-                                                dangerouslySetInnerHTML={{ __html: dynamicEvaluation.comparisonFeedback }}
-                                            />
-                                        </div>
+                                    <div className="space-y-4 text-sm leading-relaxed text-slate-300">
+                                        <div
+                                            className="prose prose-invert prose-sm max-w-none border-l-2 border-primary/30 pl-4"
+                                            dangerouslySetInnerHTML={{ __html: dynamicEvaluation.comparisonFeedback }}
+                                        />
                                     </div>
                                 ) : (
-                                    <div className="space-y-2">
-                                        <div className="text-xs font-bold uppercase tracking-widest text-primary/60 flex items-center gap-2">
-                                            <BrainCircuit className="h-4 w-4" /> Почему так?
-                                        </div>
-                                        <div
-                                            className="text-slate-700 leading-relaxed prose prose-slate max-w-none text-sm"
-                                            dangerouslySetInnerHTML={{ __html: clozeData.grammarExplanation }}
-                                        />
+                                    <div className="text-sm text-slate-300 border-l-2 border-primary/30 pl-4">
+                                        {clozeData.grammarExplanation}
                                     </div>
                                 )}
+                            </div>
 
-                                {clozeData.examples && clozeData.examples.length > 0 && (
-                                    <div className="space-y-2">
-                                        <div className="text-xs font-bold uppercase tracking-widest text-slate-400">Еще примеры</div>
-                                        <div className="grid gap-2">
-                                            {clozeData.examples.map((ex, i) => (
-                                                <div
-                                                    key={i}
-                                                    className="text-xs italic bg-slate-50 p-2 rounded border-l-2 border-slate-200 text-slate-600"
-                                                    dangerouslySetInnerHTML={{ __html: ex }}
-                                                />
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Error Correction Input */}
-                                <div className="mt-8 p-4 bg-red-50 rounded-xl border-2 border-red-200 space-y-4">
-                                    <div className="text-sm font-bold text-red-800 uppercase tracking-tight flex items-center gap-2">
-                                        <PenTool className="h-4 w-4" /> Напишите правильный ответ для закрепления:
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <Input
-                                            placeholder={clozeData.missingWord}
-                                            className={cn(
-                                                "h-12 text-lg border-2",
-                                                isCorrected ? "border-green-500 bg-green-50" : "border-red-300 focus:border-red-500"
-                                            )}
-                                            value={correctionUserAnswer}
-                                            onChange={(e) => {
-                                                const val = e.target.value;
-                                                setCorrectionUserAnswer(val);
-                                                if (val.trim().toLowerCase() === clozeData.missingWord.toLowerCase()) {
-                                                    setIsCorrected(true);
-                                                }
-                                            }}
-                                            disabled={isCorrected}
-                                            autoFocus
-                                            autoComplete="off"
-                                            autoCorrect="off"
-                                        />
-                                        {isCorrected && (
-                                            <div className="bg-green-500 text-white p-2 rounded-lg flex items-center justify-center">
-                                                <Check className="h-6 w-6" />
-                                            </div>
+                            <div className="space-y-3">
+                                <div className="text-[10px] font-black text-red-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                                    <PenTool className="h-3 w-3" /> Напишите правильно:
+                                </div>
+                                <div className="flex gap-2">
+                                    <Input
+                                        placeholder={clozeData.missingWord}
+                                        className={cn(
+                                            "h-12 text-lg font-bold bg-slate-900 border-2 transition-all",
+                                            isCorrected ? "border-green-500 text-green-400" : "border-red-500/50 text-white focus:border-red-500"
                                         )}
-                                    </div>
-                                    {!isCorrected && (
-                                        <p className="text-[10px] text-red-500 font-bold uppercase tracking-widest">Нужно вписать слово без ошибок</p>
+                                        value={correctionUserAnswer}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            setCorrectionUserAnswer(val);
+                                            if (val.trim().toLowerCase() === clozeData.missingWord.toLowerCase()) {
+                                                setIsCorrected(true);
+                                            }
+                                        }}
+                                        disabled={isCorrected}
+                                        autoFocus
+                                    />
+                                    {isCorrected && (
+                                        <div className="bg-green-500 text-white w-12 h-12 rounded-lg flex items-center justify-center shrink-0 shadow-lg">
+                                            <Check className="h-6 w-6 stroke-[3]" />
+                                        </div>
                                     )}
                                 </div>
                             </div>
-                        </div>
-                    )}
 
-                    <div className="p-4 bg-white border-t">
-                        <Button
-                            size="lg"
-                            className="w-full h-14 text-lg shadow-lg font-bold"
-                            onClick={handleContinue}
-                            disabled={feedback === 'incorrect' && !isCorrected}
-                        >
-                            {feedback === 'correct' ? 'Идем дальше' : (isCorrected ? 'Теперь можно продолжать' : 'Сначала исправьте ошибку')}
-                        </Button>
-                    </div>
-                </div>
-            )}
+                            <Button
+                                size="lg"
+                                className="w-full h-14 text-md font-black uppercase tracking-widest shadow-xl"
+                                onClick={handleContinue}
+                                disabled={!isCorrected}
+                            >
+                                {isCorrected ? 'Идем дальше' : 'Сначала исправьте ошибку'}
+                            </Button>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </motion.div>
     );
 }

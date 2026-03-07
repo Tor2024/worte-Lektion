@@ -7,6 +7,7 @@ import { Sparkles, BookOpen, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { expandTheoryWithAI } from '@/ai/flows/expand-theory';
 import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 
 interface AiTheoryExpanderProps {
     title: string;
@@ -72,7 +73,14 @@ export function AiTheoryExpander({ title, initialHtml }: AiTheoryExpanderProps) 
                     transition={{ duration: 0.3 }}
                 >
                     <div
-                        className={`prose prose-lg max-w-none dark:prose-invert ${isExpanded ? 'prose-headings:text-purple-700 dark:prose-headings:text-purple-400' : ''}`}
+                        className={cn(
+                            "prose prose-lg max-w-none dark:prose-invert",
+                            "prose-table:w-full prose-th:px-4 prose-th:py-2 prose-td:px-4 prose-td:py-2",
+                            "prose-table:border-collapse prose-table:border prose-table:border-border",
+                            "prose-th:bg-muted prose-th:font-black prose-th:uppercase prose-th:text-[10px] prose-th:tracking-widest",
+                            "prose-td:border prose-td:border-border prose-td:align-top",
+                            isExpanded ? 'prose-headings:text-purple-700 dark:prose-headings:text-purple-400' : ''
+                        )}
                         dangerouslySetInnerHTML={{ __html: content }}
                     />
                 </motion.div>

@@ -8,7 +8,8 @@ import { Button } from '@/components/ui/button';
 import { storage } from '@/lib/storage';
 import { NeuralMap } from '../neural-map';
 import { Progress } from '@/components/ui/progress';
-import { BrainCircuit, CheckCircle, XCircle, ArrowRight, Layers, Target, PenTool, Siren, Loader2 } from 'lucide-react';
+import { BrainCircuit, CheckCircle, XCircle, ArrowRight, Layers, Target, PenTool, Siren, Loader2, Trophy } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { PrimingView } from '@/components/smart-session/priming-view';
 import { RecognitionView } from '@/components/smart-session/recognition-view';
@@ -580,29 +581,61 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
 
     if (sessionState === 'summary') {
         const finalScore = Object.values(results).filter(r => r === 'success').length;
+        const percentage = Math.round((finalScore / sessionQueue.length) * 100);
+
         return (
-            <div className="flex flex-col items-center justify-center p-4 text-center space-y-8 max-w-4xl mx-auto">
-                <div className="space-y-2">
-                    <h1 className="text-4xl font-black tracking-tighter">СИНХРОНИЗАЦИЯ ЗАВЕРШЕНА</h1>
-                    <p className="text-muted-foreground text-lg italic">
-                        Уровень усвоения: {Math.round((finalScore / sessionQueue.length) * 100)}%. Новые нейронные связи прописаны успешно.
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex flex-col items-center justify-center p-4 text-center space-y-10 max-w-4xl mx-auto min-h-[80vh]"
+            >
+                <div className="space-y-4">
+                    <div className="flex justify-center mb-6">
+                        <div className="relative">
+                            <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-150 animate-pulse" />
+                            <div className="bg-slate-950 border-2 border-primary/20 p-8 rounded-[2.5rem] shadow-2xl relative z-10 select-none">
+                                <Trophy className="h-16 w-16 text-amber-500 drop-shadow-[0_0_15px_rgba(245,158,11,0.5)]" />
+                                <div className="absolute -bottom-4 -right-4 bg-green-500 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-lg border-2 border-slate-950 uppercase tracking-widest">
+                                    Done
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h1 className="text-5xl font-black tracking-tighter text-white uppercase italic">
+                        Синхронизация <span className="text-primary not-italic">Завершена</span>
+                    </h1>
+                    <p className="text-slate-400 text-xl font-medium max-w-2xl">
+                        Уровень усвоения: <span className="text-white font-black">{percentage}%</span>.
+                        Ваши нейронные связи перестроены и готовы к работе.
                     </p>
                 </div>
 
-                <div className="w-full">
+                <div className="w-full bg-slate-950/50 p-6 rounded-[3rem] border border-white/5 shadow-inner backdrop-blur-sm">
                     <NeuralMap
                         items={sessionQueue}
-                        title="Результат сессии: Ваши новые нейроны"
+                        title="Ваша обновленная нейронная сеть"
                     />
                 </div>
 
-                <div className="flex flex-col items-center gap-4 w-full max-w-lg">
-                    <div className="text-6xl font-black text-primary">{finalScore}/{sessionQueue.length}</div>
-                    <Button asChild size="lg" className="w-full h-16 text-xl shadow-2xl hover:scale-[1.02] transition-transform rounded-2xl">
-                        <Link href="/">Вернуться в штаб</Link>
+                <div className="flex flex-col items-center gap-6 w-full max-w-md">
+                    <div className="flex items-center gap-8">
+                        <div className="text-center">
+                            <div className="text-4xl font-black text-white">{finalScore}</div>
+                            <div className="text-[10px] font-black uppercase tracking-widest text-slate-500">Слов освоено</div>
+                        </div>
+                        <div className="w-px h-12 bg-white/10" />
+                        <div className="text-center">
+                            <div className="text-4xl font-black text-primary">{percentage}%</div>
+                            <div className="text-[10px] font-black uppercase tracking-widest text-slate-500">Точность</div>
+                        </div>
+                    </div>
+
+                    <Button asChild size="lg" className="w-full h-16 text-xl shadow-[0_0_30px_rgba(var(--primary),0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all rounded-[1.5rem] font-black uppercase tracking-widest">
+                        <Link href="/">Вернуться в штаб <ArrowRight className="ml-3 h-6 w-6" /></Link>
                     </Button>
                 </div>
-            </div>
+            </motion.div>
         );
     }
 

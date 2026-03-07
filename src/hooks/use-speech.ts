@@ -32,6 +32,9 @@ export function useSpeech() {
         };
     }, []);
 
+    // Keep a reference to the active utterance to prevent garbage collection
+    const activeUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+
     const speak = useCallback((text: string, lang: string = 'de-DE', gender?: VoiceGender) => {
         return new Promise<void>((resolve) => {
             if (typeof window === 'undefined' || !window.speechSynthesis) {
@@ -43,8 +46,12 @@ export function useSpeech() {
             window.speechSynthesis.cancel();
 
             const utterance = new SpeechSynthesisUtterance(text);
+            activeUtteranceRef.current = utterance; // Hold reference
+
             utterance.lang = lang;
             utterance.rate = 0.9;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
 
             // Voice Selection Logic
             const currentVoices = voicesRef.current;
@@ -79,13 +86,11 @@ export function useSpeech() {
                         const ruPriority = ['microsoft elena', 'microsoft irina', 'google', 'premium', 'milena', 'katya', 'irina'];
                         const ruExcludes = ['pavel', 'yuri', 'alexander', 'desktop'];
 
-                        // Try priority first, avoiding excludes
                         for (const p of ruPriority) {
                             targetVoice = langVoices.find(v => v.name.toLowerCase().includes(p) && !ruExcludes.some(e => v.name.toLowerCase().includes(e)));
                             if (targetVoice) break;
                         }
 
-                        // Final fallback for Russian: any non-shaky voice
                         if (!targetVoice) {
                             targetVoice = langVoices.find(v => !ruExcludes.some(e => v.name.toLowerCase().includes(e)));
                         }
@@ -94,7 +99,6 @@ export function useSpeech() {
                     }
                 }
 
-                // Absolute last resort
                 if (!targetVoice) {
                     targetVoice = langVoices[0];
                 }
@@ -106,17 +110,49 @@ export function useSpeech() {
 
             utterance.onstart = () => setIsSpeaking(true);
             utterance.onend = () => {
+                if (activeUtteranceRef.current === utterance) {
+                    activeUtteranceRef.current = null;
+                }
                 setIsSpeaking(false);
                 resolve();
             };
-            utterance.onerror = () => {
+            utterance.onerror = (e) => {
+                console.error("Speech error", e);
+                if (activeUtteranceRef.current === utterance) {
+                    activeUtteranceRef.current = null;
+                }
                 setIsSpeaking(false);
                 resolve();
             };
 
+            // Workaround for some browsers where long text stops firing onend
+            // We'll manually resolve after a timeout proportional to text length if it hangs
+            const timeoutDuration = Math.max(5000, text.length * 100);
+            const backupTimeout = setTimeout(() => {
+                if (activeUtteranceRef.current === utterance) {
+                    console.warn("Speech onend timed out, forcing resolve");
+                    activeUtteranceRef.current = null;
+                    setIsSpeaking(false);
+                    resolve();
+                }
+            }, timeoutDuration);
+
+            utterance.onend = (oldEnd => (e: SpeechSynthesisEvent) => {
+                clearTimeout(backupTimeout);
+                if (oldEnd) oldEnd(e);
+            })(utterance.onend as any);
+
             window.speechSynthesis.speak(utterance);
         });
     }, []);
+
+    const speakSequence = useCallback(async (items: { text: string, lang: string }[]) => {
+        for (const item of items) {
+            await speak(item.text, item.lang);
+            // Slight pause between items in sequence
+            await new Promise(r => setTimeout(r, 400));
+        }
+    }, [speak]);
 
     const stop = useCallback(() => {
         if (typeof window !== 'undefined' && window.speechSynthesis) {
@@ -125,5 +161,5 @@ export function useSpeech() {
         }
     }, []);
 
-    return { speak, stop, isSpeaking, voices, isLoaded };
+    return { speak, speakSequence, stop, isSpeaking, voices, isLoaded };
 }

@@ -26,7 +26,7 @@ interface PrimingViewProps {
 
 export function PrimingView({ item, onNext, onMarkAsKnown }: PrimingViewProps) {
     const { word } = item;
-    const { speak, stop, isLoaded } = useSpeech();
+    const { speak, speakSequence, stop, isLoaded } = useSpeech();
     const [decomposition, setDecomposition] = useState<DecomposeOutput | null>(null);
     const [isDecomposing, setIsDecomposing] = useState(false);
     const [verbFamily, setVerbFamily] = useState<VerbFamilyOutput | null>(null);
@@ -63,37 +63,26 @@ export function PrimingView({ item, onNext, onMarkAsKnown }: PrimingViewProps) {
         let active = true;
 
         const playAudioFlow = async () => {
-            const pause = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
             if (!active) return;
 
-            // Small initial delay
-            await pause(500);
-            if (!active) return;
+            const sequence: { text: string, lang: string }[] = [
+                { text: formatGermanWord(word), lang: 'de-DE' },
+                { text: word.russian, lang: 'ru-RU' }
+            ];
 
-            // 1. German Word
-            await speak(formatGermanWord(word), 'de-DE');
-            if (!active) return;
-            await pause(1200);
-            if (!active) return;
-
-            // 2. Russian Translation
-            await speak(word.russian, 'ru-RU');
-            if (!active) return;
-            await pause(1500);
-            if (!active) return;
-
-            // 3. German Example
             if ('example' in word && word.example) {
-                await speak(word.example, 'de-DE');
-                if (!active) return;
-                await pause(1200);
+                sequence.push({ text: word.example, lang: 'de-DE' });
             }
+
+            if ('exampleMeaning' in word && (word as any).exampleMeaning) {
+                sequence.push({ text: (word as any).exampleMeaning, lang: 'ru-RU' });
+            }
+
+            // Wait for initial load if needed
+            await new Promise(r => setTimeout(r, 800));
             if (!active) return;
 
-            // 4. Russian Example Meaning
-            if ('exampleMeaning' in word && (word as any).exampleMeaning) {
-                await speak((word as any).exampleMeaning, 'ru-RU');
-            }
+            await speakSequence(sequence);
         };
 
         playAudioFlow();
@@ -296,14 +285,29 @@ export function PrimingView({ item, onNext, onMarkAsKnown }: PrimingViewProps) {
                         <VerbFamilyTree data={verbFamily} currentVerb={formatGermanWord(word)} />
                     )}
 
-                    {/* Context Example (Compact) */}
-                    {'example' in word && (
-                        <div className="bg-primary/5 p-4 rounded-xl text-md relative mt-2 w-full max-w-sm border border-primary/10">
-                            <span className="text-2xl absolute -top-3 -left-1 opacity-10">❝</span>
-                            <p
-                                className="italic text-foreground/70 leading-relaxed text-sm"
-                                dangerouslySetInnerHTML={{ __html: word.example }}
-                            />
+                    {/* B2 Beruf Phrase (Formerly Context Example) */}
+                    {'example' in word && word.example && (
+                        <div className="w-full max-w-xl mt-6">
+                            <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-6 rounded-3xl border-2 border-primary/20 shadow-xl relative group">
+                                <div className="absolute -top-3 left-6 px-3 py-1 bg-primary text-white text-[10px] font-black uppercase tracking-[0.1em] rounded-full shadow-lg">
+                                    B2 Beruf Phrase
+                                </div>
+                                <span className="text-4xl absolute top-4 left-2 opacity-10 font-serif leading-none">❝</span>
+                                <div className="space-y-3 relative z-10">
+                                    <p
+                                        className="text-xl md:text-2xl font-bold text-foreground leading-tight tracking-tight text-left pl-4 border-l-4 border-primary/30"
+                                        dangerouslySetInnerHTML={{ __html: word.example }}
+                                    />
+                                    {'exampleMeaning' in word && (word as any).exampleMeaning && (
+                                        <p className="text-md md:text-lg text-muted-foreground/80 italic text-left pl-4">
+                                            — {(word as any).exampleMeaning}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                            <p className="text-[10px] text-muted-foreground mt-2 opacity-50 uppercase tracking-[0.2em] font-bold">
+                                Эффективная фраза для экзамена B2
+                            </p>
                         </div>
                     )}
 
