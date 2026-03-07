@@ -72,17 +72,19 @@ export function AiTheoryExpander({ title, initialHtml }: AiTheoryExpanderProps) 
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.3 }}
                 >
-                    <div
-                        className={cn(
-                            "prose prose-lg max-w-none dark:prose-invert",
-                            "prose-table:w-full prose-th:px-4 prose-th:py-2 prose-td:px-4 prose-td:py-2",
-                            "prose-table:border-collapse prose-table:border prose-table:border-border",
-                            "prose-th:bg-muted prose-th:font-black prose-th:uppercase prose-th:text-[10px] prose-th:tracking-widest",
-                            "prose-td:border prose-td:border-border prose-td:align-top",
-                            isExpanded ? 'prose-headings:text-purple-700 dark:prose-headings:text-purple-400' : ''
-                        )}
-                        dangerouslySetInnerHTML={{ __html: content }}
-                    />
+                    <div className="overflow-x-auto overflow-hidden rounded-xl border-border/10">
+                        <div
+                            className={cn(
+                                "prose prose-lg max-w-none dark:prose-invert",
+                                "prose-table:w-full prose-table:min-w-[600px] prose-th:px-4 prose-th:py-3 prose-td:px-4 prose-td:py-3",
+                                "prose-table:border-collapse prose-table:border prose-table:border-border",
+                                "prose-th:bg-muted/50 prose-th:font-black prose-th:uppercase prose-th:text-[10px] prose-th:tracking-widest",
+                                "prose-td:border prose-td:border-border prose-td:align-top",
+                                isExpanded ? 'prose-headings:text-purple-700 dark:prose-headings:text-purple-400' : ''
+                            )}
+                            dangerouslySetInnerHTML={{ __html: content }}
+                        />
+                    </div>
                 </motion.div>
             </AnimatePresence>
 

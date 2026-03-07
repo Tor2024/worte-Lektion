@@ -115,12 +115,12 @@ export function WordCard({ word, onTranslationSelect }: { word: VocabularyWord, 
 
   return (
     <div
-      className="relative h-[420px] w-full cursor-pointer rounded-xl border bg-card text-card-foreground shadow-sm transition-transform duration-500 [transform-style:preserve-3d]"
+      className="relative h-[350px] w-full cursor-pointer rounded-xl border bg-card text-card-foreground shadow-sm transition-transform duration-500 [transform-style:preserve-3d]"
       onClick={handleFlip}
       style={{ transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}
     >
       {/* Front of the card (German) */}
-      <div className={cn("flex h-full w-full flex-col p-5 [backface-visibility:hidden]")}>
+      <div className={cn("flex h-full w-full flex-col p-4 [backface-visibility:hidden]")}>
         <div className="flex-1">
           <div className="flex justify-between items-start">
             <div className="flex flex-col gap-1">
