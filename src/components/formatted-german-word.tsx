@@ -22,23 +22,36 @@ const SEPARABLE_PREFIXES = [
 
 // Helper to determine if a verb is separable and where to split it.
 function getSeparableParts(verbStr: string): { prefix: string, base: string } | null {
-    // Basic check - we don't want to split things like 'arbeiten' just because of 'an'
-    // But this regex looks for separable prefixes at the start of the word.
+    // 1. MUST be lowercase. German verbs in infinitive are lowercase.
+    // This immediately avoids splitting Nouns like "Teilnehmerliste".
+    if (verbStr !== verbStr.toLowerCase()) return null;
 
-    // Some prefixes are also inseparable in certain verbs (um, durch, über, unter),
-    // but without a dictionary, a broad heuristic is best for common B1/B2 vocab.
-    // We sort prefixes by length descending to match longest first (e.g. 'heraus' before 'her')
     const sortedPrefixes = [...SEPARABLE_PREFIXES].sort((a, b) => b.length - a.length);
 
     for (const prefix of sortedPrefixes) {
-        if (verbStr.toLowerCase().startsWith(prefix) && verbStr.length > prefix.length + 3) { // +3 ensures there's a base verb left (e.g. 'tun')
+        if (verbStr.startsWith(prefix) && verbStr.length > prefix.length + 2) {
+            const base = verbStr.substring(prefix.length);
 
-            // Exclude inseparable if prefix is 'unter', etc., unless we are sure. For now, rely on list.
+            // 2. The base part must look like a verb root.
+            // It should end in 'en', 'el', 'er' (like 'sammeln', 'wandern', 'sehen')
+            // or be a special short verb like 'tun' or 'sein'.
+            const isVerbLike =
+                base.endsWith('en') ||
+                base.endsWith('el') ||
+                base.endsWith('er') ||
+                base === 'tun' ||
+                base === 'un' || // for ab|tun -> tun
+                base === 'sein';
 
-            return {
-                prefix: verbStr.substring(0, prefix.length),
-                base: verbStr.substring(prefix.length)
-            };
+            // 3. Avoid some common false positives like "gegen", "zwischen" (da-compounds)
+            const isFalsePositive = ['gegen', 'für', 'mit', 'bei', 'vor', 'zu', 'über', 'unter', 'nach'].includes(base);
+
+            if (isVerbLike && !isFalsePositive) {
+                return {
+                    prefix: verbStr.substring(0, prefix.length),
+                    base: base
+                };
+            }
         }
     }
 
@@ -54,36 +67,42 @@ export function FormattedGermanWord({ word, className }: FormattedGermanWordProp
     const formattedString = formatGermanWord(word);
 
     if (word.type === 'verb') {
-        // Some words might have 'sich ' in front. We need to handle that.
         const parts = formattedString.split(' ');
-        const mainVerbIndex = parts.findIndex(p => p.toLowerCase() !== 'sich');
 
-        if (mainVerbIndex !== -1) {
-            const mainVerb = parts[mainVerbIndex];
-            const split = getSeparableParts(mainVerb);
-
-            if (split) {
-                // Reconstruct with the pipe
-                parts[mainVerbIndex] = (
-                    <span key="split-verb">
-                        {split.prefix}
-                        <span className="text-red-500 font-black mx-[1px] select-none opacity-80">|</span>
-                        {split.base}
-                    </span>
-                ) as any; // Type override for array mingling
-
-                return (
-                    <span className={className}>
-                        {parts.map((part, i) => (
+        return (
+            <span className={className}>
+                {parts.map((part, i) => {
+                    // Skip parts in parentheses or "sich"
+                    if (part.startsWith('(') || part.endsWith(')') || part.toLowerCase() === 'sich') {
+                        return (
                             <React.Fragment key={i}>
                                 {part}
                                 {i < parts.length - 1 && ' '}
                             </React.Fragment>
-                        ))}
-                    </span>
-                );
-            }
-        }
+                        );
+                    }
+
+                    const split = getSeparableParts(part);
+                    if (split) {
+                        return (
+                            <React.Fragment key={i}>
+                                {split.prefix}
+                                <span className="text-red-500 font-black mx-[0.5px] select-none opacity-90">|</span>
+                                {split.base}
+                                {i < parts.length - 1 && ' '}
+                            </React.Fragment>
+                        );
+                    }
+
+                    return (
+                        <React.Fragment key={i}>
+                            {part}
+                            {i < parts.length - 1 && ' '}
+                        </React.Fragment>
+                    );
+                })}
+            </span>
+        );
     }
 
     // Default string rendering
