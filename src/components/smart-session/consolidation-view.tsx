@@ -22,9 +22,14 @@ export function ConsolidationView({ items, onComplete }: ConsolidationViewProps)
     const [selectedOption, setSelectedOption] = useState<string | null>(null);
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
     const [score, setScore] = useState(0);
-    const { speak, speakSequence, isLoaded } = useSpeech();
+    const { speak, speakSequence, stop, isLoaded } = useSpeech();
 
     const currentItem = items[currentIndex];
+
+    // Stop speech when item changes or component unmounts
+    useEffect(() => {
+        return () => stop();
+    }, [currentIndex, stop]);
 
     // Play Russian word on load
     useEffect(() => {

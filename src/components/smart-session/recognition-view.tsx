@@ -26,7 +26,12 @@ export function RecognitionView({ item, onResult, onMarkAsKnown, direction: forc
     const [selectedOption, setSelectedOption] = useState<string | null>(null);
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
     const [showSuccess, setShowSuccess] = useState(false);
-    const { speak, speakSequence, isLoaded } = useSpeech();
+    const { speak, speakSequence, stop, isLoaded } = useSpeech();
+
+    // Stop speech when word changes or component unmounts
+    useEffect(() => {
+        return () => stop();
+    }, [item.id, stop]);
 
     // If forcedDirection is provided, use it. Otherwise, fallback to random (for standalone usage).
     const direction = useMemo(() =>

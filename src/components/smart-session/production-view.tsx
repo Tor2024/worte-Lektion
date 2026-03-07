@@ -36,7 +36,12 @@ export function ProductionView({ item, storyContext, onStoryUpdate, onResult, mo
     const [isCorrected, setIsCorrected] = useState(false);
 
     const [showSuccess, setShowSuccess] = useState(false);
-    const { speakSequence, isLoaded } = useSpeech();
+    const { speakSequence, stop, isLoaded } = useSpeech();
+
+    // Stop speech when word changes or component unmounts
+    useEffect(() => {
+        return () => stop();
+    }, [item.id, stop]);
 
     // Fetch AI context on mount
     useEffect(() => {

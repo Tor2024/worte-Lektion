@@ -70,12 +70,17 @@ export function PrimingView({ item, onNext, onMarkAsKnown }: PrimingViewProps) {
                 { text: word.russian, lang: 'ru-RU' }
             ];
 
-            if ('example' in word && word.example) {
-                sequence.push({ text: word.example, lang: 'de-DE' });
-            }
-
-            if ('exampleMeaning' in word && (word as any).exampleMeaning) {
-                sequence.push({ text: (word as any).exampleMeaning, lang: 'ru-RU' });
+            if ((word as any).collocations?.[0]) {
+                const anchor = (word as any).collocations[0];
+                sequence.push({ text: anchor.phrase, lang: 'de-DE' });
+                sequence.push({ text: anchor.translation, lang: 'ru-RU' });
+            } else {
+                if ('example' in word && word.example) {
+                    sequence.push({ text: word.example, lang: 'de-DE' });
+                }
+                if ('exampleMeaning' in word && (word as any).exampleMeaning) {
+                    sequence.push({ text: (word as any).exampleMeaning, lang: 'ru-RU' });
+                }
             }
 
             // Wait for initial load if needed
@@ -91,7 +96,7 @@ export function PrimingView({ item, onNext, onMarkAsKnown }: PrimingViewProps) {
             active = false;
             stop();
         };
-    }, [word, isLoaded, speak, stop]);
+    }, [item.id, isLoaded, speak, stop]);
 
     return (
         <motion.div
@@ -285,8 +290,24 @@ export function PrimingView({ item, onNext, onMarkAsKnown }: PrimingViewProps) {
                         <VerbFamilyTree data={verbFamily} currentVerb={formatGermanWord(word)} />
                     )}
 
-                    {/* B2 Beruf Phrase (Formerly Context Example) */}
-                    {'example' in word && word.example && (
+                    {/* Anchor Phrase (Collocation) as primary memorization aid */}
+                    {(word as any).collocations?.[0] ? (
+                        <div className="w-full max-w-xl mt-6">
+                            <div className="bg-gradient-to-br from-amber-500/10 to-amber-500/5 p-6 rounded-3xl border-2 border-amber-500/20 shadow-xl relative group">
+                                <div className="absolute -top-3 left-6 px-3 py-1 bg-amber-500 text-white text-[10px] font-black uppercase tracking-[0.1em] rounded-full shadow-lg">
+                                    Лексический якорь
+                                </div>
+                                <div className="space-y-3 relative z-10">
+                                    <p className="text-2xl md:text-3xl font-bold text-foreground leading-tight tracking-tight text-left pl-4 border-l-4 border-amber-500/30">
+                                        {(word as any).collocations[0].phrase}
+                                    </p>
+                                    <p className="text-md md:text-lg text-muted-foreground/80 italic text-left pl-4">
+                                        — {(word as any).collocations[0].translation}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    ) : ('example' in word && word.example && (
                         <div className="w-full max-w-xl mt-6">
                             <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-6 rounded-3xl border-2 border-primary/20 shadow-xl relative group">
                                 <div className="absolute -top-3 left-6 px-3 py-1 bg-primary text-white text-[10px] font-black uppercase tracking-[0.1em] rounded-full shadow-lg">
@@ -309,7 +330,7 @@ export function PrimingView({ item, onNext, onMarkAsKnown }: PrimingViewProps) {
                                 Эффективная фраза для экзамена B2
                             </p>
                         </div>
-                    )}
+                    ))}
 
                     {/* Verb Conjugations (Compact) */}
                     {word.type === 'verb' && (word as any).conjugations && (

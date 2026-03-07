@@ -34,6 +34,24 @@ export function useSpeech() {
 
     // Keep a reference to the active utterance to prevent garbage collection
     const activeUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+    const sequenceIdRef = useRef<number>(0);
+
+    const stop = useCallback(() => {
+        if (typeof window !== 'undefined' && window.speechSynthesis) {
+            window.speechSynthesis.cancel();
+            sequenceIdRef.current++; // Cancel any running sequence loop
+            setIsSpeaking(false);
+        }
+    }, []);
+
+    // Cleanup on unmount
+    useEffect(() => {
+        return () => {
+            if (typeof window !== 'undefined' && window.speechSynthesis) {
+                window.speechSynthesis.cancel();
+            }
+        };
+    }, []);
 
     const speak = useCallback((text: string, lang: string = 'de-DE', gender?: VoiceGender) => {
         return new Promise<void>((resolve) => {
@@ -42,18 +60,18 @@ export function useSpeech() {
                 return;
             }
 
-            // Stop any current speech
-            window.speechSynthesis.cancel();
+            // Note: We don't call cancel() here anymore inside speak(), 
+            // because speakSequence needs to call speak multiple times in a row.
+            // Cancellation should happen at the start of a sequence or manual stop.
 
             const utterance = new SpeechSynthesisUtterance(text);
-            activeUtteranceRef.current = utterance; // Hold reference
+            activeUtteranceRef.current = utterance;
 
             utterance.lang = lang;
             utterance.rate = 0.9;
             utterance.pitch = 1.0;
             utterance.volume = 1.0;
 
-            // Voice Selection Logic
             const currentVoices = voicesRef.current;
             const langVoices = currentVoices.filter(v => v.lang.startsWith(lang.split('-')[0]));
             let targetVoice: SpeechSynthesisVoice | undefined;
@@ -80,7 +98,6 @@ export function useSpeech() {
                     }
                 }
 
-                // Fallback for Quality
                 if (!targetVoice) {
                     if (lang.startsWith('ru')) {
                         const ruPriority = ['microsoft elena', 'microsoft irina', 'google', 'premium', 'milena', 'katya', 'irina'];
@@ -99,34 +116,23 @@ export function useSpeech() {
                     }
                 }
 
-                if (!targetVoice) {
-                    targetVoice = langVoices[0];
-                }
-
-                if (targetVoice) {
-                    utterance.voice = targetVoice;
-                }
+                if (!targetVoice) targetVoice = langVoices[0];
+                if (targetVoice) utterance.voice = targetVoice;
             }
 
             utterance.onstart = () => setIsSpeaking(true);
             utterance.onend = () => {
-                if (activeUtteranceRef.current === utterance) {
-                    activeUtteranceRef.current = null;
-                }
+                if (activeUtteranceRef.current === utterance) activeUtteranceRef.current = null;
                 setIsSpeaking(false);
                 resolve();
             };
             utterance.onerror = (e) => {
                 console.error("Speech error", e);
-                if (activeUtteranceRef.current === utterance) {
-                    activeUtteranceRef.current = null;
-                }
+                if (activeUtteranceRef.current === utterance) activeUtteranceRef.current = null;
                 setIsSpeaking(false);
                 resolve();
             };
 
-            // Workaround for some browsers where long text stops firing onend
-            // We'll manually resolve after a timeout proportional to text length if it hangs
             const timeoutDuration = Math.max(5000, text.length * 100);
             const backupTimeout = setTimeout(() => {
                 if (activeUtteranceRef.current === utterance) {
@@ -147,19 +153,22 @@ export function useSpeech() {
     }, []);
 
     const speakSequence = useCallback(async (items: { text: string, lang: string }[]) => {
+        // Stop any currently running speech and increment sequence ID
+        stop();
+        const currentSequenceId = sequenceIdRef.current;
+
         for (const item of items) {
+            // Check if we should abort this sequence
+            if (sequenceIdRef.current !== currentSequenceId) break;
+
             await speak(item.text, item.lang);
+
+            if (sequenceIdRef.current !== currentSequenceId) break;
+
             // Slight pause between items in sequence
             await new Promise(r => setTimeout(r, 400));
         }
-    }, [speak]);
-
-    const stop = useCallback(() => {
-        if (typeof window !== 'undefined' && window.speechSynthesis) {
-            window.speechSynthesis.cancel();
-            setIsSpeaking(false);
-        }
-    }, []);
+    }, [speak, stop]);
 
     return { speak, speakSequence, stop, isSpeaking, voices, isLoaded };
 }
