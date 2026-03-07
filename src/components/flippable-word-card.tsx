@@ -394,9 +394,10 @@ export function FlippableWordCard({ userWord, className, reverse = false, compac
                             {/* Satzbau (Word Order) - Shown for ANY word that has the structure field (Conj, Prep, Adverbs) */}
                             {(word as any).structure && (
                                 <div className="w-full flex-grow flex flex-col items-center justify-center gap-4">
-                                    <div className="p-5 bg-primary/5 rounded-3xl border-2 border-primary/10 text-center w-full shadow-inner">
-                                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] block mb-2">Satzbau (Порядок слов)</span>
-                                        <div className="text-xl font-black text-primary tracking-tight mb-3">
+                                    <div className="p-6 bg-gradient-to-br from-primary/5 to-primary/10 rounded-3xl border-2 border-primary/20 text-center w-full shadow-inner relative overflow-hidden group/satzbau">
+                                        <div className="absolute top-0 left-0 w-1 h-full bg-primary/20" />
+                                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] block mb-3 opacity-60">Satzbau (Порядок слов)</span>
+                                        <div className="text-2xl sm:text-3xl font-black text-primary tracking-tight mb-4 px-4 drop-shadow-sm">
                                             {(word as any).structure}
                                         </div>
 

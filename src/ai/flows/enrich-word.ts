@@ -50,7 +50,7 @@ const EnrichedWordSchema = z.object({
     comparative: z.string().optional().describe('For adjectives: comparative form (e.g. "stärker").'),
     superlative: z.string().optional().describe('For adjectives: superlative form (e.g. "am stärksten").'),
     // Conjunction & Structure specifics
-    structure: z.string().optional().describe('Verb position/sentence structure (e.g. "Глагол в конце (Nebensatz)", "Инверсия (Глагол на 2-й позиции)"). This must be in RUSSIAN. Important for words like während, bevor, deshalb.'),
+    structure: z.string().optional().describe('Verb position/sentence structure (e.g. "Глагол на 2-м месте", "Инверсия (Глагол на 2-й позиции)"). This MUST be in RUSSIAN. Important for words like während, bevor, deshalb, unter anderem.'),
     structureExample: z.string().optional().describe('A German example sentence demonstrating the word order. Highlight the verb using <b> tags (e.g., "Ich lerne Deutsch, <b>weil</b> es Spaß <b>macht</b>").'),
     // Common
     example: z.string().describe('A simple example sentence using the word in context.'),
@@ -102,8 +102,9 @@ const renderPrompt = (input: WordEnrichmentInput) => {
      - Keep 'preposition' and 'case' at the top level for backward compatibility (fill them from the primary governance item), but prioritize the 'governance' array in the UI.
   5. If it is a **Noun**:
      - Provide article, plural form.
-  6. If it is a **Conjunction** or a word affecting word order (like deshalb, während, trotzdem):
-     - Indicate the verb position/structure in the 'structure' field. Use clear terms like "Verb am Ende (Nebensatz)" or "Inversion (Verb an Pos. 2)".
+  6. If it is a **Conjunction**, **Adverb**, or **Particle** that affects or has a specific word order (like deshalb, während, trotzdem, unter anderem, zwar...аber):
+     - Indicate the verb position/sentence structure in the 'structure' field. 
+     - **CRITICAL**: The 'structure' field must be in **RUSSIAN**. Use clear terms like "Глагол на 2-м месте", "Порядок слов не меняется", "Инверсия (Глагол на 2-й позиции)", "Глагол в конце (Nebensatz)".
      - **CRITICAL**: Provide a 'structureExample' where the key word and the verb(s) are highlighted with <b> tags to show their positions.
   7. If it is an **Adjective**:
      - Provide **comparative** and **superlative** forms.
