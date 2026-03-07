@@ -108,7 +108,9 @@ export function isWordStandardized(userWord: UserVocabularyWord): boolean {
     }
 
     if (word.type === 'adjective') {
-        return !!((word as any).comparative && (word as any).superlative);
+        // Некоторые прилагательные (например, "sonstige") не имеют степеней сравнения.
+        // Раз слово дошло до этой строчки (значит у него есть пример и синонимы), мы считаем его стандартизированным.
+        return true;
     }
 
     if (word.type === 'preposition') {
