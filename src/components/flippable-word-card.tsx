@@ -397,7 +397,7 @@ export function FlippableWordCard({ userWord, className, reverse = false, compac
                                     <div className="p-6 bg-gradient-to-br from-primary/5 to-primary/10 rounded-3xl border-2 border-primary/20 text-center w-full shadow-inner relative overflow-hidden group/satzbau">
                                         <div className="absolute top-0 left-0 w-1 h-full bg-primary/20" />
                                         <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] block mb-3 opacity-60">Satzbau (Порядок слов)</span>
-                                        <div className="text-2xl sm:text-3xl font-black text-primary tracking-tight mb-4 px-4 drop-shadow-sm">
+                                        <div className="text-xl sm:text-2xl font-black text-primary tracking-tight mb-4 px-4 drop-shadow-sm leading-tight">
                                             {(word as any).structure}
                                         </div>
 
@@ -582,7 +582,7 @@ export function FlippableWordCard({ userWord, className, reverse = false, compac
         <div
             className={cn(
                 "relative w-full perspective-1000 cursor-pointer group",
-                compact ? "h-[380px]" : "h-[520px]",
+                compact ? "h-[380px]" : "h-[570px]",
                 className
             )}
             onClick={handleFlip}

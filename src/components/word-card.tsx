@@ -125,7 +125,7 @@ export function WordCard({
     <div
       className={cn(
         "relative w-full cursor-pointer rounded-xl border bg-card text-card-foreground shadow-sm transition-all duration-500 [transform-style:preserve-3d]",
-        compact ? "h-[350px]" : "h-[520px]"
+        compact ? "h-[350px]" : "h-[570px]"
       )}
       onClick={handleFlip}
       style={{ transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}
