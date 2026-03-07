@@ -162,6 +162,8 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                         ...((word as any).governance || []).map((g: any) => g.preposition),
                         (word as any).preposition
                     ].filter(Boolean)
+                        .map(p => String(p).trim())
+                        .filter(p => p !== '' && p !== '-' && p.toLowerCase() !== 'без предлога')
                 ))
                 : [];
 
@@ -307,7 +309,11 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                                                     <div className="flex flex-wrap items-center gap-1.5 mb-1">
                                                         <span className="font-bold text-primary">{word.german}</span>
                                                         <Badge variant="secondary" className="bg-primary/20 text-primary hover:bg-primary/30 text-[10px] px-1.5 py-0 h-5">
-                                                            {gov.preposition} + {gov.case}
+                                                            {(() => {
+                                                                const prep = String(gov.preposition || '').trim();
+                                                                const hasPrep = prep !== '' && prep !== '-' && prep.toLowerCase() !== 'без предлога';
+                                                                return [hasPrep ? prep : null, gov.case].filter(Boolean).join(' + ');
+                                                            })()}
                                                         </Badge>
                                                         <span className="text-muted-foreground mx-1">→</span>
                                                         <span
@@ -337,7 +343,11 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                                                 <div key={idx} className="bg-primary/5 dark:bg-primary/10 p-3 rounded-lg border border-primary/10 text-left">
                                                     <div className="flex flex-wrap items-center gap-1.5 mb-1">
                                                         <Badge variant="secondary" className="bg-primary/20 text-primary hover:bg-primary/30 text-[10px] px-1.5 py-0 h-5">
-                                                            {gov.preposition} + {gov.case}
+                                                            {(() => {
+                                                                const prep = String(gov.preposition || '').trim();
+                                                                const hasPrep = prep !== '' && prep !== '-' && prep.toLowerCase() !== 'без предлога';
+                                                                return [hasPrep ? prep : null, gov.case].filter(Boolean).join(' + ');
+                                                            })()}
                                                         </Badge>
                                                         <span className="text-sm font-medium">{gov.meaning}</span>
                                                     </div>
@@ -447,16 +457,24 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
 
                             {(word as any).governance && (word as any).governance.length > 0 ? (
                                 <div className="mt-2 space-y-1">
-                                    {(word as any).governance.map((gov: any, i: number) => (
-                                        <div key={i} className="text-xs font-bold text-primary">
-                                            {gov.preposition} + {gov.case} <span className="text-muted-foreground">→</span> {gov.meaning}
-                                        </div>
-                                    ))}
+                                    {(word as any).governance.map((gov: any, i: number) => {
+                                        const prep = String(gov.preposition || '').trim();
+                                        const hasPrep = prep !== '' && prep !== '-' && prep.toLowerCase() !== 'без предлога';
+                                        return (
+                                            <div key={i} className="text-xs font-bold text-primary">
+                                                {hasPrep ? `${prep} + ` : ''}{gov.case} <span className="text-muted-foreground">→</span> {gov.meaning}
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             ) : (
                                 ((word as any).preposition || (word as any).case) && (
                                     <span className="font-bold text-primary mt-1">
-                                        {[(word as any).preposition ? `+ ${(word as any).preposition}` : null, (word as any).case ? `+ ${(word as any).case}` : null].filter(Boolean).join(' ')}
+                                        {(() => {
+                                            const prep = String((word as any).preposition || '').trim();
+                                            const hasPrep = prep !== '' && prep !== '-' && prep.toLowerCase() !== 'без предлога';
+                                            return [hasPrep ? `+ ${prep}` : null, (word as any).case ? `+ ${(word as any).case}` : null].filter(Boolean).join(' ');
+                                        })()}
                                     </span>
                                 )
                             )}
@@ -466,11 +484,15 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                     {word.type === 'adjective' && (word as any).governance && (word as any).governance.length > 0 && (
                         <div className="text-sm text-muted-foreground italic flex flex-col gap-1 text-center w-full mt-2">
                             <div className="space-y-1">
-                                {(word as any).governance.map((gov: any, i: number) => (
-                                    <div key={i} className="text-xs font-bold text-primary">
-                                        {gov.preposition} + {gov.case} <span className="text-muted-foreground">→</span> {gov.meaning}
-                                    </div>
-                                ))}
+                                {(word as any).governance.map((gov: any, i: number) => {
+                                    const prep = String(gov.preposition || '').trim();
+                                    const hasPrep = prep !== '' && prep !== '-' && prep.toLowerCase() !== 'без предлога';
+                                    return (
+                                        <div key={i} className="text-xs font-bold text-primary">
+                                            {hasPrep ? `${prep} + ` : ''}{gov.case} <span className="text-muted-foreground">→</span> {gov.meaning}
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
                     )}
