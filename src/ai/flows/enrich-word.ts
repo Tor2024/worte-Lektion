@@ -102,10 +102,14 @@ const renderPrompt = (input: WordEnrichmentInput) => {
      - Keep 'preposition' and 'case' at the top level for backward compatibility (fill them from the primary governance item), but prioritize the 'governance' array in the UI.
   5. If it is a **Noun**:
      - Provide article, plural form.
-  6. If it is a **Conjunction**, **Adverb**, or **Particle** that affects or has a specific word order (like deshalb, während, trotzdem, unter anderem, zwar...аber):
-     - Indicate the verb position/sentence structure in the 'structure' field. 
-     - **CRITICAL**: The 'structure' field must be in **RUSSIAN**. Use clear terms like "Глагол на 2-м месте", "Порядок слов не меняется", "Инверсия (Глагол на 2-й позиции)", "Глагол в конце (Nebensatz)".
-     - **CRITICAL**: Provide a 'structureExample' where the key word and the verb(s) are highlighted with <b> tags to show their positions.
+  6. Если слово влияет на порядок слов (союзы, наречия, частицы):
+     - Опишите позицию глагола в поле 'structure' на РУССКОМ, используя ТОЛЬКО один из этих вариантов:
+       1. "Глагол на 1-м месте" (Frage, Imperativ)
+       2. "Глагол на 2-м месте" (Hauptsatz, Inversion)
+       3. "Глагол в конце" (Nebensatz)
+       4. "Позиция 0 (ADUSO)" (und, aber, oder, sondern, denn)
+     - **CRITICAL**: Предоставьте 'structureExample' (немецкий), где ключевое слово и глагол(ы) выделены тегом <b>. 
+     - **CLARITY**: Пример должен быть коротким, естественным и наглядно показывать правило.
   7. If it is an **Adjective**:
      - Provide **comparative** and **superlative** forms.
   8. Provide 2-3 **Synonyms** and 1-2 **Antonyms** with Russian translations. Ensure translations for synonyms are concise.
