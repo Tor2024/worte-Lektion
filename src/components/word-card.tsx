@@ -10,7 +10,15 @@ import { cn } from '@/lib/utils';
 import { SpeakButton } from '@/components/speak-button';
 import { formatGermanWord, getGenderColorClass, getGermanType, getRussianType } from '@/lib/german-utils';
 
-export function WordCard({ word, onTranslationSelect }: { word: VocabularyWord, onTranslationSelect?: (translation: string) => void }) {
+export function WordCard({
+  word,
+  onTranslationSelect,
+  compact = false
+}: {
+  word: VocabularyWord,
+  onTranslationSelect?: (translation: string) => void,
+  compact?: boolean
+}) {
   const [isFlipped, setIsFlipped] = useState(false);
 
   // Reset flip state when the word changes
@@ -115,12 +123,18 @@ export function WordCard({ word, onTranslationSelect }: { word: VocabularyWord, 
 
   return (
     <div
-      className="relative h-[350px] w-full cursor-pointer rounded-xl border bg-card text-card-foreground shadow-sm transition-transform duration-500 [transform-style:preserve-3d]"
+      className={cn(
+        "relative w-full cursor-pointer rounded-xl border bg-card text-card-foreground shadow-sm transition-all duration-500 [transform-style:preserve-3d]",
+        compact ? "h-[350px]" : "h-[520px]"
+      )}
       onClick={handleFlip}
       style={{ transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}
     >
       {/* Front of the card (German) */}
-      <div className={cn("flex h-full w-full flex-col p-4 [backface-visibility:hidden]")}>
+      <div className={cn(
+        "flex h-full w-full flex-col [backface-visibility:hidden]",
+        compact ? "p-4" : "p-6"
+      )}>
         <div className="flex-1">
           <div className="flex justify-between items-start">
             <div className="flex flex-col gap-1">
@@ -176,7 +190,10 @@ export function WordCard({ word, onTranslationSelect }: { word: VocabularyWord, 
 
       {/* Back of the card (Russian) */}
       <div
-        className={cn("absolute inset-0 flex h-full w-full flex-col rounded-xl border bg-card p-5 text-card-foreground [backface-visibility:hidden] [transform:rotateY(180deg)]")}
+        className={cn(
+          "absolute inset-0 flex h-full w-full flex-col rounded-xl border bg-card text-card-foreground [backface-visibility:hidden] [transform:rotateY(180deg)]",
+          compact ? "p-4" : "p-6"
+        )}
       >
         <div className="flex-1">
           <div className="flex justify-between items-start">

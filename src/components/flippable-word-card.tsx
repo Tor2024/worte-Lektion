@@ -19,11 +19,12 @@ interface FlippableWordCardProps {
     userWord: UserVocabularyWord;
     className?: string;
     reverse?: boolean;
+    compact?: boolean;
     onRefresh?: () => Promise<void>; // Added onRefresh prop
     onTranslationSelect?: (translation: string) => void;
 }
 
-export function FlippableWordCard({ userWord, className, reverse = false, onRefresh, onTranslationSelect }: FlippableWordCardProps) {
+export function FlippableWordCard({ userWord, className, reverse = false, compact = false, onRefresh, onTranslationSelect }: FlippableWordCardProps) {
     const [isFlipped, setIsFlipped] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false); // Added isRefreshing state
 
@@ -578,7 +579,11 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
 
     return (
         <div
-            className={cn("relative h-[380px] w-full perspective-1000 cursor-pointer group", className)}
+            className={cn(
+                "relative w-full perspective-1000 cursor-pointer group",
+                compact ? "h-[380px]" : "h-[520px]",
+                className
+            )}
             onClick={handleFlip}
         >
             <motion.div

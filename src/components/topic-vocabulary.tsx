@@ -56,7 +56,7 @@ export function TopicVocabulary({ words, topicTitle }: { words: VocabularyWord[]
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {words.map((word, i) => (
-          <WordCard key={word.german + i} word={word} />
+          <WordCard key={word.german + i} word={word} compact />
         ))}
       </div>
     );
@@ -71,7 +71,7 @@ export function TopicVocabulary({ words, topicTitle }: { words: VocabularyWord[]
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {allDisplayWords.map((word, i) => (
-            <WordCard key={word.german + i} word={word} />
+            <WordCard key={word.german + i} word={word} compact />
           ))}
         </div>
       )}
