@@ -171,12 +171,12 @@ export function FlippableWordCard({ userWord, className, reverse = false, onRefr
                 <div className="flex flex-col items-center w-full h-full relative">
                     {/* Verb Prepositions Badges (Top Left) */}
                     {verbPrepositions.length > 0 && (
-                        <div className="absolute top-2 left-4 flex flex-col items-start gap-1 z-20">
+                        <div className="absolute top-2 left-4 flex flex-col items-start gap-1.5 z-20">
                             {verbPrepositions.map((prep, idx) => (
                                 <Badge
                                     key={idx}
                                     variant="outline"
-                                    className="flex items-center gap-1.5 px-2 py-0.5 text-[10px] h-6 font-bold uppercase tracking-tight bg-red-500/10 text-red-600 border-red-200 shadow-sm"
+                                    className="flex items-center gap-1.5 px-3 py-1 text-xs font-black uppercase tracking-widest bg-red-500/10 text-red-600 border-red-300 shadow-sm"
                                 >
                                     {String(prep)}
                                 </Badge>
