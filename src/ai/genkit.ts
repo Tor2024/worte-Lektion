@@ -28,7 +28,7 @@ const aiInstances = keys.map(key => {
   if (!apiKey) return null;
   return genkit({
     plugins: [googleAI({ apiKey })],
-    model: 'googleai/gemini-2.0-flash',
+    model: 'googleai/gemini-2.5-flash',
   });
 }).filter(instance => instance !== null);
 
@@ -63,9 +63,13 @@ export const executeWithRetry = async <T>(
       try {
         return await operation(instance);
       } catch (error: any) {
-        console.error(`AI request failed with key index ${index} (attempt ${globalAttempts + 1}/${MAX_GLOBAL_RETRIES + 1}):`, error.message);
-        if (error.stack) console.error(error.stack);
+        // console.warn(`AI request failed with key index ${index}:`, error.message);
         lastError = error;
+
+        // If it's NOT a quota error/429, and it's a fatal error (like invalid prompt), 
+        // we might NOT want to retry with other keys. 
+        // However, "internal error" or "service unavailable" should be retried.
+        // For now, we continue to rotate keys as a safe default for robustness.
       }
     }
 
