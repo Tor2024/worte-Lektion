@@ -1,31 +1,52 @@
 import { NextResponse } from 'next/server';
-import { ai, aiStable } from '@/ai/genkit';
+import { genkit } from 'genkit';
+import { googleAI } from '@genkit-ai/google-genai';
 
 export async function GET() {
-    const results: any = {
-        pool_standard: { model: 'gemini-2.5-flash', status: 'testing' },
-        pool_stable: { model: 'gemini-2.0-flash', status: 'testing' },
+    const rawKeys = process.env.GEMINI_API_KEYS || process.env.GEMINI_API_KEY || '';
+    const keys = Array.from(new Set(rawKeys.split(',').map(k => k.trim()).filter(k => k.length > 0)));
+
+    const modelsToTest = [
+        'gemini-1.5-flash',
+        'gemini-1.5-flash-latest',
+        'gemini-1.5-pro',
+        'gemini-2.0-flash',
+        'gemini-2.5-flash'
+    ];
+
+    const report: any = {
+        keyCount: keys.length,
+        results: []
     };
 
-    try {
-        if (!ai) throw new Error("AI Standard pool not initialized");
-        const resp = await ai.generate({ prompt: 'Respond with "Standard OK"' });
-        results.pool_standard.status = 'SUCCESS';
-        results.pool_standard.output = resp.text;
-    } catch (e: any) {
-        results.pool_standard.status = 'ERROR';
-        results.pool_standard.error = e.message;
+    for (let i = 0; i < keys.length; i++) {
+        const key = keys[i];
+        const keyObfuscated = key.substring(0, 4) + '...' + key.substring(key.length - 4);
+        const keyReport: any = { keyIndex: i, key: keyObfuscated, models: {} };
+
+        for (const modelName of modelsToTest) {
+            try {
+                const ai = genkit({
+                    plugins: [googleAI({ apiKey: key })],
+                    model: `googleai/${modelName}`
+                });
+
+                const start = Date.now();
+                const resp = await ai.generate({ prompt: 'hi' });
+                keyReport.models[modelName] = {
+                    status: 'SUCCESS',
+                    output: resp.text,
+                    latency: Date.now() - start
+                };
+            } catch (e: any) {
+                keyReport.models[modelName] = {
+                    status: 'ERROR',
+                    error: e.message.substring(0, 200) + (e.message.length > 200 ? '...' : '')
+                };
+            }
+        }
+        report.results.push(keyReport);
     }
 
-    try {
-        if (!aiStable) throw new Error("AI Stable pool not initialized");
-        const resp = await aiStable.generate({ prompt: 'Respond with "Stable OK"' });
-        results.pool_stable.status = 'SUCCESS';
-        results.pool_stable.output = resp.text;
-    } catch (e: any) {
-        results.pool_stable.status = 'ERROR';
-        results.pool_stable.error = e.message;
-    }
-
-    return NextResponse.json(results);
+    return NextResponse.json(report);
 }
