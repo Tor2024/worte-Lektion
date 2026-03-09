@@ -3,13 +3,14 @@ import { WRITING_TOPICS, UNIVERSAL_PHRASES } from "@/lib/writing-data";
 import WritingClient from "./writing-client";
 
 interface WritingTopicPageProps {
-    params: {
+    params: Promise<{
         topicId: string;
-    };
+    }>;
 }
 
-export default function WritingTopicPage({ params }: WritingTopicPageProps) {
-    const topic = WRITING_TOPICS.find((t) => t.id === params.topicId);
+export default async function WritingTopicPage({ params }: WritingTopicPageProps) {
+    const { topicId } = await params;
+    const topic = WRITING_TOPICS.find((t) => t.id === topicId);
 
     if (!topic) {
         notFound();
@@ -26,3 +27,4 @@ export default function WritingTopicPage({ params }: WritingTopicPageProps) {
         </div>
     );
 }
+
