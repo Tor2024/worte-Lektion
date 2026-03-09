@@ -1,5 +1,3 @@
-'use server';
-
 import { executeWithRetry } from '@/ai/genkit';
 import { z } from 'genkit';
 
