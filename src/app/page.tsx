@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { BookOpen, ArrowRight, BrainCircuit, Siren, GraduationCap, CheckCircle, PenLine } from 'lucide-react';
+import { BookOpen, ArrowRight, BrainCircuit, Siren, GraduationCap, CheckCircle, PenLine, Zap } from 'lucide-react';
 import Image from 'next/image';
 import {
   getLevelImage,
@@ -138,6 +138,25 @@ function DailySessionWidget() {
             </div>
           </div>
         )}
+
+        {/* Smart Scheduling Hint */}
+        {!isLoading && (
+          <div className="mt-4 p-3 bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-200/50 dark:border-indigo-800/30 rounded-xl flex items-start gap-3">
+            <div className="p-1.5 bg-indigo-100 dark:bg-indigo-900/40 rounded-lg">
+              <Zap className="h-3.5 w-3.5 text-indigo-500" />
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-[10px] font-black uppercase tracking-widest text-indigo-500/70">Совет по расписанию</span>
+              <span className="text-xs text-muted-foreground font-medium">
+                {new Date().getHours() >= 20 || new Date().getHours() < 6
+                  ? "🌙 Повторение перед сном — лучший способ закрепить слова в долговременной памяти."
+                  : new Date().getHours() >= 6 && new Date().getHours() < 12
+                    ? "☀️ Утренние часы — идеальное время для загрузки новых слов!"
+                    : "💡 Регулярность важнее интенсивности. 15 минут в день достаточно!"}
+              </span>
+            </div>
+          </div>
+        )}
       </CardContent>
       <CardFooter className="relative z-10 pb-8">
         <Button asChild size="lg" className="w-full h-14 text-lg bg-indigo-600 hover:bg-indigo-700 shadow-xl shadow-indigo-500/20 hover:scale-[1.02] transition-transform">
@@ -146,7 +165,7 @@ function DailySessionWidget() {
           </Link>
         </Button>
       </CardFooter>
-    </Card>
+    </Card >
   );
 }
 

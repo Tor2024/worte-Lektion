@@ -28,6 +28,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { decomposeGermanWord, type DecomposeOutput } from '@/ai/flows/decompose-german-word';
 import { Edit2, Save, X, Info } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { QuickRecallTest } from './quick-recall-test';
 
 type GlobalPhase = 'priming' | 'recognition' | 'narrative' | 'production' | 'remedial';
 type SessionState = 'loading' | 'intro' | 'warmup' | 'active' | 'consolidation' | 'summary';
@@ -44,8 +45,17 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
     const [sessionMode, setSessionMode] = useState<'learning' | 'review-only'>('learning');
     const [sessionNumber, setSessionNumber] = useState(1);
 
-    // Batch Management
-    const BATCH_SIZE = 4; // Increased from 2 for better cognitive flow
+    // Adaptive Batch Management
+    const getAdaptiveBatchSize = (items: StudyQueueItem[], batchIdx: number, defaultSize: number) => {
+        const start = batchIdx * defaultSize;
+        const batch = items.slice(start, start + defaultSize);
+        const hasLeeches = batch.some(w => (w.consecutiveMistakes || 0) >= 3 || w.status === 'leech');
+        const allEasy = batch.every(w => (w.interval || 0) > 15);
+        if (hasLeeches) return 3;
+        if (allEasy) return 6;
+        return 4;
+    };
+    const BASE_BATCH_SIZE = 4;
     const [currentBatchIndex, setCurrentBatchIndex] = useState(0);
 
     // Phase Management
@@ -71,6 +81,7 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
     const [editingMnemonicValue, setEditingMnemonicValue] = useState("");
     const [decomposition, setDecomposition] = useState<DecomposeOutput | null>(null);
     const [isDecomposing, setIsDecomposing] = useState(false);
+    const [showQuickRecall, setShowQuickRecall] = useState(false);
 
     const leeches = useMemo(() => sessionQueue.filter(w => (w.consecutiveMistakes || 0) >= 3), [sessionQueue]);
 
@@ -101,7 +112,7 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
         if (isLoading) return;
 
         // New session structure: { items, mode, sessionNumber }
-        const session = getDailySession(folderId);
+        const session = getDailySession(folderId, settings.productionMode);
 
         // Wait for queue to be ready (if empty, retry later or show empty state if truly empty)
         // For now, getDailySession returns empty array if not ready
@@ -120,11 +131,19 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
         setSessionState(session.items.length > 0 ? 'intro' : 'summary');
     }, [getDailySession, sessionState, folderId, isLoading]);
 
-    // Derived: Current batch words
-    const currentBatchWords = useMemo(() => {
-        const start = currentBatchIndex * BATCH_SIZE;
-        return sessionQueue.slice(start, start + BATCH_SIZE);
+    // Derived: Current batch words with adaptive sizing
+    const BATCH_SIZE = useMemo(() => {
+        return getAdaptiveBatchSize(sessionQueue, currentBatchIndex, BASE_BATCH_SIZE);
     }, [sessionQueue, currentBatchIndex]);
+
+    const currentBatchWords = useMemo(() => {
+        // Calculate actual start position using adaptive sizes
+        let start = 0;
+        for (let i = 0; i < currentBatchIndex; i++) {
+            start += getAdaptiveBatchSize(sessionQueue, i, BASE_BATCH_SIZE);
+        }
+        return sessionQueue.slice(start, start + BATCH_SIZE);
+    }, [sessionQueue, currentBatchIndex, BATCH_SIZE]);
 
     const totalBatches = Math.ceil(sessionQueue.length / BATCH_SIZE);
 
@@ -284,7 +303,7 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
         genStory();
     }, [currentPhase, currentBatchIndex, currentBatchWords, sessionState]);
 
-    const handleNext = (result: 'success' | 'fail') => {
+    const handleNext = (result: 'success' | 'fail', confusedWithId?: string) => {
         if (!currentItem) return;
 
         if (currentPhase === 'priming') {
@@ -348,7 +367,7 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
 
                 // In review-only mode, update status as fail immediately if failed in recognition
                 if (sessionMode === 'review-only') {
-                    updateItemStatus(currentItem.id, 'fail');
+                    updateItemStatus(currentItem.id, 'fail', confusedWithId);
                 }
 
                 // Jump back to Priming (or stay in recognition if we decide so, but current logic jumps back)
@@ -391,7 +410,7 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
             setResults(updatedResults);
 
             // SAVE PROGRESS IMMEDIATELY for this word
-            updateItemStatus(currentItem.id, finalResult as 'success' | 'fail');
+            updateItemStatus(currentItem.id, finalResult as 'success' | 'fail', result === 'fail' ? confusedWithId : undefined);
 
             if (phaseIndex < currentBatchWords.length - 1) {
                 setPhaseIndex(i => i + 1);
@@ -609,6 +628,15 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                         Уровень усвоения: <span className="text-white font-black">{percentage}%</span>.
                         Ваши нейронные связи перестроены и готовы к работе.
                     </p>
+
+                    {/* Quick Recall Test Integration */}
+                    <QuickRecallTest
+                        sessionWords={sessionQueue}
+                        onComplete={(correct, total) => {
+                            console.log(`Quick recall completed: ${correct}/${total}`);
+                        }}
+                        onDismiss={() => setShowQuickRecall(false)}
+                    />
                 </div>
 
                 <div className="w-full bg-slate-950/50 p-6 rounded-[3rem] border border-white/5 shadow-inner backdrop-blur-sm">
@@ -725,6 +753,7 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                                     setAsKnown(currentItem.id);
                                     handleNext('success');
                                 }}
+                                isRefresh={refreshWords.has(currentItem.id)}
                             />
                         )}
                         {currentPhase === 'recognition' && (

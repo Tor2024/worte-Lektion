@@ -163,6 +163,7 @@ export interface StudyQueueItem {
   tags: string[]; // e.g., 'folder-id' to track origin
   consecutiveMistakes: number; // For leech tracking
   mnemonic?: string;
+  confusedWith?: Record<string, number>; // Maps wordId -> count of mistakes
 }
 
 export const INITIAL_SM2_STATE: SM2State = {

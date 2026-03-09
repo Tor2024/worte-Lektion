@@ -5,7 +5,7 @@ import { StudyQueueItem } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { formatGermanWord, getGenderColorClass } from '@/lib/german-utils';
-import { BrainCircuit, Check, X } from 'lucide-react';
+import { BrainCircuit, Check, X, ArrowRight, MapPin, Link } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState, useMemo, useEffect } from 'react';
 import { useSpeech } from '@/hooks/use-speech';
@@ -16,7 +16,7 @@ import { FormattedGermanWord } from '../formatted-german-word';
 
 interface RecognitionViewProps {
     item: StudyQueueItem;
-    onResult: (result: 'success' | 'fail') => void;
+    onResult: (result: 'success' | 'fail', confusedWithId?: string) => void;
     onMarkAsKnown: () => void;
     direction?: 0 | 1; // 0 = DE->RU, 1 = RU->DE
 }
@@ -48,17 +48,26 @@ export function RecognitionView({ item, onResult, onMarkAsKnown, direction: forc
     }, [speak, word, isLoaded, direction]);
 
     const options = useMemo(() => {
-        // Distractors based on direction
-        const distractors = commonWords
-            .filter(w => w.german !== word.german)
+        // 1. Identification of "confusion partners"
+        const confusedWordIds = Object.keys(item.confusedWith || {})
+            .sort((a, b) => (item.confusedWith![b] || 0) - (item.confusedWith![a] || 0))
+            .slice(0, 2);
+
+        const confusedWords = commonWords.filter(w => confusedWordIds.includes(w.german));
+        const confusionDistractors = confusedWords.map(w => direction === 0 ? w.russian : formatGermanWord(w));
+
+        // 2. Random distractors to fill seats
+        const needed = 3 - confusionDistractors.length;
+        const randomDistractors = commonWords
+            .filter(w => w.german !== word.german && !confusedWordIds.includes(w.german))
             .sort(() => Math.random() - 0.5)
-            .slice(0, 3)
+            .slice(0, needed)
             .map(w => direction === 0 ? w.russian : formatGermanWord(w));
 
         const correct = direction === 0 ? word.russian : formatGermanWord(word);
-        const allOptions = [...distractors, correct].sort(() => Math.random() - 0.5);
+        const allOptions = [...confusionDistractors, ...randomDistractors, correct].sort(() => Math.random() - 0.5);
         return allOptions;
-    }, [word, direction]);
+    }, [word, direction, item.confusedWith]);
 
     const handleSelect = async (option: string) => {
         if (selectedOption || showSuccess) return;
@@ -93,9 +102,14 @@ export function RecognitionView({ item, onResult, onMarkAsKnown, direction: forc
             await new Promise(r => setTimeout(r, 600));
             onResult('success');
         } else {
+            // Find which word was selected to track confusion
+            const confusedWord = commonWords.find(w =>
+                (direction === 0 ? w.russian : formatGermanWord(w)) === option
+            );
+
             // Incorrect - small delay then next
             setTimeout(() => {
-                onResult('fail');
+                onResult('fail', confusedWord?.german);
             }, 1500);
         }
     };
@@ -222,6 +236,8 @@ export function RecognitionView({ item, onResult, onMarkAsKnown, direction: forc
                                                             gov.case === 'Genitiv' ? "bg-amber-600 text-white" :
                                                                 "bg-slate-700 text-white"
                                             )}>
+                                                {gov.case === 'Akkusativ' && <ArrowRight className="h-2 w-2" />}
+                                                {gov.case === 'Dativ' && <MapPin className="h-2 w-2" />}
                                                 {gov.case}
                                                 {gov.preposition && gov.preposition !== "без предлога" && (
                                                     <span className="ml-1 lowercase font-bold text-[9px] opacity-80 border-l border-white/30 pl-1">

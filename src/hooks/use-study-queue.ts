@@ -94,7 +94,7 @@ export function useStudyQueue() {
     // Session mode type for UI display
     type SessionMode = 'learning' | 'review-only';
 
-    const getDailySession = useCallback((folderId?: string): { items: StudyQueueItem[], mode: SessionMode, sessionNumber: number } => {
+    const getDailySession = useCallback((folderId?: string, productionMode?: string): { items: StudyQueueItem[], mode: SessionMode, sessionNumber: number } => {
         let queueToProcess = localQueue;
 
         // FILTER BY FOLDER ID IF PROVIDED
@@ -134,7 +134,8 @@ export function useStudyQueue() {
         }
 
         // Session 1-2: Normal learning mode
-        const DAILY_LIMIT = 70;      // Increased for 3000-word goal
+        // Dynamic limit: 100 words when skipping production phase, 70 otherwise
+        const DAILY_LIMIT = productionMode === 'skip' ? 100 : 70;
 
         const LEVEL_PRIORITY: Record<string, number> = {
             'Beruf': 100, 'B2': 90, 'B1': 80, 'A2': 70, 'A1': 60, 'A0': 50
@@ -168,22 +169,42 @@ export function useStudyQueue() {
             .filter((item: StudyQueueItem) => item.status === 'new')
             .slice(0, NEW_WORD_LIMIT);
 
-        // 5. Build the session pool dynamically up to DAILY_LIMIT (70)
-        let mainPool: StudyQueueItem[] = [...newWords];
+        // 4.5 Get leech words (hardest words — show first while brain is fresh)
+        const leechWords = queueToProcess
+            .filter((item: StudyQueueItem) => item.status === 'leech' || (item.consecutiveMistakes || 0) >= 3)
+            .sort((a, b) => (b.consecutiveMistakes || 0) - (a.consecutiveMistakes || 0));
 
-        // How much space left for review words?
-        let remainingSlots = DAILY_LIMIT - mainPool.length;
+        // 5. Build the session pool: HARD FIRST strategy
+        // Order: Leeches → Overdue → New → Due Today
+        let mainPool: StudyQueueItem[] = [];
+        let remainingSlots = DAILY_LIMIT;
 
-        // Add due today first (current flow)
-        const dueTodayToAdd = dueTodayWords.slice(0, remainingSlots);
-        mainPool = [...mainPool, ...dueTodayToAdd];
-        remainingSlots -= dueTodayToAdd.length;
+        // 5a. Leeches first (hardest words while brain is fresh)
+        const leechesToAdd = leechWords.slice(0, Math.min(leechWords.length, remainingSlots));
+        mainPool = [...mainPool, ...leechesToAdd];
+        remainingSlots -= leechesToAdd.length;
 
-        // If still space, aggressively pack in overdue words
+        // 5b. Overdue words next (they need attention)
         if (remainingSlots > 0) {
-            const overdueToAdd = overdueWords.slice(0, remainingSlots);
+            const overdueFiltered = overdueWords.filter(w => !mainPool.some(m => m.id === w.id));
+            const overdueToAdd = overdueFiltered.slice(0, remainingSlots);
             mainPool = [...mainPool, ...overdueToAdd];
             remainingSlots -= overdueToAdd.length;
+        }
+
+        // 5c. New words in the middle
+        if (remainingSlots > 0) {
+            const newToAdd = newWords.slice(0, remainingSlots);
+            mainPool = [...mainPool, ...newToAdd];
+            remainingSlots -= newToAdd.length;
+        }
+
+        // 5d. Due today last (they're still fresh in memory)
+        if (remainingSlots > 0) {
+            const dueTodayFiltered = dueTodayWords.filter(w => !mainPool.some(m => m.id === w.id));
+            const dueTodayToAdd = dueTodayFiltered.slice(0, remainingSlots);
+            mainPool = [...mainPool, ...dueTodayToAdd];
+            remainingSlots -= dueTodayToAdd.length;
         }
 
         // Final session
@@ -245,7 +266,7 @@ export function useStudyQueue() {
         return { items: finalSelection, mode: 'learning' as SessionMode, sessionNumber };
     }, [localQueue]);
 
-    const updateItemStatus = useCallback(async (wordId: string, result: 'success' | 'fail') => {
+    const updateItemStatus = useCallback(async (wordId: string, result: 'success' | 'fail', confusedWithId?: string) => {
         const item = localQueue.find((i: any) => i.id === wordId);
         if (!item) return;
 
@@ -253,12 +274,17 @@ export function useStudyQueue() {
         let newMistakes = item.consecutiveMistakes;
         let nextInterval = item.interval || 0;
         let nextEase = item.easeFactor || 2.5;
+        let currentConfusedWith = { ...(item.confusedWith || {}) };
 
         if (result === 'fail') {
             newMistakes++;
             newStatus = newMistakes >= 3 ? 'leech' : 'learning';
             nextInterval = 0; // Reset to 0 days for immediate re-learning
             nextEase = Math.max(1.3, nextEase - 0.2); // Decrease ease factor
+
+            if (confusedWithId) {
+                currentConfusedWith[confusedWithId] = (currentConfusedWith[confusedWithId] || 0) + 1;
+            }
 
             // Generate mnemonic if it becomes a leech and doesn't have one
             if (newStatus === 'leech' && !item.mnemonic) {
@@ -316,7 +342,8 @@ export function useStudyQueue() {
                     nextReviewNum: nextDate,
                     interval: nextInterval,
                     easeFactor: nextEase,
-                    mnemonic: item.mnemonic
+                    mnemonic: item.mnemonic,
+                    confusedWith: currentConfusedWith
                 }
                 : i
         );
@@ -401,7 +428,7 @@ export function useStudyQueue() {
         const reviewCount = localQueue.filter((i: StudyQueueItem) => i.status === 'review').length;
 
         // Global limit: 70 words per session (sustainable goal for 3000 words deadline)
-        const dailyLimit = 70;
+        const dailyLimit = 100; // Show max potential
         const availableTotal = Math.min(localQueue.length, dailyLimit);
 
         return {

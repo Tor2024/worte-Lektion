@@ -10,40 +10,103 @@ import { BrainCircuit, Siren } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { useSpeech } from '@/hooks/use-speech';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
+import { commonWords } from '@/lib/common-words';
 import { decomposeGermanWord, type DecomposeOutput } from '@/ai/flows/decompose-german-word';
 import { getVerbFamily, type VerbFamilyOutput } from '@/ai/flows/get-verb-family';
+import { getRektionLogic, type RektionLogicOutput } from '@/ai/flows/get-rektion-logic';
+import { getWordCluster, type WordClusterOutput } from '@/ai/flows/get-word-cluster';
 import { VerbFamilyTree } from './verb-family-tree';
-import { Loader2, Info, Network } from 'lucide-react';
+import { WordClusterView } from './word-cluster-view';
+import { Loader2, Info, Network, ArrowRight, MapPin, Link, Activity, Layers, Sparkles } from 'lucide-react';
 import { FormattedGermanWord } from '../formatted-german-word';
 
 interface PrimingViewProps {
     item: StudyQueueItem;
     onNext: () => void;
     onMarkAsKnown: () => void;
+    isRefresh?: boolean;
 }
 
-export function PrimingView({ item, onNext, onMarkAsKnown }: PrimingViewProps) {
+export function PrimingView({ item, onNext, onMarkAsKnown, isRefresh }: PrimingViewProps) {
     const { word } = item;
     const { speak, speakSequence, stop, isLoaded } = useSpeech();
     const [decomposition, setDecomposition] = useState<DecomposeOutput | null>(null);
     const [isDecomposing, setIsDecomposing] = useState(false);
     const [verbFamily, setVerbFamily] = useState<VerbFamilyOutput | null>(null);
     const [isFetchingFamily, setIsFetchingFamily] = useState(false);
+    const [rektionLogic, setRektionLogic] = useState<RektionLogicOutput | null>(null);
+    const [isFetchingRektion, setIsFetchingRektion] = useState(false);
+    const [wordCluster, setWordCluster] = useState<WordClusterOutput | null>(null);
+    const [isFetchingCluster, setIsFetchingCluster] = useState(false);
+
+    // Anti-Confusion: Identify the most dangerous partner
+    const confusionPartnerId = useMemo(() => {
+        if (!item.confusedWith) return null;
+        const ids = Object.keys(item.confusedWith);
+        if (ids.length === 0) return null;
+        // Sort by mistake count and take the top one
+        return ids.sort((a, b) => (item.confusedWith![b] || 0) - (item.confusedWith![a] || 0))[0];
+    }, [item.confusedWith]);
+
+    const confusionPartner = useMemo(() => {
+        if (!confusionPartnerId) return null;
+        return commonWords.find((w: any) => w.german === confusionPartnerId);
+    }, [confusionPartnerId]);
 
     // Decomposition Effect
     useEffect(() => {
         setDecomposition(null);
-        setVerbFamily(null); // Reset when word changes
+        setVerbFamily(null);
+        setRektionLogic(null);
+        setWordCluster(null); // Reset all on word change
         if (word.german.includes(' ') || word.german.length > 10) {
             setIsDecomposing(true);
             decomposeGermanWord({ german: word.german })
                 .then(setDecomposition)
-                .catch(err => console.error("Decomposition failed", err))
+                .catch((err: Error) => console.error("Decomposition failed", err))
                 .finally(() => setIsDecomposing(false));
         }
+
+        // Auto-fetch Rektion Logic if word has governance
+        if ((word as any).governance && (word as any).governance.length > 0) {
+            fetchRektionLogic();
+        }
     }, [word.german]);
+
+    const fetchRektionLogic = async () => {
+        const gov = (word as any).governance?.[0];
+        if (!gov || isFetchingRektion) return;
+
+        setIsFetchingRektion(true);
+        try {
+            const data = await getRektionLogic({
+                german: formatGermanWord(word),
+                preposition: gov.preposition,
+                case: gov.case,
+                russian: word.russian
+            });
+            setRektionLogic(data);
+        } catch (err: any) {
+            console.error("Rektion Logic fetch failed", err);
+        } finally {
+            setIsFetchingRektion(false);
+        }
+    };
+
+    const fetchWordCluster = async () => {
+        if (isFetchingCluster || wordCluster) return;
+        setIsFetchingCluster(true);
+        try {
+            const data = await getWordCluster(formatGermanWord(word), word.type);
+            setWordCluster(data);
+        } catch (err: any) {
+            console.error("Failed to fetch word cluster", err);
+        } finally {
+            setIsFetchingCluster(false);
+        }
+    };
 
     const fetchVerbFamily = async () => {
         if (isFetchingFamily || verbFamily) return;
@@ -106,7 +169,7 @@ export function PrimingView({ item, onNext, onMarkAsKnown }: PrimingViewProps) {
         >
             <div className="flex items-center gap-3 text-muted-foreground uppercase text-[10px] tracking-[0.2em] font-bold">
                 <BrainCircuit className="h-4 w-4" />
-                <span>Фаза 1: Загрузка Образа</span>
+                <span>{isRefresh ? '🔄 Повторная Загрузка' : 'Фаза 1: Загрузка Образа'}</span>
                 {(item.consecutiveMistakes || 0) >= 3 && (
                     <Badge variant="destructive" className="ml-2 animate-pulse flex gap-1 items-center">
                         <Siren className="h-3 w-3" /> Сложное Слово (Leech)
@@ -120,7 +183,49 @@ export function PrimingView({ item, onNext, onMarkAsKnown }: PrimingViewProps) {
             </div>
 
             <Card className="w-full bg-card border-none shadow-2xl overflow-hidden relative">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500" />
+                <div className={cn("absolute top-0 left-0 w-full h-1 bg-gradient-to-r", isRefresh ? "from-orange-500 to-red-500" : "from-blue-500 to-purple-500")} />
+
+                {/* Refresh Hint: shown when word was forgotten in Recognition */}
+                {isRefresh && (
+                    <div className="mx-4 mt-4 p-3 bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800 rounded-xl text-sm text-orange-700 dark:text-orange-300 animate-in fade-in slide-in-from-top-2">
+                        <span className="font-bold">💡 Совет:</span> Попробуйте создать визуальный образ или ассоциацию с русским словом. Представьте ситуацию, где вы используете это слово.
+                    </div>
+                )}
+
+                {/* Contrast Card: Side-by-side comparison with confused word */}
+                {confusionPartner && (
+                    <div className="mx-4 mt-4 p-4 bg-red-500/10 border-2 border-red-500/30 rounded-3xl animate-in zoom-in-95 duration-500">
+                        <div className="flex items-center gap-2 mb-4">
+                            <Badge className="bg-red-500 text-[10px] font-black uppercase shadow-lg">Anti-Confusion</Badge>
+                            <span className="text-xs text-red-600 dark:text-red-400 font-black uppercase tracking-tighter">Не путайте эти слова!</span>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            {/* Current Word */}
+                            <div className="flex flex-col items-center p-4 bg-white/80 dark:bg-slate-950/80 rounded-2xl border-2 border-primary/20 shadow-md">
+                                <div className="text-lg sm:text-2xl font-black text-primary mb-1">
+                                    <FormattedGermanWord word={word} />
+                                </div>
+                                <div className="text-[10px] text-muted-foreground italic font-medium">{word.russian}</div>
+                            </div>
+
+                            {/* Confusion Partner */}
+                            <div className="flex flex-col items-center p-4 bg-white/80 dark:bg-slate-950/80 rounded-2xl border-2 border-red-500/20 shadow-md">
+                                <div className="text-lg sm:text-2xl font-black text-red-600 mb-1">
+                                    <FormattedGermanWord word={confusionPartner as any} />
+                                </div>
+                                <div className="text-[10px] text-muted-foreground italic font-medium">{confusionPartner.russian}</div>
+                            </div>
+                        </div>
+
+                        {/* Highlighting Differences */}
+                        <div className="mt-4 p-3 bg-white/30 dark:bg-black/20 rounded-xl text-[11px] text-slate-700 dark:text-slate-300 font-medium text-left leading-relaxed border border-red-500/10">
+                            <span className="font-black text-red-600 block mb-1 uppercase tracking-widest text-[9px]">💡 В чем разница?</span>
+                            Слова визуально похожи. Обращайте внимание на различия в корнях или приставках.
+                            Используйте <strong>{word.german}</strong> для одного контекста и <strong>{confusionPartner.german}</strong> для другого.
+                        </div>
+                    </div>
+                )}
 
                 {/* Prepositions Badges (Top Left) */}
                 {(() => {
@@ -164,10 +269,14 @@ export function PrimingView({ item, onNext, onMarkAsKnown }: PrimingViewProps) {
                                     {(word as any).governance.map((gov: any, idx: number) => (
                                         <div key={idx} className="flex flex-col items-center bg-primary/10 p-4 rounded-2xl border-2 border-primary/20 w-full max-w-sm shadow-xl">
                                             <div className="flex items-center gap-3 text-2xl font-black">
+                                                {gov.case === 'Akkusativ' && <ArrowRight className="h-5 w-5 text-red-500 animate-pulse" />}
+                                                {gov.case === 'Dativ' && <MapPin className="h-5 w-5 text-emerald-500" />}
+                                                {gov.case === 'Genitiv' && <Link className="h-5 w-5 text-amber-500" />}
+
                                                 {gov.preposition === "без предлога" && gov.case === 'Akkusativ' && (word.german.toLowerCase().includes('sich') || gov.meaning?.toLowerCase().includes('возвратн')) ? (
-                                                    <span className="text-primary tracking-tighter">+ sich</span>
+                                                    <span className="text-primary tracking-tighter text-2xl">+ sich</span>
                                                 ) : (
-                                                    <span className="text-primary">+ {gov.preposition}</span>
+                                                    <span className="text-primary text-2xl">+ {gov.preposition}</span>
                                                 )}
                                                 <span className={cn(
                                                     "px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-tight flex items-center gap-1 shadow-md",
@@ -185,6 +294,15 @@ export function PrimingView({ item, onNext, onMarkAsKnown }: PrimingViewProps) {
                                                     )}
                                                 </span>
                                             </div>
+
+                                            {/* RU vs DE Logic Comparison */}
+                                            {rektionLogic?.comparison && (
+                                                <div className="mt-2 w-full p-2 bg-white/40 dark:bg-black/20 rounded-lg text-[11px] font-bold text-slate-600 dark:text-slate-400 border border-primary/5">
+                                                    <span className="text-primary/70 mr-1 uppercase text-[9px]">Vs RU:</span>
+                                                    {rektionLogic.comparison}
+                                                </div>
+                                            )}
+
                                             {gov.meaning && (
                                                 <div className="text-xs font-bold text-slate-700 dark:text-slate-300 mt-2 italic bg-primary/5 px-3 py-1 rounded-full">
                                                     ({gov.meaning})
@@ -197,6 +315,24 @@ export function PrimingView({ item, onNext, onMarkAsKnown }: PrimingViewProps) {
                                             )}
                                         </div>
                                     ))}
+                                </div>
+                            )}
+
+                            {/* Rektion Logic Hint (AI Generated) */}
+                            {rektionLogic && (
+                                <div className="mt-4 w-full max-w-sm bg-gradient-to-br from-primary/5 to-transparent p-4 rounded-3xl border border-primary/10 text-left animate-in fade-in slide-in-from-bottom-2 duration-500">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <Activity className="h-4 w-4 text-primary animate-pulse" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-primary/60">Логика Управления</span>
+                                    </div>
+                                    <p className="text-[11px] leading-relaxed text-slate-600 dark:text-slate-400">
+                                        {rektionLogic.logic}
+                                    </p>
+                                    {rektionLogic.visualMnemonic && (
+                                        <div className="mt-2 text-[10px] italic text-primary/70 bg-primary/5 px-2 py-1 rounded-lg inline-block">
+                                            💡 {rektionLogic.visualMnemonic}
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
@@ -257,7 +393,7 @@ export function PrimingView({ item, onNext, onMarkAsKnown }: PrimingViewProps) {
                                 <Info className="h-3 w-3" /> Разбор конструкции:
                             </div>
                             <div className="grid grid-cols-1 gap-1">
-                                {decomposition.components.map((c, i) => (
+                                {decomposition.components.map((c: any, i: number) => (
                                     <div key={i} className="text-sm flex justify-between gap-4">
                                         <span className="font-bold text-slate-700">{c.word} {c.pronunciation && <span className="text-[10px] text-muted-foreground font-normal">[{c.pronunciation}]</span>}</span>
                                         <span className="text-slate-500">{c.translation}</span>
@@ -288,6 +424,24 @@ export function PrimingView({ item, onNext, onMarkAsKnown }: PrimingViewProps) {
 
                     {verbFamily && (
                         <VerbFamilyTree data={verbFamily} currentVerb={formatGermanWord(word)} />
+                    )}
+
+                    {/* Word Family Cluster (Triple-Threat) */}
+                    {!wordCluster && (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="mt-2 gap-2 border-indigo-500/20 text-indigo-500/60 hover:text-indigo-600 transition-all rounded-full h-8 px-4"
+                            onClick={fetchWordCluster}
+                            disabled={isFetchingCluster}
+                        >
+                            {isFetchingCluster ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                            <span className="text-[10px] font-black uppercase tracking-tight">Расширить до кластера (Сущ+Глаг+Прил)</span>
+                        </Button>
+                    )}
+
+                    {wordCluster && (
+                        <WordClusterView data={wordCluster} currentWord={formatGermanWord(word)} />
                     )}
 
                     {/* Anchor Phrase (Collocation) as primary memorization aid */}
