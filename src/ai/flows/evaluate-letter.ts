@@ -1,6 +1,6 @@
 'use server';
 
-import { ai, aiStable, executeWithRetryStable } from '@/ai/genkit';
+import { executeWithRetry } from '@/ai/genkit';
 import { z } from 'genkit';
 
 export const LetterEvaluationSchema = z.object({
@@ -27,13 +27,11 @@ export const LetterEvaluationSchema = z.object({
 
 export type LetterEvaluation = z.infer<typeof LetterEvaluationSchema>;
 
-const GenerateLetterEvaluationInputSchema = z.object({
-    userText: z.string(),
-    taskDescription: z.string(),
-    requiredPoints: z.array(z.string())
-});
-
-export type GenerateLetterEvaluationInput = z.infer<typeof GenerateLetterEvaluationInputSchema>;
+export type GenerateLetterEvaluationInput = {
+    userText: string;
+    taskDescription: string;
+    requiredPoints: string[];
+};
 
 const renderPrompt = (input: GenerateLetterEvaluationInput) => {
     return `
@@ -59,23 +57,21 @@ const renderPrompt = (input: GenerateLetterEvaluationInput) => {
   `;
 };
 
-const evaluateLetterFlow = aiStable.defineFlow(
-    {
-        name: 'evaluateLetterFlow',
-        inputSchema: GenerateLetterEvaluationInputSchema,
-        outputSchema: LetterEvaluationSchema,
-    },
-    async (input) => {
-        return executeWithRetryStable(async (aiInstance) => {
-            const { output } = await aiInstance.generate({
-                prompt: renderPrompt(input),
-                output: { schema: LetterEvaluationSchema },
-            });
-            return output!;
-        });
-    }
-);
+export async function evaluateLetter(
+    userText: string,
+    taskDescription: string,
+    requiredPoints: string[]
+): Promise<LetterEvaluation> {
+    const input = { userText, taskDescription, requiredPoints };
 
-export async function evaluateLetter(userText: string, taskDescription: string, requiredPoints: string[]): Promise<LetterEvaluation> {
-    return evaluateLetterFlow({ userText, taskDescription, requiredPoints });
+    return executeWithRetry(async (aiInstance) => {
+        const { output } = await aiInstance.generate({
+            prompt: renderPrompt(input),
+            output: { schema: LetterEvaluationSchema },
+        });
+        if (!output) {
+            throw new Error('AI returned empty output');
+        }
+        return output;
+    });
 }
