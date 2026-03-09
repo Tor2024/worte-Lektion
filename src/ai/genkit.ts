@@ -22,7 +22,7 @@ if (keys.length > 0) {
   console.error("No Gemini API keys found in environment variables!");
 }
 
-// Create a pool of Genkit instances, one for each key
+// Create pools of Genkit instances
 const aiInstances = keys.map(key => {
   const apiKey = key.trim();
   if (!apiKey) return null;
@@ -32,51 +32,50 @@ const aiInstances = keys.map(key => {
   });
 }).filter(instance => instance !== null);
 
+const aiInstancesStable = keys.map(key => {
+  const apiKey = key.trim();
+  if (!apiKey) return null;
+  return genkit({
+    plugins: [googleAI({ apiKey })],
+    model: 'googleai/gemini-1.5-flash',
+  });
+}).filter(instance => instance !== null);
+
 if (aiInstances.length === 0) {
   console.error("No valid Gemini API keys found!");
 }
 
-// Export the first instance as default for backward compatibility
+// Export instances
 export const ai = aiInstances[0];
+export const aiStable = aiInstancesStable[0];
 
-// Helper to execute an AI operation with retries across all available keys
-export const executeWithRetry = async <T>(
-  operation: (aiInstance: typeof ai) => Promise<T>
+// Generic retry helper
+const internalExecuteWithRetry = async <T>(
+  instances: any[],
+  operation: (aiInstance: any) => Promise<T>
 ): Promise<T> => {
-  if (aiInstances.length === 0) {
+  if (instances.length === 0) {
     throw new Error("No Genkit instances available. Check API keys.");
   }
 
-  const MAX_GLOBAL_RETRIES = 2; // Total 3 attempts (initial + 2 retries)
+  const MAX_GLOBAL_RETRIES = 2;
   let globalAttempts = 0;
 
   while (globalAttempts <= MAX_GLOBAL_RETRIES) {
     let lastError: any;
+    const startOffset = Math.floor(Math.random() * instances.length);
 
-    // Try each key in sequence (starting from a random offset to distribute load)
-    const startOffset = Math.floor(Math.random() * aiInstances.length);
-
-    for (let i = 0; i < aiInstances.length; i++) {
-      const index = (startOffset + i) % aiInstances.length;
-      const instance = aiInstances[index];
+    for (let i = 0; i < instances.length; i++) {
+      const index = (startOffset + i) % instances.length;
+      const instance = instances[index];
 
       try {
         return await operation(instance);
       } catch (error: any) {
-        // console.warn(`AI request failed with key index ${index}:`, error.message);
         lastError = error;
-
-        // If it's NOT a quota error/429, and it's a fatal error (like invalid prompt), 
-        // we might NOT want to retry with other keys. 
-        // However, "internal error" or "service unavailable" should be retried.
-        // For now, we continue to rotate keys as a safe default for robustness.
       }
     }
 
-    // If we are here, all keys failed for this attempt.
-    console.warn(`All ${aiInstances.length} keys failed (Attempt ${globalAttempts + 1}/${MAX_GLOBAL_RETRIES + 1}). Last error: ${lastError?.message}`);
-
-    // Check if we should wait and retry the whole pool.
     const isRetryable =
       lastError?.message?.includes('429') ||
       lastError?.message?.includes('quota') ||
@@ -85,19 +84,26 @@ export const executeWithRetry = async <T>(
       lastError?.status === 500;
 
     if (isRetryable && globalAttempts < MAX_GLOBAL_RETRIES) {
-      const baseDelay = 2000 * Math.pow(2, globalAttempts);
-      const jitter = Math.random() * 1000;
-      const waitTime = baseDelay + jitter;
-
-      console.log(`Waiting ${Math.round(waitTime)}ms before global retry...`);
+      const waitTime = 2000 * Math.pow(2, globalAttempts) + Math.random() * 1000;
       await new Promise(resolve => setTimeout(resolve, waitTime));
-
       globalAttempts++;
       continue;
     }
 
     throw lastError || new Error("All AI instances failed.");
   }
-
   throw new Error("All AI instances failed after retries.");
+};
+
+// Export specialized retry helpers
+export const executeWithRetry = async <T>(
+  operation: (aiInstance: typeof ai) => Promise<T>
+): Promise<T> => {
+  return internalExecuteWithRetry(aiInstances, operation);
+};
+
+export const executeWithRetryStable = async <T>(
+  operation: (aiInstance: typeof aiStable) => Promise<T>
+): Promise<T> => {
+  return internalExecuteWithRetry(aiInstancesStable, operation);
 };

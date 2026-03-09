@@ -1,6 +1,6 @@
 'use server';
 
-import { ai, executeWithRetry } from '@/ai/genkit';
+import { ai, aiStable, executeWithRetryStable } from '@/ai/genkit';
 import { z } from 'genkit';
 
 export const LetterEvaluationSchema = z.object({
@@ -59,14 +59,14 @@ const renderPrompt = (input: GenerateLetterEvaluationInput) => {
   `;
 };
 
-const evaluateLetterFlow = ai.defineFlow(
+const evaluateLetterFlow = aiStable.defineFlow(
     {
         name: 'evaluateLetterFlow',
         inputSchema: GenerateLetterEvaluationInputSchema,
         outputSchema: LetterEvaluationSchema,
     },
     async (input) => {
-        return executeWithRetry(async (aiInstance) => {
+        return executeWithRetryStable(async (aiInstance) => {
             const { output } = await aiInstance.generate({
                 prompt: renderPrompt(input),
                 output: { schema: LetterEvaluationSchema },
