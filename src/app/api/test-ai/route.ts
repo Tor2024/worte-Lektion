@@ -4,7 +4,7 @@ import { ai, aiStable } from '@/ai/genkit';
 export async function GET() {
     const results: any = {
         pool_standard: { model: 'gemini-2.5-flash', status: 'testing' },
-        pool_stable: { model: 'gemini-1.5-flash', status: 'testing' },
+        pool_stable: { model: 'gemini-2.0-flash', status: 'testing' },
     };
 
     try {

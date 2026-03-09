@@ -37,7 +37,7 @@ const aiInstancesStable = keys.map(key => {
   if (!apiKey) return null;
   return genkit({
     plugins: [googleAI({ apiKey })],
-    model: 'googleai/gemini-1.5-flash',
+    model: 'googleai/gemini-2.0-flash',
   });
 }).filter(instance => instance !== null);
 
