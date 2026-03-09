@@ -67,11 +67,16 @@ const evaluateLetterFlow = ai.defineFlow(
     },
     async (input) => {
         return executeWithRetry(async (aiInstance) => {
-            const { output } = await aiInstance.generate({
-                prompt: renderPrompt(input),
-                output: { schema: LetterEvaluationSchema },
-            });
-            return output!;
+            try {
+                const { output } = await aiInstance.generate({
+                    prompt: renderPrompt(input),
+                    output: { schema: LetterEvaluationSchema },
+                });
+                return output!;
+            } catch (error: any) {
+                console.error("AI generation error in evaluateLetterFlow:", error.message);
+                throw error;
+            }
         });
     }
 );

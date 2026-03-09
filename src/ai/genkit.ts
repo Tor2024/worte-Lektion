@@ -28,7 +28,7 @@ const aiInstances = keys.map(key => {
   if (!apiKey) return null;
   return genkit({
     plugins: [googleAI({ apiKey })],
-    model: 'googleai/gemini-2.5-flash',
+    model: 'googleai/gemini-2.0-flash',
   });
 }).filter(instance => instance !== null);
 
@@ -63,13 +63,9 @@ export const executeWithRetry = async <T>(
       try {
         return await operation(instance);
       } catch (error: any) {
-        // console.warn(`AI request failed with key index ${index}:`, error.message);
+        console.error(`AI request failed with key index ${index} (attempt ${globalAttempts + 1}/${MAX_GLOBAL_RETRIES + 1}):`, error.message);
+        if (error.stack) console.error(error.stack);
         lastError = error;
-
-        // If it's NOT a quota error/429, and it's a fatal error (like invalid prompt), 
-        // we might NOT want to retry with other keys. 
-        // However, "internal error" or "service unavailable" should be retried.
-        // For now, we continue to rotate keys as a safe default for robustness.
       }
     }
 
@@ -77,7 +73,6 @@ export const executeWithRetry = async <T>(
     console.warn(`All ${aiInstances.length} keys failed (Attempt ${globalAttempts + 1}/${MAX_GLOBAL_RETRIES + 1}). Last error: ${lastError?.message}`);
 
     // Check if we should wait and retry the whole pool.
-    // We retry on 429 (quota), 503 (service unavailable), or 500 (internal).
     const isRetryable =
       lastError?.message?.includes('429') ||
       lastError?.message?.includes('quota') ||
@@ -86,9 +81,7 @@ export const executeWithRetry = async <T>(
       lastError?.status === 500;
 
     if (isRetryable && globalAttempts < MAX_GLOBAL_RETRIES) {
-      // Exponential backoff: 2s, 4s, 8s...
       const baseDelay = 2000 * Math.pow(2, globalAttempts);
-      // Add jitter (0-1000ms) to avoid thundering herd locally
       const jitter = Math.random() * 1000;
       const waitTime = baseDelay + jitter;
 
