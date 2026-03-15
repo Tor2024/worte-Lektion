@@ -25,7 +25,14 @@ export function InteractiveText({ text, wordMap }: InteractiveTextProps) {
             {parts.map((part, i) => {
                 if (part.startsWith('**') && part.endsWith('**')) {
                     const word = part.slice(2, -2);
-                    return <InteractiveWord key={i} word={word} wordMap={wordMap} isBold />;
+                    // Split the bolded word into tokens so that punctuation within the bolded part isn't broken
+                    const tokens = word.split(/([^a-zA-ZäöüÄÖÜß-]+)/);
+                    return tokens.map((token, k) => {
+                        if (token.match(/[a-zA-ZäöüÄÖÜß]/) && token.match(/^[a-zA-ZäöüÄÖÜß-]+$/)) {
+                            return <InteractiveWord key={`${i}-bold-${k}`} word={token} wordMap={wordMap} isBold={true} />;
+                        }
+                        return <span key={`${i}-bold-${k}`} className="font-black text-primary underline decoration-primary/30">{token}</span>;
+                    });
                 }
 
                 // For non-bolded text, split by whitespace, but keep whitespace

@@ -150,10 +150,10 @@ export function ProductionView({ item, storyContext, onStoryUpdate, onResult, mo
                     <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-transparent pointer-events-none" />
                     <CardContent className="p-8 flex flex-col items-center text-center space-y-6 relative z-10">
                         <div className="space-y-4">
-                            <p className="text-2xl md:text-3xl font-bold text-white leading-tight tracking-tight border-l-4 border-green-500/50 pl-6 text-left">
-                                {clozeData.sentenceWithBlank.replace('___', `<span class="text-green-400 underline decoration-2">${clozeData.missingWord}</span>`).split('___').join('') /* fallback if no blank */}
-                                <span dangerouslySetInnerHTML={{ __html: clozeData.sentenceWithBlank.replace('___', `<span class="text-green-400 underline decoration-2">${clozeData.missingWord}</span>`) }} />
-                            </p>
+                            <p
+                                className="text-2xl md:text-3xl font-bold text-white leading-tight tracking-tight border-l-4 border-green-500/50 pl-6 text-left"
+                                dangerouslySetInnerHTML={{ __html: clozeData.sentenceWithBlank.replace('___', `<span class="text-green-400 underline decoration-2">${clozeData.missingWord}</span>`) }}
+                            />
                             <p className="text-lg text-slate-400 italic text-left pl-10">— {clozeData.translation}</p>
                         </div>
 
