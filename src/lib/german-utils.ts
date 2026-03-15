@@ -55,13 +55,41 @@ export function getGenderColorClass(word: VocabularyWord): string {
 }
 
 /**
- * Strips markdown and other technical characters that shouldn't be voiced by TTS.
- * Prevents hearing "stern" or "star" when encountering bold (**) or italic (*) text.
+ * Strips markdown, HTML tags, and technical characters/abbreviations that shouldn't be voiced by TTS.
+ * This prevents TTS engines (especially Russian) from crashing or hanging on special characters.
  */
 export function cleanTextForSpeech(text: string): string {
     if (!text) return "";
-    // Strips markdown symbols (*, _, ~, `, #), brackets, and extra punctuation that shouldn't be voiced
-    return text.replace(/[*_~`#\[\]\(\)]/g, '').replace(/[-]{2,}/g, ' ');
+    
+    let cleaned = text;
+
+    // 1. Remove HTML tags completely
+    cleaned = cleaned.replace(/<[^>]*>/g, '');
+
+    // 2. Remove anything inside parentheses or brackets (grammar notes, etc.)
+    cleaned = cleaned.replace(/\([^)]*\)/g, '');
+    cleaned = cleaned.replace(/\[[^\]]*\]/g, '');
+
+    // 3. Remove common Russian dictionary abbreviations
+    const abbreviations = [
+        /(кого-л\.|что-л\.|кому-л\.|чему-л\.|кем-л\.|чем-л\.|о ком-л\.|о чем-л\.|кто-л\.)/gi,
+        /(к-л\.|ч-л\.)/gi,
+        /(т\.е\.)/gi,
+        /(соотв\.)/gi
+    ];
+    
+    abbreviations.forEach(regex => {
+        cleaned = cleaned.replace(regex, '');
+    });
+
+    // 4. Strip leftover markdown symbols (*, _, ~, `, #) and slashes
+    cleaned = cleaned.replace(/[*_~`#/]/g, ' ');
+    
+    // 5. Clean up multiple spaces and dashes
+    cleaned = cleaned.replace(/[-]{2,}/g, ' ');
+    cleaned = cleaned.replace(/\s{2,}/g, ' ').trim();
+
+    return cleaned;
 }
 /**
  * Checks if a word meets the new B2 Beruf standardization criteria.

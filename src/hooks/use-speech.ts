@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
+import { cleanTextForSpeech } from '@/lib/german-utils';
 
 export type VoiceGender = 'male' | 'female';
 
@@ -41,6 +42,7 @@ export function useSpeech() {
             window.speechSynthesis.cancel();
             sequenceIdRef.current++; // Cancel any running sequence loop
             setIsSpeaking(false);
+            activeUtteranceRef.current = null;
         }
     }, []);
 
@@ -60,11 +62,19 @@ export function useSpeech() {
                 return;
             }
 
+            const cleanedText = cleanTextForSpeech(text);
+            
+            // If text is empty after cleaning (e.g. it was just grammar notes), skip speech
+            if (!cleanedText) {
+                resolve();
+                return;
+            }
+
             // Note: We don't call cancel() here anymore inside speak(), 
             // because speakSequence needs to call speak multiple times in a row.
             // Cancellation should happen at the start of a sequence or manual stop.
 
-            const utterance = new SpeechSynthesisUtterance(text);
+            const utterance = new SpeechSynthesisUtterance(cleanedText);
             activeUtteranceRef.current = utterance;
 
             utterance.lang = lang;

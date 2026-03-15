@@ -99,7 +99,7 @@ export function RecognitionView({ item, onResult, onMarkAsKnown, direction: forc
             await speakSequence(sequence);
 
             // Small wait after audio
-            await new Promise(r => setTimeout(r, 600));
+            await new Promise(r => setTimeout(r, 250));
             onResult('success');
         } else {
             // Find which word was selected to track confusion
@@ -110,7 +110,7 @@ export function RecognitionView({ item, onResult, onMarkAsKnown, direction: forc
             // Incorrect - small delay then next
             setTimeout(() => {
                 onResult('fail', confusedWord?.german);
-            }, 1500);
+            }, 800);
         }
     };
 

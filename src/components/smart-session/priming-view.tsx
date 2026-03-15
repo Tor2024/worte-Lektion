@@ -147,7 +147,7 @@ export function PrimingView({ item, onNext, onMarkAsKnown, isRefresh }: PrimingV
             }
 
             // Wait for initial load if needed
-            await new Promise(r => setTimeout(r, 800));
+            await new Promise(r => setTimeout(r, 300));
             if (!active) return;
 
             await speakSequence(sequence);

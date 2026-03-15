@@ -77,7 +77,7 @@ export function ConsolidationView({ items, onComplete }: ConsolidationViewProps)
             await speak(formatGermanWord(currentItem.word), 'de-DE');
         }
 
-        await new Promise(r => setTimeout(r, 800));
+        await new Promise(r => setTimeout(r, 400));
 
         if (currentIndex < items.length - 1) {
             setCurrentIndex(i => i + 1);
