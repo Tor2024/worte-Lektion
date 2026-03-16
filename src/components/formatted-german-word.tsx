@@ -8,16 +8,16 @@ interface FormattedGermanWordProps {
 }
 
 const SEPARABLE_PREFIXES = [
-    'ab', 'an', 'auf', 'aus', 'bei', 'ein', 'los', 'mit', 'nach', 'her', 'hin',
-    'vor', 'weg', 'zu', 'zurück', 'zusammen', 'da', 'dabei', 'daran', 'darauf',
+    'ab', 'an', 'auf', 'aus', 'bei', 'bevor', 'da', 'dabei', 'daran', 'darauf',
     'daraus', 'darin', 'darüber', 'darum', 'davon', 'dazu', 'dazwischen',
-    'empor', 'entgegen', 'entlang', 'entzwei', 'fehl', 'fest', 'fort',
-    'gegenüber', 'gleich', 'heim', 'herab', 'heran', 'heraus', 'herbei',
-    'herein', 'herüber', 'herum', 'herunter', 'hervor', 'hinab', 'hinan',
-    'hinaus', 'hinein', 'hintan', 'hinten', 'hinterher', 'hinüber', 'hinunter',
-    'hinweg', 'hinzu', 'inne', 'kaputt', 'kennen', 'krank', 'leer', 'liegen',
-    'mit', 'nieder', 'statt', 'teil', 'wieder', 'zurecht', 'zurück', 'zusammen',
-    'zwischen'
+    'ein', 'empor', 'entgegen', 'entlang', 'entzwei', 'fehl', 'fest', 'fort',
+    'gegen', 'gegenüber', 'gleich', 'heim', 'her', 'herab', 'heran', 'heraus',
+    'herbei', 'herein', 'herüber', 'herum', 'herunter', 'hervor', 'hin', 'hinab',
+    'hinan', 'hinaus', 'hinein', 'hintan', 'hinten', 'hinterher', 'hinüber',
+    'hinunter', 'hinweg', 'hinzu', 'inne', 'kaputt', 'kennen', 'krank', 'leer',
+    'liegen', 'los', 'mit', 'nach', 'nieder', 'statt', 'teil', 'voraus',
+    'vorbei', 'vorher', 'vorüber', 'vorweg', 'vor', 'weg', 'weiter', 'wieder',
+    'zurecht', 'zurück', 'zusammen', 'zwischen', 'zu'
 ];
 
 // Helper to determine if a verb is separable and where to split it.
