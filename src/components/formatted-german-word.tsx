@@ -8,9 +8,9 @@ interface FormattedGermanWordProps {
 }
 
 const SEPARABLE_PREFIXES = [
-    'ab', 'an', 'auf', 'aus', 'bei', 'bevor', 'da', 'dabei', 'daran', 'darauf',
-    'daraus', 'darin', 'darüber', 'darum', 'davon', 'dazu', 'dazwischen',
-    'ein', 'empor', 'entgegen', 'entlang', 'entzwei', 'fehl', 'fest', 'fort',
+    'ab', 'an', 'auf', 'aus', 'bei', 'bereit', 'bevor', 'da', 'dabei', 'daran', 'darauf',
+    'daraus', 'darin', 'darüber', 'darum', 'dar', 'davon', 'dazu', 'dazwischen',
+    'ein', 'empor', 'entgegen', 'entlang', 'entzwei', 'fehl', 'fern', 'fest', 'fort',
     'gegen', 'gegenüber', 'gleich', 'heim', 'her', 'herab', 'heran', 'heraus',
     'herbei', 'herein', 'herüber', 'herum', 'herunter', 'hervor', 'hin', 'hinab',
     'hinan', 'hinaus', 'hinein', 'hintan', 'hinten', 'hinterher', 'hinüber',

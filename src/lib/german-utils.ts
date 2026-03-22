@@ -127,9 +127,9 @@ export function isWordStandardized(userWord: UserVocabularyWord): boolean {
     // 5. Type-specific checks
     if (word.type === 'verb') {
         const hasGov = (word as any).governance?.length > 0;
-        const hasConj = !!(word as any).conjugations;
-        // For verbs, either governance + conjugations OR at least a simple conjugation + example
-        return hasConj && (hasGov || !!(word as any).conjugation);
+        const hasConj = !!(word as any).conjugations || !!(word as any).conjugation;
+        // For verbs, either governance OR conjugations makes it rich enough if synonyms are missing
+        return hasConj || hasGov;
     }
 
     if (word.type === 'noun') {
