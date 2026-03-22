@@ -156,32 +156,30 @@ export function useStudyQueue() {
         }
 
         // 5. Build the session pool
-        // Order: Leeches → New (Guarantee Quota) → Overdue (Randomized slice) → Due Today
+        // Order: Leeches → Due Today → Overdue → New Words (Only if Overdue is 0)
         let mainPool: StudyQueueItem[] = [];
         let remainingSlots = DAILY_LIMIT;
 
-        const isBacklogCritical = overdueWords.length > 100;
-        const NEW_WORD_LIMIT = isBacklogCritical ? 10 : 25; // Guarantee at least 10 new words to keep progress moving
+        const isBacklogCritical = overdueWords.length > 50;
 
         // 5a. Leeches (up to 15 slots max so we don't overwhelm)
         const leechesToAdd = leechWords.slice(0, Math.min(leechWords.length, remainingSlots, 15));
         mainPool = [...mainPool, ...leechesToAdd];
         remainingSlots -= leechesToAdd.length;
 
-        // 5b. Guaranteed New Words (to prevent stagnation when backlog is huge)
-        if (remainingSlots > 0 && newWords.length > 0) {
-            const newToAdd = newWords.slice(0, Math.min(newWords.length, NEW_WORD_LIMIT, remainingSlots));
-            mainPool = [...mainPool, ...newToAdd];
-            remainingSlots -= newToAdd.length;
+        // 5b. Due today (HIGHEST PRIORITY after leeches to prevent snowball effect)
+        // We must do today's work today, otherwise they become tomorrow's overdue.
+        if (remainingSlots > 0 && dueTodayWords.length > 0) {
+            const dueTodayToAdd = dueTodayWords.slice(0, remainingSlots);
+            mainPool = [...mainPool, ...dueTodayToAdd];
+            remainingSlots -= dueTodayToAdd.length;
         }
 
-        // 5c. Overdue words 
-        // We take the oldest 2x of remaining needed slots, shuffle them, and pick remainingSlots. 
-        // This prevents "getting stuck" on the exact same oldest words for multiple sessions if you skip.
+        // 5c. Overdue words (Takes up ALL remaining slots to clear the backlog)
         if (remainingSlots > 0 && overdueWords.length > 0) {
+            // Take oldest overdue but shuffle a larger pool to avoid getting stuck on the same hard words
             const overdueFiltered = overdueWords.filter(w => !mainPool.some(m => m.id === w.id));
             const candidatesToShuffle = overdueFiltered.slice(0, remainingSlots * 2);
-            // Randomize the oldest candidates so the queue feels alive
             candidatesToShuffle.sort(() => Math.random() - 0.5);
 
             const overdueToAdd = candidatesToShuffle.slice(0, remainingSlots);
@@ -189,12 +187,24 @@ export function useStudyQueue() {
             remainingSlots -= overdueToAdd.length;
         }
 
-        // 5d. Due today
-        if (remainingSlots > 0 && dueTodayWords.length > 0) {
-            const dueTodayFiltered = dueTodayWords.filter(w => !mainPool.some(m => m.id === w.id));
-            const dueTodayToAdd = dueTodayFiltered.slice(0, remainingSlots);
-            mainPool = [...mainPool, ...dueTodayToAdd];
-            remainingSlots -= dueTodayToAdd.length;
+        // 5d. New Words (ONLY IF OVERDUE IS 0 AND FREE SLOTS REMAIN)
+        // This is the strict lock: no new words until debts are paid.
+        if (remainingSlots > 0 && overdueWords.length === 0 && newWords.length > 0) {
+            const newToAdd = newWords.slice(0, Math.min(newWords.length, 25, remainingSlots));
+            mainPool = [...mainPool, ...newToAdd];
+            remainingSlots -= newToAdd.length;
+        }
+
+        // Fast Recovery Mode: If user has a critical backlog (> 50 overdue)
+        // Force the session into 'review-only' mode. This skips the heavy "Narrative/Production" 
+        // phases and lets the user quickly drill (Recognition) through 100 words in 10 minutes.
+        if (isBacklogCritical && mainPool.length > 0) {
+             // We still deduplicate
+             const uniqueMap = new Map();
+             mainPool.forEach(item => {
+                 if (!uniqueMap.has(item.id)) uniqueMap.set(item.id, item);
+             });
+             return { items: Array.from(uniqueMap.values()), mode: 'review-only', sessionNumber };
         }
 
         // Fallback Review-only 
