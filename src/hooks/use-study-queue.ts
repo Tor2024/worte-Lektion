@@ -187,10 +187,11 @@ export function useStudyQueue() {
             remainingSlots -= overdueToAdd.length;
         }
 
-        // 5d. New Words (ONLY IF OVERDUE IS 0 AND FREE SLOTS REMAIN)
-        // This is the strict lock: no new words until debts are paid.
-        if (remainingSlots > 0 && overdueWords.length === 0 && newWords.length > 0) {
-            const newToAdd = newWords.slice(0, Math.min(newWords.length, 25, remainingSlots));
+        // 5d. New Words (Flexible distribution: fills remaining slots)
+        // If there are few overdue words, remaining slots will be filled with new words.
+        if (remainingSlots > 0 && newWords.length > 0) {
+            // Cap new words to a maximum per session (e.g. 30) so we don't overwhelm tomorrow's review queue
+            const newToAdd = newWords.slice(0, Math.min(newWords.length, 30, remainingSlots));
             mainPool = [...mainPool, ...newToAdd];
             remainingSlots -= newToAdd.length;
         }
