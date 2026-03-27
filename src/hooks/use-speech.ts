@@ -130,33 +130,40 @@ export function useSpeech() {
                 if (targetVoice) utterance.voice = targetVoice;
             }
 
+            let backupTimeout: NodeJS.Timeout;
+
             utterance.onstart = () => setIsSpeaking(true);
+            
             utterance.onend = () => {
+                clearTimeout(backupTimeout);
                 if (activeUtteranceRef.current === utterance) activeUtteranceRef.current = null;
                 setIsSpeaking(false);
                 resolve();
             };
-            utterance.onerror = (e) => {
-                console.error("Speech error", e);
+            
+            utterance.onerror = (e: SpeechSynthesisErrorEvent) => {
+                clearTimeout(backupTimeout);
+                if (e.error !== 'canceled' && e.error !== 'interrupted') {
+                    console.error("Speech error", e.error, e);
+                }
                 if (activeUtteranceRef.current === utterance) activeUtteranceRef.current = null;
                 setIsSpeaking(false);
                 resolve();
             };
 
             const timeoutDuration = Math.max(5000, text.length * 100);
-            const backupTimeout = setTimeout(() => {
+            backupTimeout = setTimeout(() => {
                 if (activeUtteranceRef.current === utterance) {
                     console.warn("Speech onend timed out, forcing resolve");
                     activeUtteranceRef.current = null;
                     setIsSpeaking(false);
                     resolve();
+                    // Optional: try to reset synthesis engine if it hangs
+                    if (typeof window !== 'undefined' && window.speechSynthesis) {
+                        window.speechSynthesis.cancel();
+                    }
                 }
             }, timeoutDuration);
-
-            utterance.onend = (oldEnd => (e: SpeechSynthesisEvent) => {
-                clearTimeout(backupTimeout);
-                if (oldEnd) oldEnd(e);
-            })(utterance.onend as any);
 
             window.speechSynthesis.speak(utterance);
         });
