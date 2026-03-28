@@ -22,7 +22,7 @@ import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { generateStory, type GenerateStoryOutput } from '@/ai/flows/generate-story';
-import { NarrativeView } from './narrative-view';
+import { InteractiveText } from './interactive-text';
 import { TooltipProvider } from '@/components/ui/tooltip';
 
 import { decomposeGermanWord, type DecomposeOutput } from '@/ai/flows/decompose-german-word';
@@ -114,12 +114,22 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
         // New session structure: { items, mode, sessionNumber }
         const session = getDailySession(folderId, settings.productionMode);
 
+        // Wait for queue to be ready (if empty, retry later or show empty state if truly empty)
+        // For now, getDailySession returns empty array if not ready
+
         setSessionQueue(session.items);
         setSessionMode(session.mode);
         setSessionNumber(session.sessionNumber);
 
+        // Only transition state if we actually have items
+        // If items are empty but we expect them, stay in loading?
+        // getDailySession returns [] if localQueue is empty.
+        // But localQueue loads async.
+        // We should check if studyQueue is loaded.
+        // For now, let's assume it loads fast enough or returns valid empty array.
+
         setSessionState(session.items.length > 0 ? 'intro' : 'summary');
-    }, [getDailySession, sessionState, folderId, isLoading, settings.productionMode]);
+    }, [getDailySession, sessionState, folderId, isLoading]);
 
     // Derived: Current batch words with adaptive sizing
     const BATCH_SIZE = useMemo(() => {
@@ -140,6 +150,10 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
     // Derived: Current item based on phaseIndex within current batch
     const currentItem = useMemo(() => {
         if (currentPhase === 'priming') {
+            // SMART SKIP LOGIC:
+            // 1. Always show Priming for NEW words or words in REFRESH mode.
+            // 2. Show Priming for words with interval < 7 (Check-in).
+            // 3. Skip for words with interval >= 7.
             const needsPriming = currentBatchWords.filter(w => {
                 const isNew = w.status === 'new';
                 const isRefresh = refreshWords.has(w.id);
@@ -147,13 +161,15 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                 return isNew || isRefresh || isShortInterval;
             });
 
-            if (needsPriming.length === 0) return null; 
+            if (needsPriming.length === 0) return null; // Phase will auto-advance in useEffect or handleNext
             return needsPriming[phaseIndex] || null;
         }
 
         if (currentPhase === 'recognition') {
+            // In recognition, we filter for words that haven't reached 2 hits yet
             const pendingWords = currentBatchWords.filter(w => (recognitionHits[w.id] || 0) < 2);
             if (pendingWords.length === 0) {
+                // If all done but phase hasn't transitioned yet, show the last word to avoid null flash
                 return currentBatchWords[currentBatchWords.length - 1] || null;
             }
             return pendingWords[phaseIndex % pendingWords.length];
@@ -171,6 +187,7 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
         if (sessionState !== 'active') return;
 
         if (currentPhase === 'priming') {
+            // SKIP PRIMING IN REVIEW-ONLY MODE (as per user request: "only selection/translations")
             if (sessionMode === 'review-only') {
                 setCurrentPhase('recognition');
                 setPhaseIndex(0);
@@ -193,6 +210,7 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
             }
         }
 
+        // AUTO-ADVANCE RECOGNITION PHASE
         if (currentPhase === 'recognition') {
             const allDone = currentBatchWords.length > 0 && currentBatchWords.every(w => (recognitionHits[w.id] || 0) >= 2);
             if (allDone) {
@@ -216,7 +234,7 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
     // Narrative Story Generation Effect
     useEffect(() => {
         if (sessionState !== 'active' || currentPhase !== 'narrative') return;
-        if (batchStories[currentBatchIndex]) return; 
+        if (batchStories[currentBatchIndex]) return; // Already generated
 
         const genStory = async () => {
             setIsNarrativeGenerating(true);
@@ -227,7 +245,10 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                     topic: "Beruf und Alltag (Focus on learning context)"
                 });
 
+                // ENHANCEMENT: Rebuild the wordMap from the new vocabulary array format
                 const enrichedWordMap: Record<string, string> = {};
+
+                // 1. Add AI-generated vocabulary
                 if (data.vocabulary && Array.isArray(data.vocabulary)) {
                     data.vocabulary.forEach(item => {
                         if (item.g && item.r) {
@@ -236,11 +257,13 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                     });
                 }
 
+                // 2. Pre-seed/Fallback with keywords from currentBatchWords
                 currentBatchWords.forEach(w => {
                     const german = w.word.german.toLowerCase().trim();
                     if (!enrichedWordMap[german]) {
                         enrichedWordMap[german] = w.word.russian;
                     }
+                    // Handle words with articles like "die Reinigung"
                     const parts = german.split(/\s+/);
                     parts.forEach(p => {
                         const pLower = p.toLowerCase();
@@ -278,7 +301,7 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
         };
 
         genStory();
-    }, [currentPhase, currentBatchIndex, currentBatchWords, sessionState, batchStories]);
+    }, [currentPhase, currentBatchIndex, currentBatchWords, sessionState]);
 
     const handleNext = (result: 'success' | 'fail', confusedWithId?: string) => {
         if (!currentItem) return;
@@ -294,6 +317,7 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
             if (phaseIndex < needsPriming.length - 1) {
                 setPhaseIndex(i => i + 1);
             } else {
+                // Move to Recognition for this batch
                 setCurrentPhase('recognition');
                 setPhaseIndex(0);
             }
@@ -303,12 +327,14 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                 const newHits = (recognitionHits[currentItem.id] || 0) + 1;
                 setRecognitionHits(prev => ({ ...prev, [currentItem.id]: newHits }));
 
+                // In review-only mode, we treat 2 hits as a final success for the word
                 if (newHits >= 2 && sessionMode === 'review-only') {
                     const finalResult = results[currentItem.id] === 'fail' ? 'fail' : 'success';
                     setResults(prev => ({ ...prev, [currentItem.id]: finalResult }));
                     updateItemStatus(currentItem.id, finalResult as 'success' | 'fail');
                 }
 
+                // Check if all words in current batch reached 2 hits
                 const allDone = currentBatchWords.every(w => {
                     const hits = w.id === currentItem.id ? newHits : (recognitionHits[w.id] || 0);
                     return hits >= 2;
@@ -316,6 +342,7 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
 
                 if (allDone) {
                     if (sessionMode === 'review-only') {
+                        // All words in batch done, move to next batch or end
                         if (currentBatchIndex < totalBatches - 1) {
                             setCurrentBatchIndex(i => i + 1);
                             setCurrentPhase('recognition');
@@ -329,23 +356,29 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                         setPhaseIndex(0);
                     }
                 } else {
+                    // Move to next pending word in batch
                     setPhaseIndex(i => i + 1);
                 }
             } else {
+                // FORGOT WORD LOGIC:
                 setRefreshWords(prev => new Set(prev).add(currentItem.id));
                 setRecognitionHits(prev => ({ ...prev, [currentItem.id]: 0 }));
                 setResults(prev => ({ ...prev, [currentItem.id]: 'fail' }));
 
+                // In review-only mode, update status as fail immediately if failed in recognition
                 if (sessionMode === 'review-only') {
                     updateItemStatus(currentItem.id, 'fail', confusedWithId);
                 }
 
+                // Jump back to Priming (or stay in recognition if we decide so, but current logic jumps back)
+                // Since my new logic skips priming in review-only, it will just jump back to phase start.
                 setCurrentPhase('priming');
                 setPhaseIndex(0);
             }
         }
         else if (currentPhase === 'narrative') {
             if (settings.productionMode === 'skip') {
+                // Skip Production: Auto-Succeed all words in the batch
                 const updatedResults: Record<string, 'success' | 'fail'> = { ...results };
                 currentBatchWords.forEach(w => {
                     const finalResult = results[w.id] === 'fail' ? 'fail' : 'success';
@@ -354,15 +387,19 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                 });
                 setResults(updatedResults);
 
+                // Move to next batch, start with priming
                 if (currentBatchIndex < totalBatches - 1) {
                     setCurrentBatchIndex(i => i + 1);
                     setCurrentPhase('priming');
                     setPhaseIndex(0);
+                    // Clear refresh flags for the new batch
                     setRefreshWords(new Set());
                 } else {
+                    // All batches finished, move to consolidation
                     setSessionState('consolidation');
                 }
             } else {
+                // One click for the whole batch story, move to production
                 setCurrentPhase('production');
                 setPhaseIndex(0);
             }
@@ -372,17 +409,22 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
             const updatedResults: Record<string, 'success' | 'fail'> = { ...results, [currentItem.id]: finalResult };
             setResults(updatedResults);
 
+            // SAVE PROGRESS IMMEDIATELY for this word
             updateItemStatus(currentItem.id, finalResult as 'success' | 'fail', result === 'fail' ? confusedWithId : undefined);
 
             if (phaseIndex < currentBatchWords.length - 1) {
                 setPhaseIndex(i => i + 1);
             } else {
+                // Production finished for this batch
                 if (currentBatchIndex < totalBatches - 1) {
+                    // Move to next batch, start with priming
                     setCurrentBatchIndex(i => i + 1);
                     setCurrentPhase('priming');
                     setPhaseIndex(0);
+                    // Clear refresh flags for the new batch
                     setRefreshWords(new Set());
                 } else {
+                    // All batches finished, move to consolidation
                     setSessionState('consolidation');
                 }
             }
@@ -436,6 +478,7 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                             <br /><span className="block mt-2 font-mono text-sm">ЗНАКОМСТВО → ДРИЛЛ (x2) → КОНТЕКСТ</span>
                         </p>
 
+                        {/* Overdue words warning */}
                         {overdueCount > 0 && (
                             <div className="w-full bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 p-4 rounded-xl text-center">
                                 <span className="text-amber-700 dark:text-amber-400 font-bold">
@@ -466,14 +509,12 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                     <Siren className="h-5 w-5 animate-pulse" />
                     Разминка: Вход в поток
                 </div>
-                <Card className="w-full border-none shadow-[0_30px_70px_rgba(239,68,68,0.15)] bg-white dark:bg-slate-950 rounded-[3rem] overflow-hidden">
-                    <div className="h-2 w-full bg-red-500" />
-                    <CardContent className="p-10 sm:p-14 text-center space-y-8">
-                        <div className="space-y-2">
-                            <div className="text-5xl font-black text-red-600 tracking-tighter italic leading-none">{formatGermanWord(currentLeech.word)}</div>
-                            <div className="text-2xl font-bold italic text-slate-400 border-t border-slate-100 dark:border-slate-800 pt-6">{currentLeech.word.russian}</div>
-                        </div>
+                <Card className="w-full border-2 border-red-500/20 shadow-2xl bg-red-50/30">
+                    <CardContent className="p-8 text-center space-y-6">
+                        <div className="text-4xl font-black text-red-600">{formatGermanWord(currentLeech.word)}</div>
+                        <div className="text-2xl italic text-slate-600 border-t pt-4">{currentLeech.word.russian}</div>
 
+                        {/* Word Breakdown (Decomposition) */}
                         {isDecomposing && (
                             <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground animate-pulse">
                                 <Loader2 className="h-3 w-3 animate-spin" /> Разбираем слово на части...
@@ -496,6 +537,7 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                             </div>
                         )}
 
+                        {/* Mnemonic Section with Editing */}
                         <div className="mt-4 p-4 bg-amber-100/50 rounded-lg text-sm text-amber-900 border border-amber-200 relative group">
                             <div className="flex justify-between items-center mb-1">
                                 <span className="text-[10px] font-bold uppercase tracking-widest opacity-50">💡 Ассоциация (Для памяти):</span>
@@ -525,6 +567,7 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                                         </Button>
                                         <Button size="sm" className="h-8 px-2 bg-amber-600 hover:bg-amber-700" onClick={() => {
                                             updateMnemonic(currentLeech.id, editingMnemonicValue);
+                                            // Update local sessionQueue so the UI reflects the change immediately
                                             setSessionQueue(prev => prev.map(item =>
                                                 item.id === currentLeech.id ? { ...item, mnemonic: editingMnemonicValue } : item
                                             ));
@@ -586,6 +629,7 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                         Ваши нейронные связи перестроены и готовы к работе.
                     </p>
 
+                    {/* Quick Recall Test Integration */}
                     <QuickRecallTest
                         sessionWords={sessionQueue}
                         onComplete={(correct, total) => {
@@ -595,14 +639,11 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                     />
                 </div>
 
-                <div className="w-full bg-white dark:bg-slate-950 p-6 rounded-[3.5rem] border-none shadow-[0_40px_100px_rgba(0,0,0,0.1)] relative overflow-hidden">
-                    <div className="absolute inset-0 bg-primary/5 opacity-40 blur-3xl rounded-full translate-y-1/2" />
-                    <div className="relative z-10">
-                        <NeuralMap
-                            items={sessionQueue}
-                            title="Ваша обновленная нейронная сеть"
-                        />
-                    </div>
+                <div className="w-full bg-slate-950/50 p-6 rounded-[3rem] border border-white/5 shadow-inner backdrop-blur-sm">
+                    <NeuralMap
+                        items={sessionQueue}
+                        title="Ваша обновленная нейронная сеть"
+                    />
                 </div>
 
                 <div className="flex flex-col items-center gap-6 w-full max-w-md">
@@ -632,6 +673,7 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                 <ConsolidationView
                     items={sessionQueue}
                     onComplete={() => {
+                        // SAVE SESSION PROGRESS
                         const successIds = Object.entries(results)
                             .filter(([_, result]) => result === 'success')
                             .map(([id]) => id);
@@ -644,6 +686,9 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
         );
     }
 
+    // From here on, sessionState MUST be 'active'
+
+    // Active View Calculations
     const getPhaseTitle = () => {
         switch (currentPhase) {
             case 'priming': return 'Фаза 1: Знакомство';
@@ -664,6 +709,8 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
     };
 
     const progressValue = ((currentBatchIndex * 3 + (currentPhase === 'priming' ? 0 : currentPhase === 'recognition' ? 1 : 2)) / (totalBatches * 3)) * 100;
+
+    // Phase relative progress
     const phaseProgressValue = currentPhase === 'priming'
         ? (phaseIndex / (currentBatchWords.length || 1)) * 100
         : currentPhase === 'recognition'
@@ -696,7 +743,7 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
 
             <div className="min-h-[500px] flex flex-col justify-center">
                 {currentItem ? (
-                    <TooltipProvider delayDuration={0}>
+                    <>
                         {currentPhase === 'priming' && (
                             <PrimingView
                                 key={currentItem.id}
@@ -735,11 +782,59 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                             </div>
                         )}
                         {currentPhase === 'narrative' && (
-                            <NarrativeView 
-                                storyData={batchStories[currentBatchIndex]}
-                                isGenerating={isNarrativeGenerating}
-                                onNext={() => handleNext('success')}
-                            />
+                            <div className="space-y-6">
+                                <div className="p-10 bg-[#f4ecd8] border border-[#d6c7a1] rounded-[2.5rem] relative shadow-2xl group min-h-[300px] ring-8 ring-[#f4ecd8]/50 ring-offset-4 ring-offset-slate-900/10">
+                                    {/* Background Subtle Texture/Effect */}
+                                    <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')]" />
+
+                                    <div className="absolute -top-5 left-8 flex items-center gap-3 z-10">
+                                        <div className="bg-[#2c1810] text-[#f4ecd8] px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-xl border border-[#d6c7a1]/30">
+                                            Контекстная прелюдия
+                                        </div>
+                                        {!isNarrativeGenerating && batchStories[currentBatchIndex] && (
+                                            <div className="flex items-center gap-2">
+                                                <SpeakButton
+                                                    text={batchStories[currentBatchIndex].story}
+                                                    size="sm"
+                                                    variant="secondary"
+                                                    className="bg-white/80 hover:bg-white text-[#2c1810] shadow-xl transition-all rounded-full h-9 px-4 border border-[#d6c7a1]"
+                                                    showText
+                                                />
+                                                <span className="text-[10px] text-[#2c1810]/40 font-mono">
+                                                    [{Object.keys(batchStories[currentBatchIndex].wordMap).length}w]
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="text-xl leading-relaxed text-[#2c1810] font-sans font-medium drop-shadow-sm relative z-0">
+                                        {isNarrativeGenerating ? (
+                                            <div className="flex flex-col items-center justify-center py-12 space-y-4 text-[#2c1810]/40">
+                                                <Loader2 className="h-10 w-10 animate-spin" />
+                                                <span className="text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">
+                                                    Синхронизация контекстных полей...
+                                                </span>
+                                            </div>
+                                        ) : batchStories[currentBatchIndex] ? (
+                                            <TooltipProvider delayDuration={0}>
+                                                <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+                                                    <InteractiveText
+                                                        text={batchStories[currentBatchIndex].story}
+                                                        wordMap={batchStories[currentBatchIndex].wordMap}
+                                                    />
+                                                </div>
+                                            </TooltipProvider>
+                                        ) : (
+                                            <div className="text-center py-12 text-[#2c1810]/40 italic text-sm font-sans">
+                                                История не найдена.
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                                <Button size="lg" className="w-full h-16 text-xl bg-[#2c1810] hover:bg-[#3d2419] text-[#f4ecd8] rounded-2xl shadow-xl transition-all active:scale-[0.98]" onClick={() => handleNext('success')}>
+                                    {settings.productionMode === 'skip' ? "Продолжить →" : "К упражнениям →"}
+                                </Button>
+                            </div>
                         )}
                         {currentPhase === 'production' && (
                             <ProductionView
@@ -751,14 +846,16 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                                 mode={settings.productionMode}
                             />
                         )}
-                    </TooltipProvider>
+                    </>
                 ) : (
+                    /* Fallback UI when currentItem is NULL - fixes stuck UI bug */
                     <div className="text-center space-y-4 p-8">
                         <BrainCircuit className="h-16 w-16 mx-auto text-muted-foreground animate-pulse" />
                         <p className="text-muted-foreground">Переход к следующему этапу...</p>
                         <Button
                             variant="outline"
                             onClick={() => {
+                                // Auto-advance to next phase if stuck
                                 if (currentPhase === 'recognition') {
                                     if (sessionMode === 'review-only') {
                                         if (currentBatchIndex < totalBatches - 1) {
@@ -769,7 +866,7 @@ export function SmartSessionManager({ folderId }: SmartSessionManagerProps) {
                                             setSessionState('consolidation');
                                         }
                                     } else {
-                                        setCurrentPhase('narrative');
+                                        setCurrentPhase('production');
                                         setPhaseIndex(0);
                                     }
                                 } else if (currentBatchIndex < totalBatches - 1) {

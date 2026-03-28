@@ -8,9 +8,6 @@ import { Loader2, Brain, Siren, Lightbulb, GraduationCap, Sparkles, BrainCircuit
 import { WordCard } from '@/components/word-card';
 import { motion } from 'framer-motion';
 import { FormattedGermanWord } from '@/components/formatted-german-word';
-import { UnifiedWordHeader } from './unified-word-header';
-import { InfoModule } from './info-module';
-import { useSpeech } from '@/hooks/use-speech';
 
 interface RemedialViewProps {
     word: VocabularyWord;
@@ -54,70 +51,94 @@ export function RemedialView({ word, onComplete }: RemedialViewProps) {
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col items-center space-y-10 w-full max-w-4xl mx-auto px-4"
+            className="space-y-8 max-w-2xl mx-auto px-4"
         >
-            {/* Header: Error Clinic Context */}
-            <div className="w-full bg-slate-950 border-2 border-red-500/20 rounded-[3rem] p-10 text-center relative overflow-hidden shadow-2xl group">
-                <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 to-transparent pointer-events-none" />
-                <div className="absolute -right-20 -top-20 w-80 h-80 bg-red-500/10 blur-[100px] rounded-full group-hover:bg-red-500/20 transition-all duration-700" />
-                
-                <div className="relative z-10 flex flex-col items-center">
-                    <div className="bg-red-500/20 p-5 rounded-full border border-red-500/30 shadow-inner mb-6 group-hover:scale-110 transition-transform">
-                        <Siren className="w-12 h-12 text-red-500 animate-pulse" />
+            <div className="bg-slate-950 border border-primary/20 rounded-3xl p-8 text-center relative overflow-hidden shadow-2xl">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent pointer-events-none" />
+                <div className="relative z-10">
+                    <div className="flex justify-center mb-6">
+                        <div className="bg-primary/20 p-4 rounded-full border border-primary/30 shadow-inner">
+                            <Sparkles className="w-10 h-10 text-primary" />
+                        </div>
                     </div>
-                    <h1 className="text-4xl font-black text-white mb-3 uppercase tracking-tighter">Клиника Ошибок</h1>
-                    <p className="text-slate-400 font-medium max-w-md italic">Это слово — «пиявка» (Leech). Нам нужно разрушить ложную нейронную связь.</p>
+                    <h1 className="text-3xl font-black text-white mb-2 uppercase tracking-tight">Клиника Ошибок</h1>
+                    <p className="text-slate-400 font-medium">Это слово — «пиявка» (Leech). Давайте деактивируем ложную ассоциацию.</p>
                 </div>
             </div>
 
-            {/* The Word: Unified Header */}
-            <Card className="w-full bg-white dark:bg-slate-950 border-none shadow-[0_20px_50px_rgba(0,0,0,0.2)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.4)] overflow-hidden rounded-[3rem] relative">
-                <div className="h-2 w-full bg-red-500" />
-                <CardContent className="p-12 flex flex-col items-center">
-                    <UnifiedWordHeader word={word} showRussian={true} autoSpeak={true} />
-                </CardContent>
-            </Card>
+            {/* The Word Itself (Large & Beautiful) */}
+            <div className="flex justify-center">
+                <div className="p-10 bg-white/5 border border-white/10 rounded-3xl shadow-xl hover:bg-white/10 transition-colors group">
+                    <div className="text-5xl font-black text-white tracking-widest group-hover:scale-105 transition-transform">
+                        <FormattedGermanWord word={word} />
+                    </div>
+                    <div className="text-xl text-primary font-bold mt-2 opacity-80">{word.russian}</div>
+                </div>
+            </div>
 
-            {/* AI Analysis: Modular Tiles */}
+            {/* Analysis Cards (Premium Layout) */}
             {analysis && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full animate-in fade-in slide-in-from-bottom-6 duration-1000">
-                    
-                    {/* New Association (Mnemonic) - Full Width */}
-                    <div className="col-span-1 md:col-span-2">
-                        <InfoModule title="Новая ассоциация (Мгновенное решение)" icon={Brain} variant="primary" className="bg-slate-950 border-2 border-primary/20 p-8">
-                            <p className="text-2xl italic font-serif text-white leading-relaxed text-center py-4">
+                <div className="grid gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+
+                    {/* Mnemonic */}
+                    <Card className="bg-slate-950 border-white/10 shadow-xl relative overflow-hidden group">
+                        <div className="absolute top-0 left-0 w-1.5 h-full bg-purple-500" />
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-2 text-purple-400">
+                                <Brain className="w-4 h-4 text-purple-500" />
+                                Новая ассоциация
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-xl italic font-serif text-slate-200 leading-relaxed group-hover:text-white transition-colors">
                                 &ldquo;{analysis.mnemonic}&rdquo;
                             </p>
-                        </InfoModule>
+                        </CardContent>
+                    </Card>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Confusion Trap */}
+                        <Card className="bg-slate-950 border-white/10 shadow-xl relative overflow-hidden">
+                            <div className="absolute top-0 left-0 w-1.5 h-full bg-amber-500" />
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2 text-amber-400">
+                                    <Siren className="w-3 h-3 text-amber-500" />
+                                    Ловушка
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-xs text-slate-400 leading-relaxed">{analysis.confusionAnalysis}</p>
+                            </CardContent>
+                        </Card>
+
+                        {/* Usage Tip */}
+                        <Card className="bg-slate-950 border-white/10 shadow-xl relative overflow-hidden">
+                            <div className="absolute top-0 left-0 w-1.5 h-full bg-emerald-500" />
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2 text-emerald-400">
+                                    <Lightbulb className="w-3 h-3 text-emerald-500" />
+                                    Принцип
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-xs text-slate-400 leading-relaxed">{analysis.usageTip}</p>
+                            </CardContent>
+                        </Card>
                     </div>
 
-                    {/* Confusion Trap */}
-                    <InfoModule title="Ловушка: Почему вы ошиблись?" icon={Siren} variant="amber" className="bg-slate-950 border-white/5 h-full">
-                        <p className="text-sm text-slate-300 leading-relaxed italic">{analysis.confusionAnalysis}</p>
-                    </InfoModule>
-
-                    {/* Usage Tip */}
-                    <InfoModule title="Железный принцип использования" icon={Lightbulb} variant="success" className="bg-slate-950 border-white/5 h-full">
-                        <p className="text-sm text-slate-300 leading-relaxed italic">{analysis.usageTip}</p>
-                    </InfoModule>
                 </div>
             )}
 
             <Button
                 onClick={onComplete}
                 size="lg"
-                className="w-full h-20 text-2xl font-black uppercase tracking-[0.2em] shadow-2xl active:scale-[0.98] transition-all bg-emerald-600 hover:bg-emerald-700 text-white rounded-[2rem]"
+                className="w-full h-16 text-xl font-black uppercase tracking-widest shadow-2xl active:scale-[0.98] transition-all bg-primary hover:bg-primary/90"
             >
-                <GraduationCap className="mr-4 h-10 w-10 shrink-0" />
+                <GraduationCap className="mr-3 h-7 w-7" />
                 Я все осознал
             </Button>
-            
-            <div className="flex items-center gap-4 text-red-500/30 text-[10px] uppercase font-black tracking-[0.3em] animate-pulse">
-                <BrainCircuit className="h-4 w-4" />
-                <span>Коррекция Нейронного Пути</span>
-            </div>
         </motion.div>
     );
 }

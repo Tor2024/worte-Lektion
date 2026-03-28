@@ -25,14 +25,7 @@ export function InteractiveText({ text, wordMap }: InteractiveTextProps) {
             {parts.map((part, i) => {
                 if (part.startsWith('**') && part.endsWith('**')) {
                     const word = part.slice(2, -2);
-                    // Split the bolded word into tokens so that punctuation within the bolded part isn't broken
-                    const tokens = word.split(/([^a-zA-ZäöüÄÖÜß-]+)/);
-                    return tokens.map((token, k) => {
-                        if (token.match(/[a-zA-ZäöüÄÖÜß]/) && token.match(/^[a-zA-ZäöüÄÖÜß-]+$/)) {
-                            return <InteractiveWord key={`${i}-bold-${k}`} word={token} wordMap={wordMap} isBold={true} />;
-                        }
-                        return <span key={`${i}-bold-${k}`} className="font-black text-primary underline decoration-primary/30">{token}</span>;
-                    });
+                    return <InteractiveWord key={i} word={word} wordMap={wordMap} isBold />;
                 }
 
                 // For non-bolded text, split by whitespace, but keep whitespace
@@ -87,10 +80,11 @@ function InteractiveWord({ word, wordMap, isBold }: { word: string; wordMap: Rec
         <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
                 <span
+                    title={translation}
                     className={cn(
-                        "cursor-help transition-all duration-200 border-b-2 border-dotted border-[#2c1810]/10",
-                        "hover:border-[#2c1810]/40 hover:bg-[#2c1810]/5 active:bg-[#2c1810]/10",
-                        isBold ? "font-black text-primary underline decoration-primary/40 underline-offset-4" : "text-inherit"
+                        "cursor-help transition-all duration-200 tabular-nums border-b border-dotted border-[#2c1810]/20",
+                        "hover:border-[#2c1810]/60 hover:bg-[#2c1810]/5 active:bg-[#2c1810]/10",
+                        isBold ? "font-black text-primary underline decoration-primary/50 underline-offset-4" : "text-inherit"
                     )}
                 >
                     {word}
@@ -98,12 +92,12 @@ function InteractiveWord({ word, wordMap, isBold }: { word: string; wordMap: Rec
             </TooltipTrigger>
             <TooltipContent
                 side="top"
-                sideOffset={8}
-                className="z-[100] bg-[#2c1810] text-[#fdfaf1] border-none shadow-[0_10px_30px_rgba(0,0,0,0.3)] px-4 py-2 rounded-xl animate-in fade-in zoom-in-95 duration-200"
+                sideOffset={5}
+                className="z-[100] bg-[#2c1810] text-[#f4ecd8] border-[#d6c7a1]/20 shadow-2xl px-3 py-1.5 text-xs font-medium animate-in zoom-in-95 duration-200"
             >
-                <div className="flex flex-col gap-1 items-center text-center min-w-[120px]">
-                    <span className="opacity-40 text-[9px] uppercase tracking-[0.2em] font-black">Перевод</span>
-                    <span className="font-bold text-base leading-tight italic">{translation}</span>
+                <div className="flex flex-col gap-0.5 items-center text-center max-w-[200px]">
+                    <span className="opacity-50 text-[9px] uppercase tracking-widest font-bold">Перевод</span>
+                    <span className="font-sans leading-tight">{translation}</span>
                 </div>
             </TooltipContent>
         </Tooltip>
