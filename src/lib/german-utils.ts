@@ -82,8 +82,8 @@ export function cleanTextForSpeech(text: string): string {
         cleaned = cleaned.replace(regex, '');
     });
 
-    // 4. Strip leftover markdown symbols (*, _, ~, `, #) and slashes
-    cleaned = cleaned.replace(/[*_~`#/]/g, ' ');
+    // 4. Strip leftover markdown symbols (*, _, ~, `, #), slashes and vertical bars
+    cleaned = cleaned.replace(/[*_~`#/|]/g, ' ');
     
     // 5. Clean up multiple spaces and dashes
     cleaned = cleaned.replace(/[-]{2,}/g, ' ');

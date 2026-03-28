@@ -1,18 +1,19 @@
-
 'use client';
 
 import { StudyQueueItem } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { formatGermanWord, getGenderColorClass } from '@/lib/german-utils';
-import { BrainCircuit, Check, X, ArrowRight, MapPin, Link } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { BrainCircuit, Check, X, ArrowRight, MapPin, Link, Activity, Lightbulb, BookOpen, Repeat, Languages } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useMemo, useEffect } from 'react';
 import { useSpeech } from '@/hooks/use-speech';
 import { commonWords } from '@/lib/common-words';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { FormattedGermanWord } from '../formatted-german-word';
+import { UnifiedWordHeader } from './unified-word-header';
+import { InfoModule } from './info-module';
 
 interface RecognitionViewProps {
     item: StudyQueueItem;
@@ -28,27 +29,36 @@ export function RecognitionView({ item, onResult, onMarkAsKnown, direction: forc
     const [showSuccess, setShowSuccess] = useState(false);
     const { speak, speakSequence, stop, isLoaded } = useSpeech();
 
-    // Stop speech when word changes or component unmounts
+    // Reset state when item changes
     useEffect(() => {
-        return () => stop();
-    }, [item.id, stop]);
+        setSelectedOption(null);
+        setIsCorrect(null);
+        setShowSuccess(false);
+    }, [item.id]);
 
-    // If forcedDirection is provided, use it. Otherwise, fallback to random (for standalone usage).
+    // Direction logic (forced or random)
     const direction = useMemo(() =>
         forcedDirection !== undefined ? forcedDirection : (Math.random() > 0.5 ? 1 : 0),
         [item.id, forcedDirection]);
 
+    // 1. AUTO-SPEAK THE QUESTION (Stage 2 & 3 Logic)
     useEffect(() => {
-        if (!isLoaded) return;
-        if (direction === 0) {
-            speak(formatGermanWord(word), 'de-DE');
-        } else {
-            speak(word.russian, 'ru-RU');
-        }
-    }, [speak, word, isLoaded, direction]);
+        if (!isLoaded || selectedOption || showSuccess) return;
+
+        const questionText = direction === 0 ? formatGermanWord(word) : word.russian;
+        const lang = direction === 0 ? 'de-DE' : 'ru-RU';
+
+        const timer = setTimeout(() => {
+            speak(questionText, lang);
+        }, 400);
+
+        return () => {
+            clearTimeout(timer);
+            stop();
+        };
+    }, [item.id, direction, isLoaded]);
 
     const options = useMemo(() => {
-        // 1. Identification of "confusion partners"
         const confusedWordIds = Object.keys(item.confusedWith || {})
             .sort((a, b) => (item.confusedWith![b] || 0) - (item.confusedWith![a] || 0))
             .slice(0, 2);
@@ -56,23 +66,26 @@ export function RecognitionView({ item, onResult, onMarkAsKnown, direction: forc
         const confusedWords = commonWords.filter(w => confusedWordIds.includes(w.german));
         const confusionDistractors = confusedWords.map(w => direction === 0 ? w.russian : formatGermanWord(w));
 
-        // 2. Random distractors to fill seats
         const needed = 3 - confusionDistractors.length;
         const randomDistractors = commonWords
             .filter(w => w.german !== word.german && !confusedWordIds.includes(w.german))
             .sort(() => Math.random() - 0.5)
-            .slice(0, needed)
+            .slice(0, Math.max(0, needed))
             .map(w => direction === 0 ? w.russian : formatGermanWord(w));
 
         const correct = direction === 0 ? word.russian : formatGermanWord(word);
-        const allOptions = [...confusionDistractors, ...randomDistractors, correct].sort(() => Math.random() - 0.5);
-        return allOptions;
-    }, [word, direction, item.confusedWith]);
+        return [...confusionDistractors, ...randomDistractors, correct].sort(() => Math.random() - 0.5);
+    }, [word.german, direction, item.confusedWith]);
 
     const handleSelect = async (option: string) => {
         if (selectedOption || showSuccess) return;
 
         setSelectedOption(option);
+
+        // 2. SPEAK THE SELECTION (Stage 2 & 3 Logic)
+        const answerLang = direction === 0 ? 'ru-RU' : 'de-DE';
+        speak(option, answerLang);
+
         const correctValue = direction === 0 ? word.russian : formatGermanWord(word);
         const correct = option === correctValue;
         setIsCorrect(correct);
@@ -80,37 +93,34 @@ export function RecognitionView({ item, onResult, onMarkAsKnown, direction: forc
         if (correct) {
             setShowSuccess(true);
 
+            // Sequence for reinforcement on success
             const sequence: { text: string, lang: string }[] = [];
-
-            // 1. The word itself in opposite language
             if (direction === 0) {
                 sequence.push({ text: word.russian, lang: 'ru-RU' });
+                sequence.push({ text: formatGermanWord(word), lang: 'de-DE' });
             } else {
                 sequence.push({ text: formatGermanWord(word), lang: 'de-DE' });
+                sequence.push({ text: word.russian, lang: 'ru-RU' });
             }
 
-            // 2. The Anchor Phrase (Collocation) instead of full sentence
             const firstCollocation = (word as any).collocations?.[0];
             if (firstCollocation) {
                 sequence.push({ text: firstCollocation.phrase, lang: 'de-DE' });
                 sequence.push({ text: firstCollocation.translation, lang: 'ru-RU' });
             }
 
-            await speakSequence(sequence);
-
-            // Small wait after audio
-            await new Promise(r => setTimeout(r, 250));
-            onResult('success');
+            setTimeout(async () => {
+                await speakSequence(sequence);
+                await new Promise(r => setTimeout(r, 400));
+                onResult('success');
+            }, 600);
         } else {
-            // Find which word was selected to track confusion
             const confusedWord = commonWords.find(w =>
                 (direction === 0 ? w.russian : formatGermanWord(w)) === option
             );
-
-            // Incorrect - small delay then next
             setTimeout(() => {
                 onResult('fail', confusedWord?.german);
-            }, 800);
+            }, 1200);
         }
     };
 
@@ -119,45 +129,40 @@ export function RecognitionView({ item, onResult, onMarkAsKnown, direction: forc
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="flex flex-col items-center justify-center space-y-6 w-full max-w-2xl px-4"
+                className="flex flex-col items-center justify-center space-y-8 w-full max-w-4xl px-4 mx-auto"
             >
-                <div className="flex flex-col items-center gap-2 mb-4">
-                    <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(34,197,94,0.5)] animate-bounce">
-                        <Check className="h-10 w-10 text-white stroke-[4]" />
+                <div className="flex flex-col items-center gap-3">
+                    <div className="w-20 h-20 bg-emerald-500 rounded-full flex items-center justify-center shadow-[0_0_40px_rgba(16,185,129,0.4)] animate-bounce border-4 border-white dark:border-slate-900 transition-all duration-500">
+                        <Check className="h-12 w-12 text-white stroke-[4]" />
                     </div>
-                    <h2 className="text-2xl font-black text-green-500 uppercase tracking-widest mt-2">Верно!</h2>
+                    <h2 className="text-3xl font-black text-emerald-500 uppercase tracking-[0.2em] mt-2">Верно!</h2>
                 </div>
 
-                <Card className="w-full bg-slate-950 border-green-500/30 shadow-2xl overflow-hidden relative">
-                    <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent pointer-events-none" />
-                    <CardContent className="p-8 flex flex-col items-center text-center space-y-6 relative z-10">
+                <Card className="w-full bg-white dark:bg-slate-950 border-none shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden rounded-[3rem] relative">
+                    <div className="h-1.5 w-full bg-emerald-500" />
+                    <CardContent className="p-8 sm:p-12 flex flex-col items-center space-y-10">
+                        <UnifiedWordHeader word={word} showRussian={true} />
 
-                        <div className="flex flex-col items-center gap-1">
-                            <div className="text-4xl font-black tracking-tight text-white mb-1">
-                                <FormattedGermanWord word={word} />
-                            </div>
-                            <div className="text-xl text-green-400 font-bold italic">
-                                {word.russian}
-                            </div>
+                        <div className="w-full flex flex-wrap gap-4 justify-center">
+                            {(word.type === 'verb' || word.type === 'adjective') && (word as any).governance?.[0] && (
+                                <InfoModule title="Управление" icon={MapPin} variant="success">
+                                    <div className="flex items-center gap-3 text-2xl font-black">
+                                        <span>+ {(word as any).governance[0].preposition === "без предлога" ? "∅" : (word as any).governance[0].preposition}</span>
+                                        <Badge className="bg-emerald-600 font-extrabold">{(word as any).governance[0].case}</Badge>
+                                    </div>
+                                </InfoModule>
+                            )}
+
+                            {(word as any).collocations?.[0] && (
+                                <InfoModule title="Лексический якорь" icon={BookOpen} variant="amber">
+                                    <p className="font-bold text-slate-800 dark:text-slate-200">{(word as any).collocations[0].phrase}</p>
+                                    <p className="text-xs text-muted-foreground italic mt-1">{(word as any).collocations[0].translation}</p>
+                                </InfoModule>
+                            )}
                         </div>
 
-                        {/* Anchor Phrase (Collocation) instead of full sentence in Phase 2 */}
-                        {(word as any).collocations && (word as any).collocations.length > 0 && (
-                            <div className="w-full pt-6 border-t border-white/10 space-y-3">
-                                <Badge variant="outline" className="bg-amber-500/10 text-amber-400 border-amber-500/20 text-[10px] uppercase font-black px-3">
-                                    Лексический якорь
-                                </Badge>
-                                <p className="text-2xl md:text-3xl font-bold text-white leading-tight tracking-tight text-left pl-4 border-l-4 border-amber-500/50">
-                                    {(word as any).collocations[0].phrase}
-                                </p>
-                                <p className="text-md text-slate-400 italic text-left pl-4">
-                                    — {(word as any).collocations[0].translation}
-                                </p>
-                            </div>
-                        )}
-
-                        <div className="flex items-center gap-2 text-green-500/50 text-[10px] uppercase font-bold tracking-widest animate-pulse mt-4">
-                            <BrainCircuit className="h-3 w-3" /> Озвучка и переход к следующему слову...
+                        <div className="flex items-center gap-4 text-emerald-500/50 text-[10px] uppercase font-black tracking-[0.2em] animate-pulse">
+                            <BrainCircuit className="h-4 w-4" /> Следующее слово через секунду...
                         </div>
                     </CardContent>
                 </Card>
@@ -169,173 +174,77 @@ export function RecognitionView({ item, onResult, onMarkAsKnown, direction: forc
         <motion.div
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
-            className="flex flex-col items-center space-y-4"
+            className="flex flex-col items-center space-y-8 w-full max-w-4xl mx-auto"
         >
-            <div className="flex items-center gap-2 text-primary uppercase text-[8px] font-black tracking-[0.2em] animate-pulse">
-                <BrainCircuit className="h-3 w-3" /> Фаза 2: Укрепление нейронной связи
+            <div className="flex items-center gap-3 text-primary/60 uppercase text-[10px] tracking-[0.2em] font-black">
+                <BrainCircuit className="h-4 w-4 animate-pulse" />
+                <span>Фаза 2: Укрепление нейронной связи</span>
             </div>
 
-            <Card className="w-full bg-slate-950 border-primary/20 shadow-2xl relative overflow-hidden group">
-                {/* Visual "Neural" element */}
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
-                <div className="absolute -right-10 -top-10 w-40 h-40 bg-primary/10 blur-3xl rounded-full group-hover:bg-primary/20 transition-colors" />
+            <Card className="w-full bg-slate-950 border-2 border-primary/20 shadow-2xl relative overflow-hidden rounded-[3rem] group">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent pointer-events-none" />
+                <div className="absolute -right-20 -top-20 w-80 h-80 bg-primary/20 blur-[100px] rounded-full group-hover:bg-primary/30 transition-all duration-700" />
 
-                {/* Prepositions/Governance Badges (Top Left) */}
-                {(() => {
-                    const prepositions = Array.from(new Set(
-                        [
-                            ...((word as any).governance || []).map((g: any) => g.preposition),
-                            (word as any).preposition
-                        ].filter(Boolean)
-                            .map(p => String(p).trim())
-                            .filter(p => p !== '' && p !== '-' && p.toLowerCase() !== 'без предлога')
-                    ));
-
-                    if (prepositions.length === 0) return null;
-
-                    return (
-                        <div className="absolute top-4 left-4 flex flex-col items-start gap-1.5 z-20">
-                            {prepositions.map((prep, idx) => (
-                                <Badge
-                                    key={idx}
-                                    variant="outline"
-                                    className="flex items-center gap-1.5 px-3 py-1 text-xs font-black uppercase tracking-widest bg-red-500/10 text-red-600 border-red-300 shadow-sm"
-                                >
-                                    {String(prep)}
-                                </Badge>
-                            ))}
+                <CardContent className="p-8 sm:p-14 flex flex-col items-center text-center relative z-10 space-y-8">
+                    <div className="flex flex-col items-center space-y-2">
+                        <div className="text-[10px] font-black text-primary/40 uppercase tracking-[0.3em] bg-primary/5 px-4 py-1.5 rounded-full border border-primary/10">
+                            {direction === 0 ? "Понимаете ли вы это слово?" : "Как это будет по-немецки?"}
                         </div>
-                    );
-                })()}
 
-                <CardContent className="p-6 sm:p-8 flex flex-col items-center text-center relative z-10 pt-10">
-                    <div className="text-[10px] font-bold text-primary/60 mb-2 uppercase tracking-widest">
-                        {direction === 0 ? "Понимаете ли вы это слово?" : "Как это будет по-немецки?"}
-                    </div>
-
-                    <div className="flex flex-col items-center gap-1 mb-4">
-                        <div className="text-4xl font-black tracking-tighter text-white h-[48px] flex items-center">
-                            {direction === 0 ? <FormattedGermanWord word={word} /> : word.russian}
-                        </div>
-                        {/* Governance Section (Rektion) as Hint */}
-                        {((word.type === 'verb' || word.type === 'adjective') && (word as any).governance && (word as any).governance.length > 0) && (
-                            <div className="flex flex-col items-center gap-1.5 mt-2 w-full max-w-[280px]">
-                                {(word as any).governance.map((gov: any, idx: number) => (
-                                    <div key={idx} className="flex flex-col items-center bg-white/10 py-2 px-4 rounded-2xl border border-white/20 w-full transition-all hover:bg-white/20 shadow-lg">
-                                        <div className="flex items-center gap-3 text-lg font-black">
-                                            {gov.preposition === "без предлога" && gov.case === 'Akkusativ' && (word.german.toLowerCase().includes('sich') || gov.meaning?.toLowerCase().includes('возвратн')) ? (
-                                                <span className="text-secondary tracking-tighter text-xs">+ sich</span>
-                                            ) : (
-                                                <span className="text-white">+ {gov.preposition}</span>
-                                            )}
-                                            <span className={cn(
-                                                "px-2 py-1 rounded-md text-[10px] font-extrabold uppercase tracking-tighter flex items-center gap-1 shadow-sm",
-                                                gov.case === 'Akkusativ' ? "bg-red-600 text-white" :
-                                                    gov.case === 'Dativ' ? "bg-emerald-600 text-white" :
-                                                        gov.case === 'Nominativ' ? "bg-blue-600 text-white" :
-                                                            gov.case === 'Genitiv' ? "bg-amber-600 text-white" :
-                                                                "bg-slate-700 text-white"
-                                            )}>
-                                                {gov.case === 'Akkusativ' && <ArrowRight className="h-2 w-2" />}
-                                                {gov.case === 'Dativ' && <MapPin className="h-2 w-2" />}
-                                                {gov.case}
-                                                {gov.preposition && gov.preposition !== "без предлога" && (
-                                                    <span className="ml-1 lowercase font-bold text-[9px] opacity-80 border-l border-white/30 pl-1">
-                                                        {gov.case === 'Akkusativ' ? 'wohin?' : 'wo?'}
-                                                    </span>
-                                                )}
-                                            </span>
-                                        </div>
-                                        {gov.meaning && (
-                                            <div className="text-[10px] font-bold text-slate-200 italic mt-1 bg-black/20 px-2 py-0.5 rounded-full">
-                                                ({gov.meaning})
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-
-                        {/* Legacy case fallback for verbs */}
-                        <div className="text-xl font-black text-white tracking-tight mt-4 flex items-center gap-3 bg-white/5 p-3 rounded-2xl border border-white/10">
-                            <span>+ {(word as any).preposition || ""}</span>
-                            <span className={cn(
-                                "px-2 py-1 rounded-md text-[10px] font-extrabold uppercase tracking-tighter shadow-sm",
-                                (word as any).case === 'Akkusativ' ? "bg-red-600 text-white" :
-                                    (word as any).case === 'Dativ' ? "bg-emerald-600 text-white" :
-                                        (word as any).case === 'Nominativ' ? "bg-blue-600 text-white" :
-                                            (word as any).case === 'Genitiv' ? "bg-amber-600 text-white" :
-                                                "bg-slate-700 text-white"
-                            )}>
-                                {(word as any).case}
-                                {((word as any).case === 'Akkusativ' || (word as any).case === 'Dativ') && (word as any).preposition && (
-                                    <span className="ml-1 lowercase font-bold text-[9px] opacity-80 border-l border-white/30 pl-1">
-                                        {(word as any).case === 'Akkusativ' ? 'wohin?' : 'wo?'}
-                                    </span>
-                                )}
-                            </span>
+                        <div className="pt-4">
+                            {direction === 0 ? (
+                                <UnifiedWordHeader word={word} isDark={true} className="scale-110" />
+                            ) : (
+                                <div className="text-5xl sm:text-6xl font-black tracking-tighter text-white italic drop-shadow-lg">
+                                    {word.russian}
+                                </div>
+                            )}
                         </div>
                     </div>
-                    <div className="flex items-center gap-4">
-                        <div className="h-[2px] w-12 bg-gradient-to-r from-transparent to-primary/40" />
-                        <p className="text-muted-foreground text-sm font-medium">Выберите правильный вариант</p>
-                        <div className="h-[2px] w-12 bg-gradient-to-l from-transparent to-primary/40" />
-                    </div>
 
-                    {/* Mnemonic for Leech words */}
-                    {(item.mnemonic || ((item.consecutiveMistakes || 0) >= 3 && (word as any).mnemonic)) && (
-                        <div className="mt-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg text-xs italic text-amber-200/80 w-full max-w-sm text-center">
-                            <span className="font-bold uppercase text-[9px] block mb-1 opacity-70 text-amber-400">💡 Мнемоника (ассоциация):</span>
-                            &ldquo;{item.mnemonic || (word as any).mnemonic}&rdquo;
-                        </div>
-                    )}
+                    <div className="flex items-center gap-6 w-full max-w-md">
+                        <div className="h-px flex-1 bg-gradient-to-r from-transparent to-primary/30" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-primary/40">Выберите вариант</span>
+                        <div className="h-px flex-1 bg-gradient-to-l from-transparent to-primary/30" />
+                    </div>
                 </CardContent>
             </Card>
 
-            <div className="flex flex-col gap-4 w-full">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
-                    {options.map((option, idx) => {
-                        const isTarget = option === (direction === 0 ? word.russian : formatGermanWord(word));
-                        const isSelected = selectedOption === option;
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+                {options.map((option, idx) => {
+                    const isTarget = option === (direction === 0 ? word.russian : formatGermanWord(word));
+                    const isSelected = selectedOption === option;
 
-                        let variant: "outline" | "default" | "destructive" | "secondary" = "outline";
-                        if (selectedOption) {
-                            if (isTarget) variant = "default";
-                            else if (isSelected) variant = "destructive";
-                            else variant = "secondary";
-                        }
-
-                        return (
-                            <Button
-                                key={idx}
-                                variant={variant as any}
-                                className={cn(
-                                    "h-20 text-lg font-bold rounded-2xl border-2 transition-all duration-300 relative overflow-hidden",
-                                    !selectedOption && "hover:border-primary/50 hover:bg-primary/5 hover:scale-[1.02]",
-                                    isTarget && selectedOption && "bg-green-600 border-green-500 text-white shadow-[0_0_20px_rgba(34,197,94,0.3)]",
-                                    isSelected && !isTarget && "bg-red-600 border-red-500 text-white"
-                                )}
-                                onClick={() => handleSelect(option)}
-                                disabled={!!selectedOption || showSuccess}
-                            >
-                                {option}
-                                {isSelected && (isTarget ? <Check className="absolute right-4" /> : <X className="absolute right-4" />)}
-                            </Button>
-                        );
-                    })}
-                </div>
-
-                {!selectedOption && (
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-muted-foreground hover:text-green-400 hover:bg-white/5 opacity-50 hover:opacity-100 transition-all mx-auto"
-                        onClick={onMarkAsKnown}
-                    >
-                        Знаю это слово отлично (пропустить)
-                    </Button>
-                )}
+                    return (
+                        <Button
+                            key={idx}
+                            variant="outline"
+                            className={cn(
+                                "h-24 text-xl font-black rounded-3xl border-2 transition-all duration-300 relative overflow-hidden",
+                                !selectedOption && "bg-white/5 border-white/10 hover:border-primary hover:bg-primary/5 hover:scale-[1.02] active:scale-95 text-slate-300 hover:text-white shadow-lg",
+                                isTarget && selectedOption && "bg-emerald-600 border-emerald-500 text-white shadow-[0_0_30px_rgba(16,185,129,0.4)] z-20",
+                                isSelected && !isTarget && "bg-red-600 border-red-500 text-white shadow-[0_0_30px_rgba(239,68,68,0.4)] z-20"
+                            )}
+                            onClick={() => handleSelect(option)}
+                            disabled={!!selectedOption || showSuccess}
+                        >
+                            <span className="relative z-10">{option}</span>
+                            {isSelected && (isTarget ? <Check className="absolute right-6 h-8 w-8 stroke-[4]" /> : <X className="absolute right-6 h-8 w-8 stroke-[4]" />)}
+                        </Button>
+                    );
+                })}
             </div>
+
+            {!selectedOption && (
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground/40 hover:text-green-500 font-black uppercase text-[9px] tracking-[0.2em] transition-all hover:bg-transparent"
+                    onClick={onMarkAsKnown}
+                >
+                    Знаю отлично (пропустить)
+                </Button>
+            )}
         </motion.div>
     );
 }

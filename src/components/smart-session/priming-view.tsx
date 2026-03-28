@@ -19,8 +19,10 @@ import { getRektionLogic, type RektionLogicOutput } from '@/ai/flows/get-rektion
 import { getWordCluster, type WordClusterOutput } from '@/ai/flows/get-word-cluster';
 import { VerbFamilyTree } from './verb-family-tree';
 import { WordClusterView } from './word-cluster-view';
-import { Loader2, Info, Network, ArrowRight, MapPin, Link, Activity, Layers, Sparkles } from 'lucide-react';
+import { Loader2, Info, Network, ArrowRight, MapPin, Link, Activity, Layers, Sparkles, Lightbulb, BookOpen, Repeat, Languages } from 'lucide-react';
 import { FormattedGermanWord } from '../formatted-german-word';
+import { UnifiedWordHeader } from './unified-word-header';
+import { InfoModule } from './info-module';
 
 interface PrimingViewProps {
     item: StudyQueueItem;
@@ -125,6 +127,8 @@ export function PrimingView({ item, onNext, onMarkAsKnown, isRefresh }: PrimingV
         if (!isLoaded) return;
         let active = true;
 
+        const cleanText = (text: string) => text.replace(/<[^>]*>/g, '');
+
         const playAudioFlow = async () => {
             if (!active) return;
 
@@ -137,17 +141,15 @@ export function PrimingView({ item, onNext, onMarkAsKnown, isRefresh }: PrimingV
                 const anchor = (word as any).collocations[0];
                 sequence.push({ text: anchor.phrase, lang: 'de-DE' });
                 sequence.push({ text: anchor.translation, lang: 'ru-RU' });
-            } else {
-                if ('example' in word && word.example) {
-                    sequence.push({ text: word.example, lang: 'de-DE' });
-                }
+            } else if ('example' in word && word.example) {
+                sequence.push({ text: cleanText(word.example), lang: 'de-DE' });
                 if ('exampleMeaning' in word && (word as any).exampleMeaning) {
                     sequence.push({ text: (word as any).exampleMeaning, lang: 'ru-RU' });
                 }
             }
 
-            // Wait for initial load if needed
-            await new Promise(r => setTimeout(r, 300));
+            // Small initial delay
+            await new Promise(r => setTimeout(r, 600));
             if (!active) return;
 
             await speakSequence(sequence);
@@ -163,419 +165,215 @@ export function PrimingView({ item, onNext, onMarkAsKnown, isRefresh }: PrimingV
 
     return (
         <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="flex flex-col items-center space-y-4"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col items-center space-y-6 w-full max-w-4xl mx-auto"
         >
-            <div className="flex items-center gap-3 text-muted-foreground uppercase text-[10px] tracking-[0.2em] font-bold">
-                <BrainCircuit className="h-4 w-4" />
-                <span>{isRefresh ? '🔄 Повторная Загрузка' : 'Фаза 1: Загрузка Образа'}</span>
-                {(item.consecutiveMistakes || 0) >= 3 && (
-                    <Badge variant="destructive" className="ml-2 animate-pulse flex gap-1 items-center">
+            {/* Header / Phase Indicator */}
+            <div className="flex items-center justify-between w-full px-4">
+                <div className="flex items-center gap-3 text-primary/60 uppercase text-[10px] tracking-[0.2em] font-black">
+                    <Activity className="h-4 w-4 animate-pulse" />
+                    <span>{isRefresh ? '🔄 Нейро-синхронизация' : 'Фаза 1: Загрузка Образа'}</span>
+                </div>
+                {item.consecutiveMistakes >= 3 && (
+                    <Badge variant="destructive" className="animate-pulse flex gap-1 items-center font-black text-[9px] uppercase tracking-tighter">
                         <Siren className="h-3 w-3" /> Сложное Слово (Leech)
-                    </Badge>
-                )}
-                {word.level && (
-                    <Badge variant="secondary" className="ml-2 bg-primary/10 text-primary border-primary/20">
-                        {word.level}
                     </Badge>
                 )}
             </div>
 
-            <Card className="w-full bg-card border-none shadow-2xl overflow-hidden relative">
-                <div className={cn("absolute top-0 left-0 w-full h-1 bg-gradient-to-r", isRefresh ? "from-orange-500 to-red-500" : "from-blue-500 to-purple-500")} />
+            <Card className="w-full bg-white dark:bg-slate-950 border-none shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden rounded-[3rem] relative">
+                {/* Accent Line */}
+                <div className={cn(
+                    "h-1.5 w-full bg-gradient-to-r",
+                    isRefresh ? "from-orange-500 to-red-600" : "from-blue-600 to-indigo-600"
+                )} />
 
-                {/* Refresh Hint: shown when word was forgotten in Recognition */}
-                {isRefresh && (
-                    <div className="mx-4 mt-4 p-3 bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800 rounded-xl text-sm text-orange-700 dark:text-orange-300 animate-in fade-in slide-in-from-top-2">
-                        <span className="font-bold">💡 Совет:</span> Попробуйте создать визуальный образ или ассоциацию с русским словом. Представьте ситуацию, где вы используете это слово.
-                    </div>
-                )}
+                <CardContent className="p-8 sm:p-12 flex flex-col items-center space-y-10">
+                    
+                    {/* 1. UNIFIED HEADER */}
+                    <UnifiedWordHeader 
+                        word={word} 
+                        showRussian={true} 
+                        className="mb-4"
+                    />
 
-                {/* Contrast Card: Side-by-side comparison with confused word */}
-                {confusionPartner && (
-                    <div className="mx-4 mt-4 p-4 bg-red-500/10 border-2 border-red-500/30 rounded-3xl animate-in zoom-in-95 duration-500">
-                        <div className="flex items-center gap-2 mb-4">
-                            <Badge className="bg-red-500 text-[10px] font-black uppercase shadow-lg">Anti-Confusion</Badge>
-                            <span className="text-xs text-red-600 dark:text-red-400 font-black uppercase tracking-tighter">Не путайте эти слова!</span>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            {/* Current Word */}
-                            <div className="flex flex-col items-center p-4 bg-white/80 dark:bg-slate-950/80 rounded-2xl border-2 border-primary/20 shadow-md">
-                                <div className="text-lg sm:text-2xl font-black text-primary mb-1">
-                                    <FormattedGermanWord word={word} />
-                                </div>
-                                <div className="text-[10px] text-muted-foreground italic font-medium">{word.russian}</div>
-                            </div>
-
-                            {/* Confusion Partner */}
-                            <div className="flex flex-col items-center p-4 bg-white/80 dark:bg-slate-950/80 rounded-2xl border-2 border-red-500/20 shadow-md">
-                                <div className="text-lg sm:text-2xl font-black text-red-600 mb-1">
-                                    <FormattedGermanWord word={confusionPartner as any} />
-                                </div>
-                                <div className="text-[10px] text-muted-foreground italic font-medium">{confusionPartner.russian}</div>
-                            </div>
-                        </div>
-
-                        {/* Highlighting Differences */}
-                        <div className="mt-4 p-3 bg-white/30 dark:bg-black/20 rounded-xl text-[11px] text-slate-700 dark:text-slate-300 font-medium text-left leading-relaxed border border-red-500/10">
-                            <span className="font-black text-red-600 block mb-1 uppercase tracking-widest text-[9px]">💡 В чем разница?</span>
-                            Слова визуально похожи. Обращайте внимание на различия в корнях или приставках.
-                            Используйте <strong>{word.german}</strong> для одного контекста и <strong>{confusionPartner.german}</strong> для другого.
-                        </div>
-                    </div>
-                )}
-
-                {/* Prepositions Badges (Top Left) */}
-                {(() => {
-                    const prepositions = Array.from(new Set(
-                        [
-                            ...((word as any).governance || []).map((g: any) => g.preposition),
-                            (word as any).preposition
-                        ].filter(Boolean)
-                            .map(p => String(p).trim())
-                            .filter(p => p !== '' && p !== '-' && p.toLowerCase() !== 'без предлога')
-                    ));
-
-                    if (prepositions.length === 0) return null;
-
-                    return (
-                        <div className="absolute top-4 left-4 flex flex-col items-start gap-1.5 z-20">
-                            {prepositions.map((prep, idx) => (
-                                <Badge
-                                    key={idx}
-                                    variant="outline"
-                                    className="flex items-center gap-1.5 px-3 py-1 text-xs font-black uppercase tracking-widest bg-red-500/10 text-red-600 border-red-300 shadow-sm"
-                                >
-                                    {String(prep)}
-                                </Badge>
-                            ))}
-                        </div>
-                    );
-                })()}
-
-                <CardContent className="p-6 sm:p-8 flex flex-col items-center text-center space-y-4 relative z-10">
-
-                    <div className="space-y-3 w-full">
-                        <div className="flex flex-col gap-0 items-center justify-center pt-2">
-                            <div className="text-5xl font-black tracking-tight text-primary">
-                                <FormattedGermanWord word={word} />
-                            </div>
-                            {/* Specific Governance Display for Verbs and Adjectives */}
-                            {/* Governance Section (Rektion) */}
-                            {(word.type === 'verb' || word.type === 'adjective') && (word as any).governance && (word as any).governance.length > 0 && (
-                                <div className="flex flex-col items-center gap-2 mt-2 w-full">
+                    {/* 2. MODULAR KNOWLEDGE GRID */}
+                    <div className="w-full flex flex-wrap gap-4 justify-center">
+                        
+                        {/* REKTION / GOVERNANCE MODULE */}
+                        {(word.type === 'verb' || word.type === 'adjective') && (word as any).governance && (word as any).governance.length > 0 && (
+                            <InfoModule 
+                                title="Логика управления" 
+                                icon={MapPin} 
+                                variant={((word as any).governance[0].case === 'Akkusativ' ? 'error' : 'success') as any}
+                                fullWidth
+                            >
+                                <div className="space-y-4">
                                     {(word as any).governance.map((gov: any, idx: number) => (
-                                        <div key={idx} className="flex flex-col items-center bg-primary/10 p-4 rounded-2xl border-2 border-primary/20 w-full max-w-sm shadow-xl">
-                                            <div className="flex items-center gap-3 text-2xl font-black">
-                                                {gov.case === 'Akkusativ' && <ArrowRight className="h-5 w-5 text-red-500 animate-pulse" />}
-                                                {gov.case === 'Dativ' && <MapPin className="h-5 w-5 text-emerald-500" />}
-                                                {gov.case === 'Genitiv' && <Link className="h-5 w-5 text-amber-500" />}
-
-                                                {gov.preposition === "без предлога" && gov.case === 'Akkusativ' && (word.german.toLowerCase().includes('sich') || gov.meaning?.toLowerCase().includes('возвратн')) ? (
-                                                    <span className="text-primary tracking-tighter text-2xl">+ sich</span>
-                                                ) : (
-                                                    <span className="text-primary text-2xl">+ {gov.preposition}</span>
-                                                )}
-                                                <span className={cn(
-                                                    "px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-tight flex items-center gap-1 shadow-md",
+                                        <div key={idx} className="flex flex-col gap-2">
+                                            <div className="flex items-center gap-3 text-2xl font-black text-slate-900 dark:text-white">
+                                                <span>+ {gov.preposition === "без предлога" ? (word.german.toLowerCase().includes('sich') ? 'sich' : '∅') : gov.preposition}</span>
+                                                <Badge className={cn(
+                                                    "px-3 py-1 rounded-lg text-xs font-black uppercase tracking-tight",
                                                     gov.case === 'Akkusativ' ? "bg-red-600 text-white" :
-                                                        gov.case === 'Dativ' ? "bg-emerald-600 text-white" :
-                                                            gov.case === 'Nominativ' ? "bg-blue-600 text-white" :
-                                                                gov.case === 'Genitiv' ? "bg-amber-600 text-white" :
-                                                                    "bg-slate-700 text-white"
+                                                    gov.case === 'Dativ' ? "bg-emerald-600 text-white" : "bg-primary text-white"
                                                 )}>
                                                     {gov.case}
-                                                    {gov.preposition && gov.preposition !== "без предлога" && (
-                                                        <span className="ml-1 opacity-80 border-l border-white/30 pl-2 lowercase font-bold">
-                                                            {gov.case === 'Akkusativ' ? 'wohin?' : 'wo?'}
-                                                        </span>
-                                                    )}
-                                                </span>
+                                                </Badge>
+                                                {gov.preposition !== "без предлога" && (
+                                                    <span className="text-xs text-muted-foreground font-bold lowercase opacity-50">
+                                                        ({gov.case === 'Akkusativ' ? 'wohin?' : 'wo?'})
+                                                    </span>
+                                                )}
                                             </div>
-
-                                            {/* RU vs DE Logic Comparison */}
-                                            {rektionLogic?.comparison && (
-                                                <div className="mt-2 w-full p-2 bg-white/40 dark:bg-black/20 rounded-lg text-[11px] font-bold text-slate-600 dark:text-slate-400 border border-primary/5">
-                                                    <span className="text-primary/70 mr-1 uppercase text-[9px]">Vs RU:</span>
-                                                    {rektionLogic.comparison}
-                                                </div>
-                                            )}
-
-                                            {gov.meaning && (
-                                                <div className="text-xs font-bold text-slate-700 dark:text-slate-300 mt-2 italic bg-primary/5 px-3 py-1 rounded-full">
-                                                    ({gov.meaning})
-                                                </div>
-                                            )}
-                                            {gov.example && (
-                                                <div className="mt-2 text-xs text-muted-foreground leading-relaxed border-t border-primary/10 pt-2 w-full italic">
-                                                    &ldquo;{gov.example}&rdquo;
-                                                </div>
+                                            {rektionLogic?.logic && (
+                                                <p className="text-xs text-muted-foreground border-l-2 border-primary/20 pl-4 py-1 italic">
+                                                    {rektionLogic.logic}
+                                                </p>
                                             )}
                                         </div>
                                     ))}
                                 </div>
-                            )}
-
-                            {/* Rektion Logic Hint (AI Generated) */}
-                            {rektionLogic && (
-                                <div className="mt-4 w-full max-w-sm bg-gradient-to-br from-primary/5 to-transparent p-4 rounded-3xl border border-primary/10 text-left animate-in fade-in slide-in-from-bottom-2 duration-500">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <Activity className="h-4 w-4 text-primary animate-pulse" />
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-primary/60">Логика Управления</span>
-                                    </div>
-                                    <p className="text-[11px] leading-relaxed text-slate-600 dark:text-slate-400">
-                                        {rektionLogic.logic}
-                                    </p>
-                                    {rektionLogic.visualMnemonic && (
-                                        <div className="mt-2 text-[10px] italic text-primary/70 bg-primary/5 px-2 py-1 rounded-lg inline-block">
-                                            💡 {rektionLogic.visualMnemonic}
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                            {/* Legacy case fallback for verbs */}
-                            <div className="text-3xl font-black text-primary tracking-tight mt-6 flex items-center gap-4 bg-primary/5 p-4 rounded-2xl border-2 border-primary/10 shadow-lg">
-                                <span>+ {(word as any).preposition || ""}</span>
-                                <span className={cn(
-                                    "px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-tight flex items-center gap-1 shadow-md",
-                                    (word as any).case === 'Akkusativ' ? "bg-red-600 text-white" :
-                                        (word as any).case === 'Dativ' ? "bg-emerald-600 text-white" :
-                                            (word as any).case === 'Nominativ' ? "bg-blue-600 text-white" :
-                                                (word as any).case === 'Genitiv' ? "bg-amber-600 text-white" :
-                                                    "bg-slate-700 text-white"
-                                )}>
-                                    {(word as any).case}
-                                    {((word as any).case === 'Akkusativ' || (word as any).case === 'Dativ') && (word as any).preposition && (
-                                        <span className="ml-1 opacity-80 border-l border-white/30 pl-2 lowercase font-bold">
-                                            {(word as any).case === 'Akkusativ' ? 'wohin?' : 'wo?'}
-                                        </span>
-                                    )}
-                                </span>
-                            </div>
-                        </div>
-
-                        <div className="flex flex-col items-center gap-0">
-                            <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50">{getRussianType(word.type)}</div>
-                            <div className="text-2xl text-foreground font-black italic">
-                                {word.russian}
-                            </div>
-                        </div>
-
-                        {/* Synonyms (Unobtrusive & Non-Italic) */}
-                        {(word as any).synonyms && (word as any).synonyms.length > 0 && (
-                            <div className="mt-2 flex flex-wrap justify-center gap-1.5 opacity-60 hover:opacity-100 transition-opacity">
-                                {(word as any).synonyms.map((s: any, idx: number) => (
-                                    <span key={idx} className="text-xs font-medium text-muted-foreground px-2 py-0.5 rounded-full bg-muted/50 border border-border/50">
-                                        ≈ {s.word} ({s.translation})
-                                    </span>
-                                ))}
-                            </div>
+                            </InfoModule>
                         )}
-                    </div>
 
-                    <div className="flex gap-4">
-                        <SpeakButton text={formatGermanWord(word)} secondaryText={word.russian} size="lg" />
-                    </div>
-
-                    {/* Word Breakdown (Decomposition) */}
-                    {isDecomposing && (
-                        <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground animate-pulse py-2">
-                            <Loader2 className="h-3 w-3 animate-spin" /> Разбираем слово на части...
-                        </div>
-                    )}
-
-                    {decomposition && (
-                        <div className="w-full max-w-sm bg-muted/30 p-4 rounded-xl border border-dashed border-primary/20 text-left space-y-2 animate-in fade-in slide-in-from-top-2">
-                            <div className="text-[10px] font-bold uppercase tracking-widest text-primary/60 flex items-center gap-1">
-                                <Info className="h-3 w-3" /> Разбор конструкции:
-                            </div>
-                            <div className="grid grid-cols-1 gap-1">
-                                {decomposition.components.map((c: any, i: number) => (
-                                    <div key={i} className="text-sm flex justify-between gap-4">
-                                        <span className="font-bold text-slate-700">{c.word} {c.pronunciation && <span className="text-[10px] text-muted-foreground font-normal">[{c.pronunciation}]</span>}</span>
-                                        <span className="text-slate-500">{c.translation}</span>
+                        {/* DECOMPOSITION MODULE */}
+                        {(isDecomposing || decomposition) && (
+                            <InfoModule title="Разбор конструкции" icon={Layers} variant="primary">
+                                {isDecomposing ? (
+                                    <div className="flex items-center gap-2 animate-pulse text-xs">
+                                        <Loader2 className="h-3 w-3 animate-spin" /> Анализ структуры...
                                     </div>
-                                ))}
-                            </div>
-                            {decomposition.explanation && (
-                                <p className="text-[10px] italic text-muted-foreground pt-1 border-t border-primary/10">
-                                    {decomposition.explanation}
+                                ) : (
+                                    <div className="space-y-2">
+                                        <div className="grid grid-cols-1 gap-1">
+                                            {decomposition?.components.map((c: any, i: number) => (
+                                                <div key={i} className="flex justify-between items-center text-sm border-b border-primary/5 pb-1">
+                                                    <span className="font-bold text-slate-800 dark:text-slate-200">{c.word}</span>
+                                                    <span className="text-muted-foreground text-xs">{c.translation}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        {decomposition?.explanation && (
+                                            <p className="text-[10px] opacity-60 mt-2 leading-tight">{decomposition.explanation}</p>
+                                        )}
+                                    </div>
+                                )}
+                            </InfoModule>
+                        )}
+
+                        {/* MNEMONIC MODULE */}
+                        {(item.mnemonic || (word as any).mnemonic) && (
+                            <InfoModule title="Инсайт для памяти" icon={Lightbulb} variant="warning">
+                                <p className="italic text-slate-700 dark:text-slate-300">
+                                    &ldquo;{item.mnemonic || (word as any).mnemonic}&rdquo;
                                 </p>
-                            )}
-                        </div>
-                    )}
+                            </InfoModule>
+                        )}
 
-                    {/* Verb Family Integration */}
-                    {word.type === 'verb' && !verbFamily && (
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="mt-2 gap-2 border-primary/20 text-primary/60 hover:text-primary transition-all rounded-full h-8 px-4"
-                            onClick={fetchVerbFamily}
-                            disabled={isFetchingFamily}
-                        >
-                            {isFetchingFamily ? <Loader2 className="h-3 w-3 animate-spin" /> : <Network className="h-3 w-3" />}
-                            <span className="text-[10px] font-bold uppercase tracking-tight">Семейство глагола (логика приставок)</span>
-                        </Button>
-                    )}
+                        {/* SYNONYMS MODULE */}
+                        {(word as any).synonyms && (word as any).synonyms.length > 0 && (
+                            <InfoModule title="Синонимы" icon={Repeat} variant="indigo">
+                                <div className="flex flex-wrap gap-2">
+                                    {(word as any).synonyms.map((s: any, idx: number) => (
+                                        <div key={idx} className="bg-indigo-500/5 px-2 py-1 rounded-lg border border-indigo-500/10 text-xs text-indigo-700 dark:text-indigo-300 transition-colors hover:bg-indigo-500/10">
+                                            <span className="font-bold">{s.word}</span>
+                                            <span className="ml-1 opacity-60">({s.translation})</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </InfoModule>
+                        )}
 
-                    {verbFamily && (
-                        <VerbFamilyTree data={verbFamily} currentVerb={formatGermanWord(word)} />
-                    )}
+                        {/* ANTONYMS MODULE */}
+                        {(word as any).antonyms && (word as any).antonyms.length > 0 && (
+                            <InfoModule title="Антонимы" icon={Languages} variant="rose">
+                                <div className="flex flex-wrap gap-2">
+                                    {(word as any).antonyms.map((a: any, idx: number) => (
+                                        <div key={idx} className="bg-rose-500/5 px-2 py-1 rounded-lg border border-rose-500/10 text-xs text-rose-700 dark:text-rose-300 transition-colors hover:bg-rose-500/10">
+                                            <span className="font-bold">{a.word}</span>
+                                            <span className="ml-1 opacity-60">({a.translation})</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </InfoModule>
+                        )}
 
-                    {/* Word Family Cluster (Triple-Threat) */}
-                    {!wordCluster && (
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="mt-2 gap-2 border-indigo-500/20 text-indigo-500/60 hover:text-indigo-600 transition-all rounded-full h-8 px-4"
-                            onClick={fetchWordCluster}
-                            disabled={isFetchingCluster}
-                        >
-                            {isFetchingCluster ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
-                            <span className="text-[10px] font-black uppercase tracking-tight">Расширить до кластера (Сущ+Глаг+Прил)</span>
-                        </Button>
-                    )}
+                    </div>
 
-                    {wordCluster && (
-                        <WordClusterView data={wordCluster} currentWord={formatGermanWord(word)} />
-                    )}
-
-                    {/* Anchor Phrase (Collocation) as primary memorization aid */}
-                    {(word as any).collocations?.[0] ? (
-                        <div className="w-full max-w-xl mt-6">
-                            <div className="bg-gradient-to-br from-amber-500/10 to-amber-500/5 p-6 rounded-3xl border-2 border-amber-500/20 shadow-xl relative group">
-                                <div className="absolute -top-3 left-6 px-3 py-1 bg-amber-500 text-white text-[10px] font-black uppercase tracking-[0.1em] rounded-full shadow-lg">
+                    {/* 3. PRIMARY CONTEXT (Large Anchor/Example) */}
+                    <div className="w-full flex flex-col items-center">
+                        {(word as any).collocations?.[0] ? (
+                            <div className="w-full bg-slate-50 dark:bg-slate-900 border-2 border-primary/10 p-8 rounded-[2.5rem] relative group overflow-hidden">
+                                <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity">
+                                    <BookOpen className="h-24 w-24" />
+                                </div>
+                                <div className="absolute top-4 left-6 px-3 py-1 bg-primary text-white text-[9px] font-black uppercase tracking-widest rounded-full">
                                     Лексический якорь
                                 </div>
-                                <div className="space-y-3 relative z-10">
-                                    <p className="text-2xl md:text-3xl font-bold text-foreground leading-tight tracking-tight text-left pl-4 border-l-4 border-amber-500/30">
+                                <div className="space-y-4 pt-4">
+                                    <p className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white leading-tight tracking-tight pl-4 border-l-4 border-primary">
                                         {(word as any).collocations[0].phrase}
                                     </p>
-                                    <p className="text-md md:text-lg text-muted-foreground/80 italic text-left pl-4">
-                                        — {(word as any).collocations[0].translation}
-                                    </p>
+                                    <p className="text-lg text-muted-foreground italic pl-4">— {(word as any).collocations[0].translation}</p>
                                 </div>
                             </div>
-                        </div>
-                    ) : ('example' in word && word.example && (
-                        <div className="w-full max-w-xl mt-6">
-                            <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-6 rounded-3xl border-2 border-primary/20 shadow-xl relative group">
-                                <div className="absolute -top-3 left-6 px-3 py-1 bg-primary text-white text-[10px] font-black uppercase tracking-[0.1em] rounded-full shadow-lg">
+                        ) : ('example' in word && word.example && (
+                            <div className="w-full bg-slate-50 dark:bg-slate-900 border-2 border-primary/10 p-8 rounded-[2.5rem] relative group">
+                                <div className="absolute top-4 left-6 px-3 py-1 bg-primary text-white text-[9px] font-black uppercase tracking-widest rounded-full">
                                     B2 Beruf Phrase
                                 </div>
-                                <span className="text-4xl absolute top-4 left-2 opacity-10 font-serif leading-none">❝</span>
-                                <div className="space-y-3 relative z-10">
-                                    <p
-                                        className="text-xl md:text-2xl font-bold text-foreground leading-tight tracking-tight text-left pl-4 border-l-4 border-primary/30"
-                                        dangerouslySetInnerHTML={{ __html: word.example }}
+                                <div className="space-y-4 pt-4">
+                                    <p className="text-xl md:text-2xl font-black text-slate-900 dark:text-white leading-tight tracking-tight pl-4 border-l-4 border-primary"
+                                       dangerouslySetInnerHTML={{ __html: word.example }}
                                     />
                                     {'exampleMeaning' in word && (word as any).exampleMeaning && (
-                                        <p className="text-md md:text-lg text-muted-foreground/80 italic text-left pl-4">
-                                            — {(word as any).exampleMeaning}
-                                        </p>
+                                        <p className="text-lg text-muted-foreground italic pl-4">— {(word as any).exampleMeaning}</p>
                                     )}
                                 </div>
                             </div>
-                            <p className="text-[10px] text-muted-foreground mt-2 opacity-50 uppercase tracking-[0.2em] font-bold">
-                                Эффективная фраза для экзамена B2
-                            </p>
-                        </div>
-                    ))}
-
-                    {/* Verb Conjugations (Compact) */}
-                    {word.type === 'verb' && (word as any).conjugations && (
-                        <div className="w-full max-w-sm mt-2 p-3 bg-primary/5 rounded-xl border border-primary/10">
-                            <h4 className="text-[9px] font-bold uppercase tracking-widest text-primary/40 mb-2">Спряжение (Präsens)</h4>
-                            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-                                <div className="flex justify-between border-b border-primary/10 pb-1">
-                                    <span className="text-muted-foreground">ich</span>
-                                    <span className="font-bold">{(word as any).conjugations.ich}</span>
-                                </div>
-                                <div className="flex justify-between border-b border-primary/10 pb-1">
-                                    <span className="text-muted-foreground">wir</span>
-                                    <span className="font-bold">{(word as any).conjugations.wir}</span>
-                                </div>
-                                <div className="flex justify-between border-b border-primary/10 pb-1">
-                                    <span className="text-muted-foreground">du</span>
-                                    <span className="font-bold">{(word as any).conjugations.du}</span>
-                                </div>
-                                <div className="flex justify-between border-b border-primary/10 pb-1">
-                                    <span className="text-muted-foreground">ihr</span>
-                                    <span className="font-bold">{(word as any).conjugations.ihr}</span>
-                                </div>
-                                <div className="flex justify-between border-b border-primary/10 pb-1">
-                                    <span className="text-muted-foreground">er/sie/es</span>
-                                    <span className="font-bold">{(word as any).conjugations.er_sie_es}</span>
-                                </div>
-                                <div className="flex justify-between border-b border-primary/10 pb-1">
-                                    <span className="text-muted-foreground">sie/Sie</span>
-                                    <span className="font-bold">{(word as any).conjugations.sie_Sie}</span>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Semantic Bridge: Synonyms & Collocations (Compact) */}
-                    <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
-                        {(word as any).synonyms && (word as any).synonyms.length > 0 && (
-                            <div className="p-4 bg-blue-50/50 rounded-xl border border-blue-100 text-left">
-                                <h4 className="text-[10px] font-bold uppercase tracking-widest text-blue-400 mb-2">Синонимы</h4>
-                                <div className="space-y-1">
-                                    {(word as any).synonyms.map((s: any, i: number) => (
-                                        <div key={i} className="text-sm">
-                                            <span className="font-bold text-blue-600">{s.word}</span>
-                                            <span className="text-muted-foreground ml-2">— {s.translation}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                        {(word as any).collocations && (word as any).collocations.length > 0 && (
-                            <div className="p-4 bg-purple-50/50 rounded-xl border border-purple-100 text-left">
-                                <h4 className="text-[10px] font-bold uppercase tracking-widest text-purple-400 mb-2">Коллокации</h4>
-                                <div className="space-y-1">
-                                    {(word as any).collocations.map((c: any, i: number) => (
-                                        <div key={i} className="text-sm">
-                                            <span className="font-bold text-purple-600">{c.phrase}</span>
-                                            <span className="text-muted-foreground ml-2">— {c.translation}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
+                        ))}
                     </div>
 
-                    {/* Mnemonic */}
-                    {(item.mnemonic || ((item.consecutiveMistakes || 0) >= 3 && (word as any).mnemonic)) && (
-                        <div className={cn(
-                            "mt-4 p-3 border rounded-lg text-sm italic w-full max-w-md text-left",
-                            (item.consecutiveMistakes || 0) >= 3
-                                ? "bg-amber-100 border-amber-400 text-amber-900 shadow-lg"
-                                : "bg-amber-50 border-amber-200 text-amber-900"
-                        )}>
-                            <span className="font-bold uppercase text-[10px] block mb-1 opacity-70">💡 Мнемоника (ассоциация):</span>
-                            &ldquo;{item.mnemonic || (word as any).mnemonic}&rdquo;
-                        </div>
-                    )}
+                    {/* 4. AI-ENHANCED VIEWS (Family / Cluster) */}
+                    <div className="w-full flex flex-col gap-4">
+                        {(word.type === 'verb' && !verbFamily) && (
+                            <Button variant="ghost" className="w-full h-12 rounded-2xl hover:bg-primary/5 text-primary/60 border border-dashed border-primary/20" onClick={fetchVerbFamily} disabled={isFetchingFamily}>
+                                {isFetchingFamily ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Network className="h-4 w-4 mr-2" />}
+                                Семейство глагола (логика приставок)
+                            </Button>
+                        )}
+                        {verbFamily && <VerbFamilyTree data={verbFamily} currentVerb={formatGermanWord(word)} />}
+                        
+                        {!wordCluster && (
+                            <Button variant="ghost" className="w-full h-12 rounded-2xl hover:bg-indigo-500/5 text-indigo-500/60 border border-dashed border-indigo-500/20" onClick={fetchWordCluster} disabled={isFetchingCluster}>
+                                {isFetchingCluster ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
+                                Расширить до кластера (СУЩ + ГЛАГ + ПРИЛ)
+                            </Button>
+                        )}
+                        {wordCluster && <WordClusterView data={wordCluster} currentWord={formatGermanWord(word)} />}
+                    </div>
                 </CardContent>
             </Card>
 
-            <div className="w-full max-w-sm space-y-4">
-                <div className="flex flex-col gap-2">
-                    <Button size="lg" className="w-full h-16 text-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg" onClick={onNext}>
-                        Запомнил
-                    </Button>
-                    <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-green-600 hover:bg-green-50" onClick={onMarkAsKnown}>
-                        Знаю отлично (пропустить)
-                    </Button>
-                </div>
-                <p className="text-xs text-center text-muted-foreground opacity-70">
-                    Нажмите, когда четко представите образ слова.
-                </p>
+            {/* ACTION BUTTONS */}
+            <div className="w-full max-w-sm flex flex-col gap-3">
+                <Button 
+                    size="lg" 
+                    className="w-full h-16 text-xl font-black uppercase tracking-widest bg-gradient-to-r from-blue-600 to-indigo-700 shadow-2xl hover:scale-[1.02] active:scale-95 transition-all rounded-3xl" 
+                    onClick={onNext}
+                >
+                    Запомнил <ArrowRight className="ml-2 h-6 w-6" />
+                </Button>
+                <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-muted-foreground/60 hover:text-green-600 font-bold uppercase text-[9px] tracking-widest" 
+                    onClick={onMarkAsKnown}
+                >
+                    Знаю отлично (пропустить)
+                </Button>
             </div>
         </motion.div>
     );

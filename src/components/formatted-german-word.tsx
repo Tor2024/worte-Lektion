@@ -87,7 +87,7 @@ export function FormattedGermanWord({ word, className }: FormattedGermanWordProp
                         return (
                             <React.Fragment key={i}>
                                 {split.prefix}
-                                <span className="text-red-500 font-black mx-[0.5px] select-none opacity-90">|</span>
+                                <span className="inline-block w-[2px] h-[0.7em] bg-red-600/40 dark:bg-red-400/50 align-middle mx-[1px] rounded-full translate-y-[-1px]" />
                                 {split.base}
                                 {i < parts.length - 1 && ' '}
                             </React.Fragment>

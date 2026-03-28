@@ -39,6 +39,8 @@ export function useSpeech() {
 
     const stop = useCallback(() => {
         if (typeof window !== 'undefined' && window.speechSynthesis) {
+            // Aggressive reset: resume before cancel to un-jam the engine
+            window.speechSynthesis.resume();
             window.speechSynthesis.cancel();
             sequenceIdRef.current++; // Cancel any running sequence loop
             setIsSpeaking(false);
@@ -55,22 +57,32 @@ export function useSpeech() {
         };
     }, []);
 
-    const speak = useCallback((text: string, lang: string = 'de-DE', gender?: VoiceGender, cancelFirst = true) => {
+    const speak = useCallback(async (text: string, lang: string = 'de-DE', gender?: VoiceGender, cancelFirst = true) => {
+        if (typeof window === 'undefined' || !window.speechSynthesis) {
+            return;
+        }
+
+        const cleanedText = cleanTextForSpeech(text);
+        if (!cleanedText) return;
+
+        // CHUNKING LOGIC: If text is long, split by sentences and speak them sequentially
+        // This prevents the 'synthesis-failed' limit in Chrome/Windows
+        if (cleanedText.length > 200) {
+            const chunks = cleanedText.match(/[^.!?]+[.!?]*/g) || [cleanedText];
+            if (chunks.length > 1) {
+                if (cancelFirst) stop();
+                for (const chunk of chunks) {
+                    await speak(chunk.trim(), lang, gender, false);
+                    await new Promise(r => setTimeout(r, 100)); // Gap between chunks
+                }
+                return;
+            }
+        }
+
         return new Promise<void>((resolve) => {
-            if (typeof window === 'undefined' || !window.speechSynthesis) {
-                resolve();
-                return;
-            }
-
-            const cleanedText = cleanTextForSpeech(text);
-            
-            // If text is empty after cleaning (e.g. it was just grammar notes), skip speech
-            if (!cleanedText) {
-                resolve();
-                return;
-            }
-
             if (cancelFirst) {
+                // Aggressive reset: resume before cancel to un-jam the engine if it was paused
+                window.speechSynthesis.resume();
                 window.speechSynthesis.cancel();
             }
 
@@ -145,6 +157,10 @@ export function useSpeech() {
                 clearTimeout(backupTimeout);
                 if (e.error !== 'canceled' && e.error !== 'interrupted') {
                     console.error("Speech error", e.error, e);
+                    // If synthesis failed, try to resume the engine for next calls
+                    if (typeof window !== 'undefined' && window.speechSynthesis) {
+                        window.speechSynthesis.resume();
+                    }
                 }
                 if (activeUtteranceRef.current === utterance) activeUtteranceRef.current = null;
                 setIsSpeaking(false);
@@ -158,16 +174,21 @@ export function useSpeech() {
                     activeUtteranceRef.current = null;
                     setIsSpeaking(false);
                     resolve();
-                    // Optional: try to reset synthesis engine if it hangs
                     if (typeof window !== 'undefined' && window.speechSynthesis) {
                         window.speechSynthesis.cancel();
                     }
                 }
             }, timeoutDuration);
 
-            window.speechSynthesis.speak(utterance);
+            // Safety delay: 100ms gap before actual speak call 
+            // This helps browser stabilize after cancel() or sequence transitions
+            setTimeout(() => {
+                if (typeof window !== 'undefined' && window.speechSynthesis) {
+                    window.speechSynthesis.speak(utterance);
+                }
+            }, 100);
         });
-    }, []);
+    }, [stop]);
 
     const speakSequence = useCallback(async (items: { text: string, lang: string }[]) => {
         // Stop any currently running speech and increment sequence ID

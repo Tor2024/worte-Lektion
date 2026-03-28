@@ -41,18 +41,6 @@ export function SpeakButton({
             const currentId = ++sequenceIdRef.current;
             const cleanedText = cleanTextForSpeech(text);
 
-            // If text is very long, chunk it by sentences to prevent TTS 'synthesis-failed' limits
-            if (cleanedText.length > 200 && !secondaryText) {
-                // Split by common sentence terminators but keep the punctuation
-                const chunks = cleanedText.match(/[^.!?]+[.!?]*/g) || [cleanedText];
-                const items = chunks.map(c => ({ text: c.trim(), lang })).filter(c => c.text);
-                
-                if (items.length > 1) {
-                    await speakSequence(items);
-                    return;
-                }
-            }
-
             await speak(cleanedText, lang, gender);
 
             if (secondaryText && currentId === sequenceIdRef.current) {
