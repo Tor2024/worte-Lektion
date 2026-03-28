@@ -43,11 +43,15 @@ const AdaptiveExerciseInputSchema = z.object({
 export type AdaptiveExerciseInput = z.infer<typeof AdaptiveExerciseInputSchema>;
 
 const ExerciseSchema = z.object({
+  instruction: z.string().describe('DETAILED instructions for the user in Russian (e.g. "Поставьте глагол в форму Konjunktiv II" or "Выберите правильный предлог"). Do not leave this empty.').default('Вставьте пропущенное слово'),
+  example: z.string().optional().describe('1-2 short, HTML-formatted examples showing how to apply the rule for this specific task. Highlight important parts with <strong class="text-primary">. e.g. "Пример: Er <strong class="text-primary">hätte</strong> das <strong class="text-primary">tun sollen</strong>".'),
   question: z.string().describe('The question or fill-in-the-blank sentence.'),
   answer: z.string().describe('The correct answer.')
 });
 
 const SentenceConstructionExerciseSchema = z.object({
+  instruction: z.string().describe('DETAILED instructions in Russian (e.g. "Составьте предложение, обращая внимание на порядок слов в Perfekt").').default('Составьте предложение'),
+  example: z.string().optional().describe('1 short, HTML-formatted example of similar word ordering to guide the user.'),
   words: z.array(z.string()).describe('An array of words to be arranged into a correct sentence.'),
   correctSentence: z.string().describe('The correctly formed sentence.'),
 });
@@ -118,14 +122,15 @@ const renderPrompt = (input: AdaptiveExerciseInput) => {
   ${vocabularyList}
 
   **Your Task: Create a comprehensive, multi-part exercise set.**
+  CRITICAL: Every single exercise MUST include a detailed 'instruction' field in Russian explaining exactly what grammar rule to apply, and an 'example' field providing 1-2 practical examples (formatted with HTML <strong class="text-primary"> for emphasis).
 
   1.  **Vocabulary Practice:** Check the provided vocabulary list.
-      - If the list is NOT empty, select **up to 3 words** from it. Create an array of exercises where the 'question' is the Russian word and the 'answer' is the German translation. **For nouns, the German answer MUST include the definite article (der/die/das).**
+      - If the list is NOT empty, select **up to 3 words** from it. Create an array of exercises where the 'instruction' explains to translate the word, the 'example' provides context, the 'question' is the Russian word and the 'answer' is the German translation. **For nouns, the German answer MUST include the definite article (der/die/das).**
       - If the list is empty, return an empty array for vocabularyExercises.
   2.  **Reading Practice:** Write a short, engaging German text (3-5 sentences) that is relevant to the user's level, naturally incorporates the '${grammarConcept}', and uses several words from the provided vocabulary list (if any).
-  3.  **Comprehension Check:** Based on the text you just wrote, create an array of 2 comprehension questions in German. For each, provide the question and the correct answer.
-  4.  **Targeted Grammar Exercises:** Create an array of 4 fill-in-the-blank sentences. These exercises MUST directly target the primary weakness. **If the topic is related to cases (Akkusativ, Dativ), at least 2 of these must require the user to fill in the correct article or adjective ending.** Use words from the vocabulary list. Use underscores for the blank space (e.g., "Ich sehe ___ alt___ Mann."). For each, provide the full sentence as the question and the exact word(s) for the blank as the answer.
-  5.  **Sentence Construction:** Create an array of 2 exercises where the user must form a correct sentence from a given set of words. This tests word order and should also reflect the identified weakness.
+  3.  **Comprehension Check:** Based on the text you just wrote, create an array of 2 comprehension questions in German. For each, provide the 'instruction' (e.g. "Ответьте на вопрос по тексту"), 'example' of how to answer, the question and the correct answer.
+  4.  **Targeted Grammar Exercises:** Create an array of 4 fill-in-the-blank sentences. These exercises MUST directly target the primary weakness. **If the topic is related to cases (Akkusativ, Dativ), at least 2 of these must require the user to fill in the correct article or adjective ending.** Use words from the vocabulary list. Use underscores for the blank space (e.g., "Ich sehe ___ alt___ Mann."). For each, provide the 'instruction' describing what exactly to put in the blank (e.g., "Вставьте правильное окончание прилагательного в Dativ"), an 'example' demonstrating the rule, the full sentence as the question and the exact word(s) for the blank as the answer.
+  5.  **Sentence Construction:** Create an array of 2 exercises where the user must form a correct sentence from a given set of words. This tests word order and should also reflect the identified weakness. Provide a specific 'instruction' and 'example' word order.
   6.  **Explanation:** Provide a clear, concise explanation of the grammar rule being tested. The explanation MUST be in Russian and formatted with HTML. Use tags like <h2>, <ul>, <li>, and <strong>. Highlight key terms and concepts using '<strong class="text-primary">term for Dativ</strong>' and '<strong class="text-accent">term for Akkusativ</strong>'.
 
   Ensure the output is parsable JSON and follows the specified schema.`;

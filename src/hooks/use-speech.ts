@@ -55,7 +55,7 @@ export function useSpeech() {
         };
     }, []);
 
-    const speak = useCallback((text: string, lang: string = 'de-DE', gender?: VoiceGender) => {
+    const speak = useCallback((text: string, lang: string = 'de-DE', gender?: VoiceGender, cancelFirst = true) => {
         return new Promise<void>((resolve) => {
             if (typeof window === 'undefined' || !window.speechSynthesis) {
                 resolve();
@@ -70,9 +70,9 @@ export function useSpeech() {
                 return;
             }
 
-            // Note: We don't call cancel() here anymore inside speak(), 
-            // because speakSequence needs to call speak multiple times in a row.
-            // Cancellation should happen at the start of a sequence or manual stop.
+            if (cancelFirst) {
+                window.speechSynthesis.cancel();
+            }
 
             const utterance = new SpeechSynthesisUtterance(cleanedText);
             activeUtteranceRef.current = utterance;
@@ -178,7 +178,7 @@ export function useSpeech() {
             // Check if we should abort this sequence
             if (sequenceIdRef.current !== currentSequenceId) break;
 
-            await speak(item.text, item.lang);
+            await speak(item.text, item.lang, undefined, false);
 
             if (sequenceIdRef.current !== currentSequenceId) break;
 

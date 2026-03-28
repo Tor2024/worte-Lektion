@@ -36,6 +36,8 @@ type Feedback = {
 
 
 type SentenceConstructionExercise = {
+  instruction?: string;
+  example?: string;
   words: string[];
   correctSentence: string;
 }
@@ -686,7 +688,7 @@ export function ExerciseEngine({ topic, customWords, onMastered, onWordUpdate }:
 
                 {learningFeedback ? (
                   <div className="animate-in fade-in zoom-in duration-300">
-                    <WordCard word={learningWord} />
+                    <WordCard word={learningWord} compact />
                     <Alert variant={learningFeedback.type === 'correct' ? 'default' : 'destructive'} className="mt-4">
                       <div className="flex items-center gap-2">
                         {learningFeedback.type === 'correct' ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
@@ -759,9 +761,22 @@ export function ExerciseEngine({ topic, customWords, onMastered, onWordUpdate }:
           const scExercise = currentExercise as SentenceConstructionExercise;
           return (
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="font-headline">{title}</CardTitle>
-                <SpeakButton text={scExercise.correctSentence} variant="ghost" size="sm" />
+              <CardHeader className="pb-4">
+                <div className="flex flex-row items-center justify-between mb-1">
+                  <CardTitle className="font-headline">{title}</CardTitle>
+                  <SpeakButton text={scExercise.correctSentence} variant="ghost" size="sm" />
+                </div>
+                {scExercise.instruction && (
+                  <CardDescription className="text-base text-primary/90 font-medium leading-snug">
+                    {scExercise.instruction}
+                  </CardDescription>
+                )}
+                {scExercise.example && (
+                  <div 
+                    className="mt-3 p-3 bg-primary/5 rounded-md text-sm border-l-2 border-primary/40 text-muted-foreground prose prose-sm prose-slate dark:prose-invert [&_strong]:text-primary"
+                    dangerouslySetInnerHTML={{ __html: scExercise.example }} 
+                  />
+                )}
               </CardHeader>
               <CardContent>
                 <div className="text-lg text-foreground mb-4">
@@ -789,7 +804,7 @@ export function ExerciseEngine({ topic, customWords, onMastered, onWordUpdate }:
         return (
           <Card>
             <CardHeader>
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center mb-1">
                 <CardTitle className="font-headline">{title}</CardTitle>
                 <div className="flex items-center gap-4">
                   <SpeakButton text={stdExercise.correctAnswer} variant="ghost" size="sm" />
@@ -798,65 +813,106 @@ export function ExerciseEngine({ topic, customWords, onMastered, onWordUpdate }:
                   </span>
                 </div>
               </div>
+              {stdExercise.instruction && (
+                <CardDescription className="text-base text-primary/90 font-medium leading-snug mt-1">
+                  {stdExercise.instruction}
+                </CardDescription>
+              )}
+              {stdExercise.example && (
+                <div
+                  className="mt-3 p-3 bg-primary/5 rounded-md text-sm border-l-2 border-primary/40 text-muted-foreground prose prose-sm prose-slate dark:prose-invert [&_strong]:text-primary"
+                  dangerouslySetInnerHTML={{ __html: stdExercise.example }}
+                />
+              )}
             </CardHeader>
             <CardContent>
-              <div className="text-lg text-foreground mb-4">
-                <div
-                  className="font-medium bg-muted/30 p-4 rounded-md mb-2 prose prose-slate dark:prose-invert max-w-none"
-                  dangerouslySetInnerHTML={{ __html: stdExercise.question }}
-                />
-              </div>
-
               {stdExercise.type === 'multiple-choice' ? (
-                <div className="grid grid-cols-1 gap-3 mt-4">
-                  {stdExercise.options?.map((option, idx) => (
-                    <Button
-                      key={idx}
-                      variant={userAnswer === option ? (feedback?.type === 'correct' ? "default" : "destructive") : "outline"}
-                      className={`justify-start h-auto py-4 px-6 text-lg transition-all ${feedback && option === stdExercise.correctAnswer ? "border-green-500 bg-green-50 text-green-700" : ""}`}
-                      onClick={() => {
-                        if (isSubmitting || feedback) return;
-                        setUserAnswer(option);
-                      }}
-                    >
-                      <div className="flex justify-between items-center w-full">
-                        <span>{option}</span>
-                        <SpeakButton text={option} size="sm" variant="ghost" className="h-8 w-8 ml-2" />
-                      </div>
-                    </Button>
-                  ))}
-                  <div className="mt-4">
-                    <Button
-                      onClick={() => handleSubmitExercise()}
-                      disabled={!userAnswer || isSubmitting || !!feedback}
-                      className="w-full h-12 text-lg"
-                    >
-                      {isSubmitting ? <Loader2 className="animate-spin mr-2" /> : 'Проверить'}
-                    </Button>
+                <>
+                  <div className="text-lg text-foreground mb-4">
+                    <div
+                      className="font-medium bg-muted/30 p-4 rounded-md mb-2 prose prose-slate dark:prose-invert max-w-none"
+                      dangerouslySetInnerHTML={{ __html: stdExercise.question }}
+                    />
                   </div>
-                </div>
+                  <div className="grid grid-cols-1 gap-3 mt-4">
+                    {stdExercise.options?.map((option, idx) => (
+                      <Button
+                        key={idx}
+                        variant={userAnswer === option ? (feedback?.type === 'correct' ? "default" : "destructive") : "outline"}
+                        className={`justify-start h-auto py-4 px-6 text-lg transition-all ${feedback && option === stdExercise.correctAnswer ? "border-green-500 bg-green-50 text-green-700" : ""}`}
+                        onClick={() => {
+                          if (isSubmitting || feedback) return;
+                          setUserAnswer(option);
+                        }}
+                      >
+                        <div className="flex justify-between items-center w-full">
+                          <span>{option}</span>
+                          <SpeakButton text={option} size="sm" variant="ghost" className="h-8 w-8 ml-2" />
+                        </div>
+                      </Button>
+                    ))}
+                    <div className="mt-4">
+                      <Button
+                        onClick={() => handleSubmitExercise()}
+                        disabled={!userAnswer || isSubmitting || !!feedback}
+                        className="w-full h-12 text-lg"
+                      >
+                        {isSubmitting ? <Loader2 className="animate-spin mr-2" /> : 'Проверить'}
+                      </Button>
+                    </div>
+                  </div>
+                </>
               ) : (
                 <form onSubmit={handleSubmitExercise} className="space-y-4">
-                  {stdExercise.type === 'free-text-sentence' ? (
-                    <div className="space-y-2">
-                      <textarea
-                        className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-lg ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                        placeholder="Напишите ваше предложение..."
-                        value={userAnswer}
-                        onChange={(e) => setUserAnswer(e.target.value)}
-                        disabled={isSubmitting || !!feedback}
-                      />
-                      <p className="text-xs text-muted-foreground italic">AI проверит грамматику и смысл вашего предложения.</p>
+                  {(stdExercise.type === 'fill-in-the-blank' || stdExercise.question.includes('__')) && /_{2,}/.test(stdExercise.question) ? (
+                    <div className="text-xl font-medium bg-muted/30 p-6 rounded-md mb-6 leading-[3rem] text-foreground">
+                      {stdExercise.question.split(/(_{2,})/).map((part, i) => {
+                        if (/_{2,}/.test(part)) {
+                          return (
+                            <Input
+                              key={i}
+                              autoFocus
+                              className={`inline-flex min-w-[3rem] mx-2 text-center text-xl h-10 border-b-2 bg-background transition-colors focus-visible:ring-1 focus-visible:ring-primary shadow-sm ${feedback?.type === 'incorrect' ? 'border-destructive text-destructive' : 'border-primary'}`}
+                              style={{ width: `${Math.max(4, userAnswer.length + 2)}ch` }}
+                              value={userAnswer}
+                              onChange={(e) => setUserAnswer(e.target.value)}
+                              disabled={isSubmitting || !!feedback}
+                            />
+                          );
+                        }
+                        return <span key={i} dangerouslySetInnerHTML={{ __html: part }} />;
+                      })}
                     </div>
                   ) : (
-                    <Input
-                      autoFocus
-                      placeholder="Введите ваш ответ на немецком..."
-                      value={userAnswer}
-                      onChange={(e) => setUserAnswer(e.target.value)}
-                      disabled={isSubmitting || !!feedback}
-                      className="text-xl h-14 text-center"
-                    />
+                    <>
+                      <div className="text-lg text-foreground mb-4">
+                        <div
+                          className="font-medium bg-muted/30 p-4 rounded-md mb-2 prose prose-slate dark:prose-invert max-w-none"
+                          dangerouslySetInnerHTML={{ __html: stdExercise.question }}
+                        />
+                      </div>
+                      {stdExercise.type === 'free-text-sentence' ? (
+                        <div className="space-y-2">
+                          <textarea
+                            className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-lg ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            placeholder="Напишите ваше предложение..."
+                            value={userAnswer}
+                            onChange={(e) => setUserAnswer(e.target.value)}
+                            disabled={isSubmitting || !!feedback}
+                          />
+                          <p className="text-xs text-muted-foreground italic">AI проверит грамматику и смысл вашего предложения.</p>
+                        </div>
+                      ) : (
+                        <Input
+                          autoFocus
+                          placeholder="Введите ваш ответ на немецком..."
+                          value={userAnswer}
+                          onChange={(e) => setUserAnswer(e.target.value)}
+                          disabled={isSubmitting || !!feedback}
+                          className="text-xl h-14 text-center"
+                        />
+                      )}
+                    </>
                   )}
 
                   <Button type="submit" className="w-full h-14 text-xl font-headline" disabled={!userAnswer || isSubmitting || !!feedback}>

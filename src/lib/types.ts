@@ -2,6 +2,8 @@
 export interface Exercise {
   id: string;
   type: 'fill-in-the-blank' | 'multiple-choice' | 'translation' | 'free-text-sentence' | 'word-order';
+  instruction?: string;
+  example?: string;
   question: string;
   options?: string[];
   correctAnswer: string;

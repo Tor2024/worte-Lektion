@@ -108,8 +108,12 @@ export function useStudyQueue() {
         const sessionNumber = dailyData.sessionCount + 1; // Next session number
         const now = Date.now();
 
-        // Dynamic limit: 100 words when skipping production phase, 70 otherwise
-        const DAILY_LIMIT = productionMode === 'skip' ? 100 : 70;
+        // 1. DYNAMIC LIMITS based on database size and production mode
+        const isLargeDB = queueToProcess.length > 2000;
+        const baseLimit = productionMode === 'skip' ? 100 : 70;
+        const DAILY_LIMIT = isLargeDB ? baseLimit + 20 : baseLimit; // Boost for large DBs
+        
+        const NEW_WORDS_QUOTA = 20; // Guarantee 20 new words per session
 
         const LEVEL_PRIORITY: Record<string, number> = {
             'Beruf': 100, 'B2': 90, 'B1': 80, 'A2': 70, 'A1': 60, 'A0': 50
@@ -147,56 +151,76 @@ export function useStudyQueue() {
         const totalPending = leechWords.length + overdueWords.length + dueTodayWords.length + newWords.length;
 
         if (totalPending === 0) {
-            let reviewPool = queueToProcess.filter((item: StudyQueueItem) =>
-                dailyData.learnedTodayIds.includes(item.id)
-            );
+            // FALLBACK: When everything is done, pick random words from "Mastered" (interval > 30)
+            // instead of just repeating today's words over and over.
+            let reviewPool = queueToProcess
+                .filter((item: StudyQueueItem) => item.interval >= 30)
+                .sort(() => Math.random() - 0.5)
+                .slice(0, DAILY_LIMIT);
+                
             if (reviewPool.length > 0) {
                 return { items: reviewPool, mode: 'review-only', sessionNumber };
             }
         }
 
-        // 5. Build the session pool
-        // Order: Leeches → Due Today → Overdue → New Words (Only if Overdue is 0)
+        // 5. Build the session pool (HYBRID STRATEGY)
         let mainPool: StudyQueueItem[] = [];
         let remainingSlots = DAILY_LIMIT;
 
-        const isBacklogCritical = overdueWords.length > 50;
+        const isBacklogCritical = overdueWords.length > 120;
 
-        // 5a. Leeches (up to 15 slots max so we don't overwhelm)
-        const leechesToAdd = leechWords.slice(0, Math.min(leechWords.length, remainingSlots, 15));
+        // 5a. Leeches (Priority 1: Up to 10 slots max to avoid getting stuck)
+        const leechesToAdd = leechWords.slice(0, Math.min(leechWords.length, remainingSlots, 10));
         mainPool = [...mainPool, ...leechesToAdd];
         remainingSlots -= leechesToAdd.length;
 
-        // 5b. Due today (HIGHEST PRIORITY after leeches to prevent snowball effect)
-        // We must do today's work today, otherwise they become tomorrow's overdue.
+        // 5b. New Words Quota (Priority 2: THE GUARANTEE)
+        // This ensures progress even with a massive backlog
+        if (remainingSlots > 0 && newWords.length > 0) {
+            const quotaToAddCount = Math.min(newWords.length, NEW_WORDS_QUOTA, remainingSlots);
+            const quotaToAdd = newWords.slice(0, quotaToAddCount);
+            mainPool = [...mainPool, ...quotaToAdd];
+            remainingSlots -= quotaToAdd.length;
+        }
+
+        // 5c. Due Today (Priority 3: Keep regular SRS moving)
         if (remainingSlots > 0 && dueTodayWords.length > 0) {
-            const dueTodayToAdd = dueTodayWords.slice(0, remainingSlots);
+            const dueTodayFiltered = dueTodayWords.filter(w => !mainPool.some(m => m.id === w.id));
+            const dueTodayToAdd = dueTodayFiltered.slice(0, remainingSlots);
             mainPool = [...mainPool, ...dueTodayToAdd];
             remainingSlots -= dueTodayToAdd.length;
         }
 
-        // 5c. Overdue words (Takes up ALL remaining slots to clear the backlog)
+        // 5d. Overdue Words (Priority 4: Clearing the backlog with sampling)
         if (remainingSlots > 0 && overdueWords.length > 0) {
-            // Take oldest overdue but shuffle a larger pool to avoid getting stuck on the same hard words
             const overdueFiltered = overdueWords.filter(w => !mainPool.some(m => m.id === w.id));
-            const candidatesToShuffle = overdueFiltered.slice(0, remainingSlots * 2);
-            candidatesToShuffle.sort(() => Math.random() - 0.5);
+            
+            // SAMPLING: 70% oldest, 30% random from the rest of the backlog
+            const oldestPoolSize = Math.ceil(remainingSlots * 0.7);
+            const oldestOnes = overdueFiltered.slice(0, oldestPoolSize);
+            
+            let randomOnes: StudyQueueItem[] = [];
+            if (overdueFiltered.length > oldestPoolSize) {
+                const poolForRandom = overdueFiltered.slice(oldestPoolSize);
+                randomOnes = poolForRandom
+                    .sort(() => Math.random() - 0.5)
+                    .slice(0, remainingSlots - oldestOnes.length);
+            }
 
-            const overdueToAdd = candidatesToShuffle.slice(0, remainingSlots);
+            const overdueToAdd = [...oldestOnes, ...randomOnes];
             mainPool = [...mainPool, ...overdueToAdd];
             remainingSlots -= overdueToAdd.length;
         }
 
-        // 5d. New Words (Flexible distribution: fills remaining slots)
-        // If there are few overdue words, remaining slots will be filled with new words.
+        // 5e. Final Filler: More New Words if slots remain
         if (remainingSlots > 0 && newWords.length > 0) {
-            // Cap new words to a maximum per session (e.g. 30) so we don't overwhelm tomorrow's review queue
-            const newToAdd = newWords.slice(0, Math.min(newWords.length, 30, remainingSlots));
-            mainPool = [...mainPool, ...newToAdd];
-            remainingSlots -= newToAdd.length;
+            const extraNewWords = newWords.filter(w => !mainPool.some(m => m.id === w.id));
+            const extraToAdd = extraNewWords.slice(0, Math.min(extraNewWords.length, remainingSlots));
+            mainPool = [...mainPool, ...extraToAdd];
+            remainingSlots -= extraToAdd.length;
         }
 
-        // Fast Recovery Mode: If user has a critical backlog (> 50 overdue)
+        // Fast Recovery Mode: If user has a critical backlog (> 120 overdue)
         // Force the session into 'review-only' mode. This skips the heavy "Narrative/Production" 
         // phases and lets the user quickly drill (Recognition) through 100 words in 10 minutes.
         if (isBacklogCritical && mainPool.length > 0) {
@@ -210,9 +234,11 @@ export function useStudyQueue() {
 
         // Fallback Review-only 
         if (mainPool.length === 0) {
-            let reviewPool = queueToProcess.filter((item: StudyQueueItem) =>
-                dailyData.learnedTodayIds.includes(item.id)
-            );
+            let reviewPool = queueToProcess
+                .filter((item: StudyQueueItem) => item.interval >= 30)
+                .sort(() => Math.random() - 0.5)
+                .slice(0, DAILY_LIMIT);
+
             if (reviewPool.length > 0) {
                 return { items: reviewPool, mode: 'review-only', sessionNumber };
             }
@@ -438,8 +464,12 @@ export function useStudyQueue() {
         const learningCount = localQueue.filter((i: StudyQueueItem) => i.status === 'learning' || i.status === 'leech').length;
         const reviewCount = localQueue.filter((i: StudyQueueItem) => i.status === 'review').length;
 
-        // Global limit: 70 words per session (sustainable goal for 3000 words deadline)
-        const dailyLimit = 100; // Show max potential
+        // Global limit (Synced with getDailySession logic)
+        const isLargeDB = localQueue.length > 2000;
+        const appSettings = storage.getSettings();
+        const baseLimit = appSettings.productionMode === 'skip' ? 100 : 70;
+        const dailyLimit = isLargeDB ? baseLimit + 20 : baseLimit;
+        
         const availableTotal = Math.min(localQueue.length, dailyLimit);
 
         return {
