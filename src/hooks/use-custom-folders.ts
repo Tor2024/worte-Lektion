@@ -168,6 +168,10 @@ export function useCustomFolders() {
                 const { rootMap } = await res.json();
 
                 if (rootMap) {
+                    if ((rootMap as any).error) {
+                        console.error(`[Roots] AI ERROR for batch: ${(rootMap as any).error}`);
+                    }
+
                     console.log("[Roots] Batch words sent:", batchGermanWords);
                     console.log("[Roots] AI Response keys:", Object.keys(rootMap));
 

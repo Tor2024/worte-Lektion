@@ -14,30 +14,25 @@ const RootDetectionSchema = z.object({
  * This is used for bulk reindexing of existing vocabulary.
  * Modeled after the reliable enrichWord flow.
  */
-export const detectRoots = async (words: string[]): Promise<Record<string, string>> => {
+export const detectRoots = async (words: string[]): Promise<Record<string, any>> => {
     if (words.length === 0) return {};
 
     try {
         return await executeWithRetry(async (aiInstance) => {
-            const { output } = await aiInstance.generate({
-                prompt: `
-                    Act as a German linguistics expert.
-                    Task: For the following German words, extract their common core morpheme (the root).
-                    Rules:
-                    1. No prefixes (aus-, ein-, be-, ver-, etc.)
-                    2. No endings (-en, -t, -er, -ung, etc.)
-                    3. Pure stem only (e.g., "ausrichten" -> "richt", "Ergebnis" -> "geb").
-                    4. Keep everything lowercase in the 'root' field.
-                    5. Return a list of objects with 'word' (EXACTLY as provided, case-sensitive) and 'root'.
-
-                    Words to process:
-                    ${words.join(', ')}
-                `,
+            const { output, error } = await aiInstance.generate({
+                prompt: `Analyze these German words and find their common core root (morpheme). 
+                Words: ${words.join(', ')}.
+                Requirements: lowercase root, no prefixes, no suffixes. 
+                Example: "ausrichten" -> "richt".`,
                 output: { schema: RootDetectionSchema }
             });
 
+            if (error) {
+                return { error: error.message } as any;
+            }
+
             if (!output || !output.results) {
-                return {};
+                return { error: "AI returned no results" } as any;
             }
 
             // Convert array back to record map for easy consumption
@@ -49,7 +44,6 @@ export const detectRoots = async (words: string[]): Promise<Record<string, strin
         });
     } catch (err: any) {
         console.error("[AI Root Detection Error]:", err);
-        // Return empty so the loop can skip this batch instead of crashing
-        return {};
+        return { error: `Server error: ${err.message || "Unknown error"}` } as any;
     }
 };
