@@ -143,12 +143,13 @@ export function useCustomFolders() {
 
         const total = wordsToProcess.length;
         let processed = 0;
-        const batchSize = 20; // Slightly smaller batches for stability
+        const batchSize = 10; // Extra safe batch size for Vercel timeouts
 
         // Call progress immediately to show the total in the UI
         onProgress?.(0, total);
 
-        for (let i = 0; i < wordsToProcess.length; i += batchSize) {
+        let i = 0;
+        while (i < wordsToProcess.length) {
             const batch = wordsToProcess.slice(i, i + batchSize);
             const batchGermanWords = batch.map(b => b.word.word.german);
 
@@ -177,20 +178,19 @@ export function useCustomFolders() {
                         }
                     });
 
-                    // CRITICAL: Persist after EACH successful batch to disk (resumability)
                     storage.setCustomFolders(foldersToSave);
                     setLocalFolders(foldersToSave);
+
+                    processed += batch.length;
+                    i += batch.length; // Move to next batch ONLY if success
+                    onProgress?.(processed, total);
                 }
 
-                processed += batch.length;
-                onProgress?.(Math.min(processed, total), total);
-
-                // THROTTLING: Wait between batches to respect 20 RPM limit
-                // With batchSize 20, 3s wait is ideal to keep load sustainable
-                await new Promise(r => setTimeout(r, 2500));
+                // Throttle to respect API limits
+                await new Promise(r => setTimeout(r, 2000));
             } catch (e) {
-                console.error("Batch reindex failed at index", i, e);
-                // On failure, wait longer then continue to next batch
+                console.error("Batch reindex failed, retrying same batch...", e);
+                // On failure, wait longer then RETRY THE SAME BATCH (i doesn't change)
                 await new Promise(r => setTimeout(r, 5000));
             }
         }
