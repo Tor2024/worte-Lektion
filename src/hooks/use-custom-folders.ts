@@ -186,12 +186,12 @@ export function useCustomFolders() {
                     onProgress?.(processed, total);
                 }
 
-                // Throttle to respect API limits
-                await new Promise(r => setTimeout(r, 2000));
-            } catch (e) {
-                console.error("Batch reindex failed, retrying same batch...", e);
-                // On failure, wait longer then RETRY THE SAME BATCH (i doesn't change)
+                // Throttle: Increased to 5s to stay well within Gemini Free Tier limits (15 RPM)
                 await new Promise(r => setTimeout(r, 5000));
+            } catch (e) {
+                console.error("Batch reindex failed, retrying same batch in 10s...", e);
+                // On failure, wait much longer then RETRY THE SAME BATCH
+                await new Promise(r => setTimeout(r, 10000));
             }
         }
 
