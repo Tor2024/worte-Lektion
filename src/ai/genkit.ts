@@ -82,12 +82,14 @@ export const executeWithRetry = async <T>(
 
   // Start at a random key to distribute load
   const startOffset = Math.floor(Math.random() * aiInstances.length);
+  console.log(`[AI] Starting operation using pool of ${aiInstances.length} keys (start index: ${startOffset})`);
 
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
     const index = (startOffset + attempt) % aiInstances.length;
     const instance = aiInstances[index];
 
     try {
+      if (attempt > 0) console.log(`[AI] Retry attempt ${attempt} using key #${index}...`);
       return await operation(instance);
     } catch (error: any) {
       lastError = error;
@@ -96,18 +98,22 @@ export const executeWithRetry = async <T>(
 
       // If it's a quota/rate limit error, immediately rotate to next key
       if (status === 429 || msg.includes('429') || msg.toLowerCase().includes('quota')) {
-        console.warn(`[AI] Key #${index} hit quota limit. Rotating...`);
+        console.warn(`[AI] Key #${index} hit quota limit (429). Rotating to next available key...`);
         continue;
       }
 
+      console.error(`[AI] Key #${index} failed with unexpected error:`, msg);
+
       // For other errors, wait slightly then rotate
       if (attempt < MAX_ATTEMPTS - 1) {
-        await new Promise(r => setTimeout(r, 300));
+        const waitTime = 200 * (attempt + 1);
+        await new Promise(r => setTimeout(r, waitTime));
         continue;
       }
     }
   }
 
+  console.error(`[AI] All ${aiInstances.length} keys failed after ${MAX_ATTEMPTS} attempts.`);
   throw lastError || new Error("All available AI keys failed.");
 };
 
