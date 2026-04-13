@@ -108,12 +108,32 @@ export function useStudyQueue() {
         const sessionNumber = dailyData.sessionCount + 1; // Next session number
         const now = Date.now();
 
-        // 1. DYNAMIC LIMITS based on database size and production mode
+        // 1. Get ALL overdue words (past due date)
+        const overdueCount = queueToProcess
+            .filter((item: StudyQueueItem) =>
+                item.status !== 'new' && item.nextReviewNum < now
+            ).length;
+
+        // 2. DYNAMIC LIMITS based on database size, production mode and BACKLOG
+        const isBacklogCritical = overdueCount > 120;
+        const isBacklogWarning = overdueCount > 50;
+
         const isLargeDB = queueToProcess.length > 2000;
-        const baseLimit = productionMode === 'skip' ? 100 : 70;
-        const DAILY_LIMIT = isLargeDB ? baseLimit + 20 : baseLimit; // Boost for large DBs
+        let baseLimit = productionMode === 'skip' ? 100 : 70;
         
-        const NEW_WORDS_QUOTA = 20; // Guarantee 20 new words per session
+        // If backlog is critical, increase limit for Fast Recovery Mode
+        if (isBacklogCritical) baseLimit = 120; 
+
+        const DAILY_LIMIT = isLargeDB ? baseLimit + 20 : baseLimit; 
+
+        // 3. ADAPTIVE NEW WORD QUOTA
+        // If everything is fine, add 20. If feeling pressure, add 5. If drowning, add 0.
+        let NEW_WORDS_QUOTA = 20;
+        if (isBacklogCritical) {
+            NEW_WORDS_QUOTA = 0;
+        } else if (isBacklogWarning) {
+            NEW_WORDS_QUOTA = 5;
+        }
 
         const LEVEL_PRIORITY: Record<string, number> = {
             'Beruf': 100, 'B2': 90, 'B1': 80, 'A2': 70, 'A1': 60, 'A0': 50
@@ -166,8 +186,6 @@ export function useStudyQueue() {
         // 5. Build the session pool (HYBRID STRATEGY)
         let mainPool: StudyQueueItem[] = [];
         let remainingSlots = DAILY_LIMIT;
-
-        const isBacklogCritical = overdueWords.length > 120;
 
         // 5a. Leeches (Priority 1: Up to 10 slots max to avoid getting stuck)
         const leechesToAdd = leechWords.slice(0, Math.min(leechWords.length, remainingSlots, 10));
