@@ -36,7 +36,7 @@ const EnrichedWordSchema = z.object({
     }).optional().describe('Full conjugation table for Present tense.'),
     perfektForm: z.string().optional().describe('For verbs: 3rd person singular Perfekt.'),
     preposition: z.string().optional().describe('For verbs: associated preposition if any (e.g. "auf" for "warten auf").'),
-    case: z.enum(['Akkusativ', 'Dativ', 'Genitiv', 'Nominativ']).optional().describe('For verbs/prepositions: required case (e.g. "Akkusativ" for "warten auf").'),
+    case: z.enum(['Akkusativ', 'Dativ', 'Genitiv', 'Nominativ', 'no-case']).optional().describe('For verbs/prepositions: required case (e.g. "Akkusativ" for "warten auf").'),
     verbTenses: z.object({
         praeteritum: z.string(),
         futur1: z.string(),
