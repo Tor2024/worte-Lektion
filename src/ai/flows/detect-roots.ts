@@ -42,7 +42,7 @@ export const detectRoots = async (words: string[]): Promise<Record<string, strin
 
             // Convert array back to record map for easy consumption
             const map: Record<string, string> = {};
-            output.results.forEach(item => {
+            (output.results as any[]).forEach((item: {word: string, root: string}) => {
                 map[item.word] = item.root;
             });
             return map;
