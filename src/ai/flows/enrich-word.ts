@@ -137,5 +137,17 @@ const wordEnrichmentFlow = ai.defineFlow(
 );
 
 export async function enrichWord(input: WordEnrichmentInput): Promise<EnrichedWordOutput> {
-    return wordEnrichmentFlow(input);
+    try {
+        return await wordEnrichmentFlow(input);
+    } catch (err: any) {
+        console.error("[AI Flow Error]:", err);
+        // Fallback object to prevent 500 crash in rendering
+        return {
+            german: input.word,
+            russian: "Ошибка обогащения AI",
+            allTranslations: `Произошла ошибка: ${err.message || "Неизвестная ошибка Zod/Genkit"}. Проверьте переменные окружения и ответ ИИ.`,
+            type: 'other',
+            meaning: "Ошибка на стороне сервера"
+        } as any;
+    }
 }
