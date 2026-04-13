@@ -223,19 +223,24 @@ export function useCustomFolders() {
 
                 // Throttle to respect API limits
                 await new Promise(r => setTimeout(r, 4500));
-            } catch (e) {
+            } catch (e: any) {
                 retryCount++;
+                const errorMessage = (e as Error).message || "";
+                const isRateLimit = errorMessage.includes("429") || errorMessage.toLowerCase().includes("quota");
+
                 console.error(`Batch failed at index ${i} (attempt ${retryCount}/${MAX_RETRIES_PER_BATCH})`, e);
                 
                 if (retryCount >= MAX_RETRIES_PER_BATCH) {
                     console.warn(`Skipping problematic batch at index ${i} after ${MAX_RETRIES_PER_BATCH} failures.`);
-                    i += batchGermanWords.length; // Skip this batch
+                    i += batchGermanWords.length;
                     processed += batchGermanWords.length;
                     retryCount = 0;
                     onProgress?.(processed, total);
                 } else {
-                    // On minor failure, wait longer then RETRY THE SAME BATCH
-                    await new Promise(r => setTimeout(r, 12000));
+                    // On rate limit, wait MUCH longer (20s) to let quota reset
+                    const waitTime = isRateLimit ? 25000 : 12000;
+                    console.log(`[Roots] Waiting ${waitTime/1000}s before retry...`);
+                    await new Promise(r => setTimeout(r, waitTime));
                 }
             }
         }
