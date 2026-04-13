@@ -10,11 +10,11 @@ const WordEnrichmentInputSchema = z.object({
 
 export type WordEnrichmentInput = z.infer<typeof WordEnrichmentInputSchema>;
 
-const WordTypeSchema = z.enum(['noun', 'verb', 'adjective', 'conjunction', 'preposition', 'other']);
+const WordTypeSchema = z.enum(['noun', 'verb', 'adjective', 'conjunction', 'preposition', 'adverb', 'other']);
 
 const GovernanceSchema = z.object({
     preposition: z.string().describe('The preposition (e.g. "auf", "an") or "без предлога" if none.'),
-    case: z.enum(['Akkusativ', 'Dativ', 'Genitiv', 'Nominativ', 'no-case']).describe('The required case.'),
+    case: z.string().describe('The required case (Akkusativ, Dativ, Genitiv, Nominativ, or "no-case").'),
     meaning: z.string().describe('Russian explanation of the meaning for this specific governance.'),
     example: z.string().describe('German example sentence using this specific governance.'),
 });
@@ -36,7 +36,7 @@ const EnrichedWordSchema = z.object({
     }).optional().describe('Full conjugation table for Present tense.'),
     perfektForm: z.string().optional().describe('For verbs: 3rd person singular Perfekt.'),
     preposition: z.string().optional().describe('For verbs: associated preposition if any (e.g. "auf" for "warten auf").'),
-    case: z.enum(['Akkusativ', 'Dativ', 'Genitiv', 'Nominativ', 'no-case']).optional().describe('For verbs/prepositions: required case (e.g. "Akkusativ" for "warten auf").'),
+    case: z.string().optional().describe('For verbs/prepositions: required case (e.g. "Akkusativ", "Dativ", or "Akkusativ/Dativ").'),
     verbTenses: z.object({
         praeteritum: z.string(),
         futur1: z.string(),
@@ -125,7 +125,7 @@ const wordEnrichmentFlow = ai.defineFlow(
         inputSchema: WordEnrichmentInputSchema,
         outputSchema: EnrichedWordSchema,
     },
-    async (input) => {
+    async (input: WordEnrichmentInput) => {
         return executeWithRetry(async (aiInstance) => {
             const { output } = await aiInstance.generate({
                 prompt: renderPrompt(input),

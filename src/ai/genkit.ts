@@ -40,9 +40,19 @@ const aiInstances = keys.map((apiKey, idx) => {
   }
 }).filter((instance): instance is NonNullable<typeof instance> => instance !== null);
 
-// Export primary instances
-export const ai = aiInstances[0];
-export const aiStable = ai; // Everything uses the same large pool now for reliability
+// Export primary instances - with safety proxy to prevent boot-time crashes when keys are missing
+const primaryAi = aiInstances[0];
+
+export const ai = new Proxy({} as any, {
+  get(target, prop) {
+    if (!primaryAi) {
+      throw new Error(`[AI] Attempted to use '${String(prop)}' but Genkit was not initialized. Check your GEMINI_API_KEY environment variables.`);
+    }
+    return (primaryAi as any)[prop];
+  }
+});
+
+export const aiStable = ai;
 
 /**
  * Executes an AI operation with aggressive round-robin retries across all available keys.
