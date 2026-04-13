@@ -151,6 +151,9 @@ export function useCustomFolders() {
         onProgress?.(0, total);
 
         let i = 0;
+        let retryCount = 0;
+        const MAX_RETRIES_PER_BATCH = 3;
+
         while (i < wordsToProcessList.length) {
             const batchGermanWords = wordsToProcessList.slice(i, i + batchSize);
 
@@ -184,15 +187,27 @@ export function useCustomFolders() {
                     setLocalFolders(foldersToSave);
 
                     processed += batchGermanWords.length;
-                    i += batchGermanWords.length;
+                    i += batchGermanWords.length; // Success! Move on
+                    retryCount = 0; // Reset retry counter
                     onProgress?.(processed, total);
                 }
 
                 // Throttle to respect API limits
                 await new Promise(r => setTimeout(r, 4500));
             } catch (e) {
-                console.error("Batch reindex failed, retrying same batch in 10s...", e);
-                await new Promise(r => setTimeout(r, 10000));
+                retryCount++;
+                console.error(`Batch failed at index ${i} (attempt ${retryCount}/${MAX_RETRIES_PER_BATCH})`, e);
+                
+                if (retryCount >= MAX_RETRIES_PER_BATCH) {
+                    console.warn(`Skipping problematic batch at index ${i} after ${MAX_RETRIES_PER_BATCH} failures.`);
+                    i += batchGermanWords.length; // Skip this batch
+                    processed += batchGermanWords.length;
+                    retryCount = 0;
+                    onProgress?.(processed, total);
+                } else {
+                    // On minor failure, wait longer then RETRY THE SAME BATCH
+                    await new Promise(r => setTimeout(r, 12000));
+                }
             }
         }
 
