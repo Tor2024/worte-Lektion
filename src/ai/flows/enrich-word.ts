@@ -22,6 +22,7 @@ const GovernanceSchema = z.object({
 const EnrichedWordSchema = z.object({
     german: z.string().describe('The canonical German form. For nouns, the noun itself. For verbs, the infinitive OR the fixed phrase if provided (e.g. "es geht um...").'),
     russian: z.string().describe('The single most common B2 Beruf translation.'),
+    root: z.string().optional().describe('The core German root morpheme (e.g., "richt" for "ausrichten", "geb" for "Ergebnis"). Always lowercased, no endings or prefixes.'),
     allTranslations: z.string().optional().describe('All valid Russian translations for context, separated by semicolons.'),
     type: WordTypeSchema,
     // Verb specifics

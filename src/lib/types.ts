@@ -15,6 +15,7 @@ export type WordType = 'noun' | 'verb' | 'adjective' | 'conjunction' | 'preposit
 interface BaseVocabularyWord {
   german: string;
   russian: string;
+  root?: string; // The core morpheme (e.g. "richt" for "ausrichten")
   allTranslations?: string;
   level?: 'A0' | 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'Beruf';
 }

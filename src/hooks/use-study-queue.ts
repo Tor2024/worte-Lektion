@@ -265,6 +265,26 @@ export function useStudyQueue() {
         // Final session
         let finalItems = [...mainPool];
 
+        // 6. MORPHEME CLUSTERING (Semantic Association)
+        // If we have words with a specified 'root', try to pull in their "relatives" 
+        // to build a stronger neural branch.
+        const rootsInPool = new Set(finalItems.map(i => i.word.root).filter(Boolean));
+        
+        if (rootsInPool.size > 0 && remainingSlots > 0) {
+            const relatives: StudyQueueItem[] = [];
+            queueToProcess.forEach(item => {
+                if (remainingSlots <= 0) return;
+                if (item.word.root && rootsInPool.has(item.word.root)) {
+                    // If this "relative" is not already in the pool
+                    if (!finalItems.some(f => f.id === item.id)) {
+                        relatives.push(item);
+                        remainingSlots--;
+                    }
+                }
+            });
+            finalItems = [...finalItems, ...relatives];
+        }
+
         // CRITICAL FIX: Deduplicate items by ID to strictly prevent repeats in the same session
         const uniqueMap = new Map();
         finalItems.forEach(item => {

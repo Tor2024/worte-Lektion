@@ -126,6 +126,75 @@ export function useCustomFolders() {
         storage.setCustomFolders(nextFolders);
     }, []);
 
+    const reindexAllRoots = useCallback(async (onProgress?: (current: number, total: number) => void) => {
+        const currentFolders = storage.getCustomFolders();
+        const wordsToProcess: { folderId: string, word: UserVocabularyWord }[] = [];
+
+        // ONLY pick words that actually need indexing
+        currentFolders.forEach(f => {
+            f.words.forEach(w => {
+                if (!w.word.root) {
+                    wordsToProcess.push({ folderId: f.id, word: w });
+                }
+            });
+        });
+
+        if (wordsToProcess.length === 0) return 0;
+
+        const total = wordsToProcess.length;
+        let processed = 0;
+        const batchSize = 20; // Slightly smaller batches for stability
+
+        for (let i = 0; i < wordsToProcess.length; i += batchSize) {
+            const batch = wordsToProcess.slice(i, i + batchSize);
+            const batchGermanWords = batch.map(b => b.word.word.german);
+
+            try {
+                const res = await fetch('/api/batch-roots', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ words: batchGermanWords })
+                });
+
+                if (!res.ok) throw new Error(`Batch failed with status ${res.status}`);
+                const { rootMap } = await res.json();
+
+                if (rootMap) {
+                    const foldersToSave = storage.getCustomFolders();
+                    batch.forEach(item => {
+                        const detectedRoot = rootMap[item.word.word.german];
+                        if (detectedRoot) {
+                            foldersToSave.forEach(f => {
+                                f.words.forEach(w => {
+                                    if (w.word.german === item.word.word.german) {
+                                        w.word.root = detectedRoot;
+                                    }
+                                });
+                            });
+                        }
+                    });
+
+                    // CRITICAL: Persist after EACH successful batch to disk (resumability)
+                    storage.setCustomFolders(foldersToSave);
+                    setLocalFolders(foldersToSave);
+                }
+
+                processed += batch.length;
+                onProgress?.(Math.min(processed, total), total);
+
+                // THROTTLING: Wait between batches to respect 20 RPM limit
+                // With batchSize 20, 3s wait is ideal to keep load sustainable
+                await new Promise(r => setTimeout(r, 2500));
+            } catch (e) {
+                console.error("Batch reindex failed at index", i, e);
+                // On failure, wait longer then continue to next batch
+                await new Promise(r => setTimeout(r, 5000));
+            }
+        }
+
+        return total;
+    }, []);
+
     return useMemo(() => ({
         folders: localFolders,
         isLoading: !isInitialLoadDone,
@@ -135,6 +204,7 @@ export function useCustomFolders() {
         addWordToFolder,
         updateWordInFolder,
         removeWordFromFolder,
-        searchWords
-    }), [localFolders, isInitialLoadDone, createFolder, deleteFolder, getFolder, addWordToFolder, updateWordInFolder, removeWordFromFolder, searchWords]);
+        searchWords,
+        reindexAllRoots
+    }), [localFolders, isInitialLoadDone, createFolder, deleteFolder, getFolder, addWordToFolder, updateWordInFolder, removeWordFromFolder, searchWords, reindexAllRoots]);
 }

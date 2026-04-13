@@ -5,7 +5,7 @@ import { useCustomFolders } from '@/hooks/use-custom-folders';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { FolderPlus, Trash2, Folder, ChevronRight, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import { FolderPlus, Trash2, Folder, ChevronRight, Loader2, CheckCircle, AlertCircle, BrainCircuit } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { UserVocabularyWord } from '@/lib/types';
@@ -14,10 +14,33 @@ import { useStudyQueue } from '@/hooks/use-study-queue';
 import { Progress } from '@/components/ui/progress';
 
 export function FolderManager() {
-    const { folders, isLoading: foldersLoading, createFolder, deleteFolder } = useCustomFolders();
+    const { folders, isLoading: foldersLoading, createFolder, deleteFolder, reindexAllRoots } = useCustomFolders();
     const { queue, isLoading: srsLoading } = useStudyQueue();
     const [newFolderName, setNewFolderName] = useState('');
     const [isCreating, setIsCreating] = useState(false);
+    const [isReindexing, setIsReindexing] = useState(false);
+    const [reindexProgress, setReindexProgress] = useState({ current: 0, total: 0 });
+
+    const wordsWithoutRootsCount = folders.reduce((acc, f) => 
+        acc + f.words.filter(w => !w.word.root).length, 0
+    );
+
+    const handleReindex = async () => {
+        if (!confirm(`ИИ обработает ${wordsWithoutRootsCount} слов, чтобы найти их общие корни. Это позволит группировать похожие слова в тренировках. Начать?`)) return;
+        
+        setIsReindexing(true);
+        try {
+            await reindexAllRoots((current, total) => {
+                setReindexProgress({ current, total });
+            });
+            alert('База успешно оптимизирована! Теперь похожие слова будут встречаться чаще.');
+        } catch (e) {
+            alert('Произошла ошибка при индексации.');
+        } finally {
+            setIsReindexing(false);
+            setReindexProgress({ current: 0, total: 0 });
+        }
+    };
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -80,6 +103,45 @@ export function FolderManager() {
                     </form>
                 </CardContent>
             </Card>
+
+            {wordsWithoutRootsCount > 0 && (
+                <Card className="border-primary/40 bg-primary/5 shadow-inner">
+                    <CardHeader className="pb-2">
+                        <div className="flex justify-between items-center">
+                            <div>
+                                <CardTitle className="text-lg flex items-center gap-2">
+                                    <BrainCircuit className="h-5 w-5 text-primary" />
+                                    Умная оптимизация базы
+                                </CardTitle>
+                                <CardDescription>
+                                    Найдено {wordsWithoutRootsCount} слов(а) без определенных корней. 
+                                    Сгруппируйте их для повышения эффективности обучения.
+                                </CardDescription>
+                            </div>
+                            <Button 
+                                onClick={handleReindex} 
+                                disabled={isReindexing}
+                                size="sm"
+                                className="shadow-lg"
+                            >
+                                {isReindexing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CheckCircle className="h-4 w-4 mr-2" />}
+                                {isReindexing ? 'Индексация...' : 'Оптимизировать'}
+                            </Button>
+                        </div>
+                    </CardHeader>
+                    {isReindexing && (
+                        <CardContent className="pt-0">
+                            <div className="space-y-2">
+                                <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-primary">
+                                    <span>Прогресс: {reindexProgress.current} из {reindexProgress.total}</span>
+                                    <span>{Math.round((reindexProgress.current / reindexProgress.total) * 100)}%</span>
+                                </div>
+                                <Progress value={(reindexProgress.current / reindexProgress.total) * 100} className="h-2" />
+                            </div>
+                        </CardContent>
+                    )}
+                </Card>
+            )}
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {folders.length === 0 ? (
