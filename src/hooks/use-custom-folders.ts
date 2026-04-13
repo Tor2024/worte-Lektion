@@ -145,6 +145,9 @@ export function useCustomFolders() {
         let processed = 0;
         const batchSize = 20; // Slightly smaller batches for stability
 
+        // Call progress immediately to show the total in the UI
+        onProgress?.(0, total);
+
         for (let i = 0; i < wordsToProcess.length; i += batchSize) {
             const batch = wordsToProcess.slice(i, i + batchSize);
             const batchGermanWords = batch.map(b => b.word.word.german);

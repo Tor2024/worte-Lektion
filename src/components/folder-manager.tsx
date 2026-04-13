@@ -133,10 +133,10 @@ export function FolderManager() {
                         <CardContent className="pt-0">
                             <div className="space-y-2">
                                 <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-primary">
-                                    <span>Прогресс: {reindexProgress.current} из {reindexProgress.total}</span>
-                                    <span>{Math.round((reindexProgress.current / reindexProgress.total) * 100)}%</span>
+                                    <span>Прогресс: {reindexProgress.current} из {reindexProgress.total || wordsWithoutRootsCount}</span>
+                                    <span>{reindexProgress.total > 0 ? Math.round((reindexProgress.current / reindexProgress.total) * 100) : 0}%</span>
                                 </div>
-                                <Progress value={(reindexProgress.current / reindexProgress.total) * 100} className="h-2" />
+                                <Progress value={reindexProgress.total > 0 ? (reindexProgress.current / reindexProgress.total) * 100 : 0} className="h-2" />
                             </div>
                         </CardContent>
                     )}
