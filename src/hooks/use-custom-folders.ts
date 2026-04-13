@@ -173,10 +173,13 @@ export function useCustomFolders() {
                     // Apply roots to ALL instances of the words across ALL folders
                     Object.entries(rootMap).forEach(([germanWord, detectedRoot]) => {
                         if (detectedRoot) {
+                            const rootToApply = detectedRoot as string;
+                            const targetWordLower = germanWord.toLowerCase();
+
                             foldersToSave.forEach(f => {
                                 f.words.forEach(w => {
-                                    if (w.word.german === germanWord) {
-                                        w.word.root = detectedRoot as string;
+                                    if (w.word.german.toLowerCase() === targetWordLower) {
+                                        w.word.root = rootToApply;
                                     }
                                 });
                             });

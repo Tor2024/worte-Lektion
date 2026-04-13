@@ -27,8 +27,8 @@ export const detectRoots = async (words: string[]): Promise<Record<string, strin
                     1. No prefixes (aus-, ein-, be-, ver-, etc.)
                     2. No endings (-en, -t, -er, -ung, etc.)
                     3. Pure stem only (e.g., "ausrichten" -> "richt", "Ergebnis" -> "geb").
-                    4. Keep everything lowercase.
-                    5. Return a list of objects with 'word' and 'root'.
+                    4. Keep everything lowercase in the 'root' field.
+                    5. Return a list of objects with 'word' (EXACTLY as provided, case-sensitive) and 'root'.
 
                     Words to process:
                     ${words.join(', ')}
