@@ -128,30 +128,31 @@ export function useCustomFolders() {
 
     const reindexAllRoots = useCallback(async (onProgress?: (current: number, total: number) => void) => {
         const currentFolders = storage.getCustomFolders();
-        const wordsToProcess: { folderId: string, word: UserVocabularyWord }[] = [];
-
-        // ONLY pick words that actually need indexing
+        
+        // 1. Map to track unique German words needing indexing
+        const uniqueWords = new Set<string>();
         currentFolders.forEach(f => {
             f.words.forEach(w => {
                 if (!w.word.root) {
-                    wordsToProcess.push({ folderId: f.id, word: w });
+                    uniqueWords.add(w.word.german);
                 }
             });
         });
 
-        if (wordsToProcess.length === 0) return 0;
+        const wordsToProcessList = Array.from(uniqueWords);
 
-        const total = wordsToProcess.length;
+        if (wordsToProcessList.length === 0) return 0;
+
+        const total = wordsToProcessList.length;
         let processed = 0;
-        const batchSize = 10; // Extra safe batch size for Vercel timeouts
+        const batchSize = 10;
 
         // Call progress immediately to show the total in the UI
         onProgress?.(0, total);
 
         let i = 0;
-        while (i < wordsToProcess.length) {
-            const batch = wordsToProcess.slice(i, i + batchSize);
-            const batchGermanWords = batch.map(b => b.word.word.german);
+        while (i < wordsToProcessList.length) {
+            const batchGermanWords = wordsToProcessList.slice(i, i + batchSize);
 
             try {
                 const res = await fetch('/api/batch-roots', {
@@ -165,13 +166,14 @@ export function useCustomFolders() {
 
                 if (rootMap) {
                     const foldersToSave = storage.getCustomFolders();
-                    batch.forEach(item => {
-                        const detectedRoot = rootMap[item.word.word.german];
+                    
+                    // Apply roots to ALL instances of the words across ALL folders
+                    Object.entries(rootMap).forEach(([germanWord, detectedRoot]) => {
                         if (detectedRoot) {
                             foldersToSave.forEach(f => {
                                 f.words.forEach(w => {
-                                    if (w.word.german === item.word.word.german) {
-                                        w.word.root = detectedRoot;
+                                    if (w.word.german === germanWord) {
+                                        w.word.root = detectedRoot as string;
                                     }
                                 });
                             });
@@ -181,16 +183,15 @@ export function useCustomFolders() {
                     storage.setCustomFolders(foldersToSave);
                     setLocalFolders(foldersToSave);
 
-                    processed += batch.length;
-                    i += batch.length; // Move to next batch ONLY if success
+                    processed += batchGermanWords.length;
+                    i += batchGermanWords.length;
                     onProgress?.(processed, total);
                 }
 
-                // Throttle: Increased to 5s to stay well within Gemini Free Tier limits (15 RPM)
-                await new Promise(r => setTimeout(r, 5000));
+                // Throttle to respect API limits
+                await new Promise(r => setTimeout(r, 4500));
             } catch (e) {
                 console.error("Batch reindex failed, retrying same batch in 10s...", e);
-                // On failure, wait much longer then RETRY THE SAME BATCH
                 await new Promise(r => setTimeout(r, 10000));
             }
         }
