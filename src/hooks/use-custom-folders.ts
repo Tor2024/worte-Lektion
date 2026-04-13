@@ -169,7 +169,7 @@ export function useCustomFolders() {
 
                 if (rootMap) {
                     if ((rootMap as any).error) {
-                        console.error(`[Roots] AI ERROR for batch: ${(rootMap as any).error}`);
+                        throw new Error((rootMap as any).error);
                     }
 
                     console.log("[Roots] Batch words sent:", batchGermanWords);
