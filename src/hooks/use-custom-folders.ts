@@ -168,24 +168,33 @@ export function useCustomFolders() {
                 const { rootMap } = await res.json();
 
                 if (rootMap) {
-                    // 2. DEEP CLONE to ensure React and Storage see new references
+                    console.log("[Roots] Batch words sent:", batchGermanWords);
+                    console.log("[Roots] AI Response keys:", Object.keys(rootMap));
+
+                    // DEEP CLONE to ensure React and Storage see new references
                     const foldersToSave = JSON.parse(JSON.stringify(storage.getCustomFolders()));
                     let matchesInBatch = 0;
                     
-                    // Helper to strip German articles for robust comparison
-                    const normalizeForMatch = (s: string) => s.toLowerCase()
-                        .replace(/^(der|die|das)\s+/i, '')
-                        .trim();
+                    // Helper to strip German articles + punctuation for robust comparison
+                    const normalizeForMatch = (s: string) => {
+                        if (!s) return "";
+                        return s.toLowerCase()
+                            .replace(/^(der|die|das|die \(pl\))\s+/i, '') // Remove articles including plural
+                            .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "") // Remove punctuation
+                            .trim();
+                    }
 
-                    // Apply roots to ALL instances of the words across ALL folders
-                    Object.entries(rootMap).forEach(([germanWord, detectedRoot]) => {
+                    const rootMapEntries = Object.entries(rootMap);
+                    
+                    rootMapEntries.forEach(([germanWord, detectedRoot]) => {
                         if (detectedRoot) {
                             const rootToApply = detectedRoot as string;
                             const targetNormalized = normalizeForMatch(germanWord);
 
                             foldersToSave.forEach((f: any) => {
                                 f.words.forEach((w: any) => {
-                                    if (normalizeForMatch(w.word.german) === targetNormalized) {
+                                    const localWordNormalized = normalizeForMatch(w.word.german);
+                                    if (localWordNormalized === targetNormalized) {
                                         if (!w.word.root) matchesInBatch++;
                                         w.word.root = rootToApply;
                                     }
@@ -195,16 +204,16 @@ export function useCustomFolders() {
                     });
 
                     if (matchesInBatch > 0) {
-                        console.log(`[Roots] Successfully updated ${matchesInBatch} word instances in this batch.`);
+                        console.log(`[Roots] ✅ Saved ${matchesInBatch} matches for this batch.`);
                         storage.setCustomFolders(foldersToSave);
                         setLocalFolders(foldersToSave);
                     } else {
-                        console.warn(`[Roots] AI returned roots but none matched words in your folders. Sample: ${Object.keys(rootMap)[0]} vs local words.`);
+                        console.warn(`[Roots] ⚠️ Batch finished but 0 matches found in folders. Sample AI key: "${Object.keys(rootMap)[0]}" vs Sample local: "${foldersToSave[0]?.words[0]?.word?.german}"`);
                     }
 
                     processed += batchGermanWords.length;
-                    i += batchGermanWords.length; // Success! Move on
-                    retryCount = 0; // Reset retry counter
+                    i += batchGermanWords.length;
+                    retryCount = 0;
                     onProgress?.(processed, total);
                 }
 
