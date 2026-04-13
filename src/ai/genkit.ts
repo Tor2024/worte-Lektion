@@ -43,10 +43,22 @@ const aiInstances = keys.map((apiKey, idx) => {
 // Export primary instances - with safety proxy to prevent boot-time crashes when keys are missing
 const primaryAi = aiInstances[0];
 
+if (!primaryAi) {
+  console.warn('[AI] WARNING: No API keys found! Gemini will not work. Check GEMINI_API_KEY environment variable.');
+} else {
+  console.log(`[AI] SUCCESS: Initialized pool with ${aiInstances.length} Gemini instances.`);
+}
+
 export const ai = new Proxy({} as any, {
   get(target, prop) {
+    if (prop === 'isInitialized') return !!primaryAi;
+    if (prop === 'instancesCount') return aiInstances.length;
+    
     if (!primaryAi) {
-      throw new Error(`[AI] Attempted to use '${String(prop)}' but Genkit was not initialized. Check your GEMINI_API_KEY environment variables.`);
+      // Return a function that throws if they try to call something
+      return (...args: any[]) => {
+        throw new Error(`[AI] Attempted to use '${String(prop)}' but Genkit was not initialized. Check your GEMINI_API_KEY environment variables in Vercel.`);
+      };
     }
     return (primaryAi as any)[prop];
   }

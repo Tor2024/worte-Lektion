@@ -119,35 +119,36 @@ const renderPrompt = (input: WordEnrichmentInput) => {
   Return ONLY valid JSON matching the schema.`;
 };
 
-const wordEnrichmentFlow = ai.defineFlow(
-    {
-        name: 'wordEnrichmentFlow',
-        inputSchema: WordEnrichmentInputSchema,
-        outputSchema: EnrichedWordSchema,
-    },
-    async (input: WordEnrichmentInput) => {
-        return executeWithRetry(async (aiInstance) => {
+export async function enrichWord(input: WordEnrichmentInput): Promise<EnrichedWordOutput> {
+    try {
+        // Direct generation without defineFlow for maximum reliability and better error handling
+        return await executeWithRetry(async (aiInstance) => {
             const { output } = await aiInstance.generate({
                 prompt: renderPrompt(input),
                 output: { schema: EnrichedWordSchema },
             });
-            return output!;
+            
+            if (!output) {
+                throw new Error("AI returned an empty response. This might be a quota issue or a temporary Google API error.");
+            }
+            
+            return output as EnrichedWordOutput;
         });
-    }
-);
-
-export async function enrichWord(input: WordEnrichmentInput): Promise<EnrichedWordOutput> {
-    try {
-        return await wordEnrichmentFlow(input);
     } catch (err: any) {
         console.error("[AI Flow Error]:", err);
-        // Fallback object to prevent 500 crash in rendering
+        
+        // Fallback object to show the error clearly in the UI instead of a 500 error
         return {
             german: input.word,
             russian: "Ошибка обогащения AI",
-            allTranslations: `Произошла ошибка: ${err.message || "Неизвестная ошибка Zod/Genkit"}. Проверьте переменные окружения и ответ ИИ.`,
+            allTranslations: `ОШИБКА: ${err.message || "Непредвиденная проблема с ИИ"}. 
+Убедитесь, что в Vercel добавлены ключи GEMINI_API_KEY и лимиты не превышены.`,
             type: 'other',
-            meaning: "Ошибка на стороне сервера"
+            // Defaulting needed fields to avoid frontend crashes
+            meaning: "Ошибка на стороне сервера",
+            synonyms: [],
+            antonyms: [],
+            governance: []
         } as any;
     }
 }
