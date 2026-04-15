@@ -41,7 +41,7 @@ const getRektionLogicFlow = ai.defineFlow(
         inputSchema: RektionLogicInputSchema,
         outputSchema: RektionLogicOutputSchema,
     },
-    async (input) => {
+    async (input: z.infer<typeof RektionLogicInputSchema>) => {
         return executeWithRetry(async (aiInstance) => {
             const { output } = await aiInstance.generate({
                 prompt: renderPrompt(input),

@@ -47,7 +47,7 @@ const decomposeGermanWordFlow = ai.defineFlow(
         inputSchema: DecomposeInputSchema,
         outputSchema: DecomposeOutputSchema,
     },
-    async (input) => {
+    async (input: DecomposeInput) => {
         return executeWithRetry(async (aiInstance) => {
             const { output } = await aiInstance.generate({
                 prompt: renderPrompt(input),

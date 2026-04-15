@@ -32,7 +32,7 @@ export const getVerbFamily = ai.defineFlow(
         inputSchema: VerbFamilyInputSchema,
         outputSchema: VerbFamilyOutputSchema,
     },
-    async (input) => {
+    async (input: VerbFamilyInput) => {
         return executeWithRetry(async (aiInstance) => {
             const { output } = await aiInstance.generate({
                 prompt: `

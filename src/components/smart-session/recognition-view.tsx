@@ -90,7 +90,7 @@ export function RecognitionView({ item, onResult, onMarkAsKnown, direction: forc
             }
 
             // 2. The Anchor Phrase (Collocation) instead of full sentence
-            const firstCollocation = (word as any).collocations?.[0];
+            const firstCollocation = word.collocations?.[0];
             if (firstCollocation) {
                 sequence.push({ text: firstCollocation.phrase, lang: 'de-DE' });
                 sequence.push({ text: firstCollocation.translation, lang: 'ru-RU' });
@@ -142,16 +142,16 @@ export function RecognitionView({ item, onResult, onMarkAsKnown, direction: forc
                         </div>
 
                         {/* Anchor Phrase (Collocation) instead of full sentence in Phase 2 */}
-                        {(word as any).collocations && (word as any).collocations.length > 0 && (
+                        {word.collocations && word.collocations.length > 0 && (
                             <div className="w-full pt-6 border-t border-white/10 space-y-3">
                                 <Badge variant="outline" className="bg-amber-500/10 text-amber-400 border-amber-500/20 text-[10px] uppercase font-black px-3">
                                     Лексический якорь
                                 </Badge>
                                 <p className="text-2xl md:text-3xl font-bold text-white leading-tight tracking-tight text-left pl-4 border-l-4 border-amber-500/50">
-                                    {(word as any).collocations[0].phrase}
+                                    {word.collocations[0].phrase}
                                 </p>
                                 <p className="text-md text-slate-400 italic text-left pl-4">
-                                    — {(word as any).collocations[0].translation}
+                                    — {word.collocations[0].translation}
                                 </p>
                             </div>
                         )}
@@ -184,8 +184,8 @@ export function RecognitionView({ item, onResult, onMarkAsKnown, direction: forc
                 {(() => {
                     const prepositions = Array.from(new Set(
                         [
-                            ...((word as any).governance || []).map((g: any) => g.preposition),
-                            (word as any).preposition
+                            ...(word.governance || []).map((g) => g.preposition),
+                            word.preposition
                         ].filter(Boolean)
                             .map(p => String(p).trim())
                             .filter(p => p !== '' && p !== '-' && p.toLowerCase() !== 'без предлога')
@@ -218,9 +218,9 @@ export function RecognitionView({ item, onResult, onMarkAsKnown, direction: forc
                             {direction === 0 ? <FormattedGermanWord word={word} /> : word.russian}
                         </div>
                         {/* Governance Section (Rektion) as Hint */}
-                        {((word.type === 'verb' || word.type === 'adjective') && (word as any).governance && (word as any).governance.length > 0) && (
+                        {((word.type === 'verb' || word.type === 'adjective') && word.governance && word.governance.length > 0) && (
                             <div className="flex flex-col items-center gap-1.5 mt-2 w-full max-w-[280px]">
-                                {(word as any).governance.map((gov: any, idx: number) => (
+                                {word.governance.map((gov, idx: number) => (
                                     <div key={idx} className="flex flex-col items-center bg-white/10 py-2 px-4 rounded-2xl border border-white/20 w-full transition-all hover:bg-white/20 shadow-lg">
                                         <div className="flex items-center gap-3 text-lg font-black">
                                             {gov.preposition === "без предлога" && gov.case === 'Akkusativ' && (word.german.toLowerCase().includes('sich') || gov.meaning?.toLowerCase().includes('возвратн')) ? (
@@ -258,19 +258,19 @@ export function RecognitionView({ item, onResult, onMarkAsKnown, direction: forc
 
                         {/* Legacy case fallback for verbs */}
                         <div className="text-xl font-black text-white tracking-tight mt-4 flex items-center gap-3 bg-white/5 p-3 rounded-2xl border border-white/10">
-                            <span>+ {(word as any).preposition || ""}</span>
+                            <span>+ {word.preposition || ""}</span>
                             <span className={cn(
                                 "px-2 py-1 rounded-md text-[10px] font-extrabold uppercase tracking-tighter shadow-sm",
-                                (word as any).case === 'Akkusativ' ? "bg-red-600 text-white" :
-                                    (word as any).case === 'Dativ' ? "bg-emerald-600 text-white" :
-                                        (word as any).case === 'Nominativ' ? "bg-blue-600 text-white" :
-                                            (word as any).case === 'Genitiv' ? "bg-amber-600 text-white" :
+                                word.case === 'Akkusativ' ? "bg-red-600 text-white" :
+                                    word.case === 'Dativ' ? "bg-emerald-600 text-white" :
+                                        word.case === 'Nominativ' ? "bg-blue-600 text-white" :
+                                            word.case === 'Genitiv' ? "bg-amber-600 text-white" :
                                                 "bg-slate-700 text-white"
                             )}>
-                                {(word as any).case}
-                                {((word as any).case === 'Akkusativ' || (word as any).case === 'Dativ') && (word as any).preposition && (
+                                {word.case}
+                                {(word.case === 'Akkusativ' || word.case === 'Dativ') && word.preposition && (
                                     <span className="ml-1 lowercase font-bold text-[9px] opacity-80 border-l border-white/30 pl-1">
-                                        {(word as any).case === 'Akkusativ' ? 'wohin?' : 'wo?'}
+                                        {word.case === 'Akkusativ' ? 'wohin?' : 'wo?'}
                                     </span>
                                 )}
                             </span>
@@ -283,10 +283,10 @@ export function RecognitionView({ item, onResult, onMarkAsKnown, direction: forc
                     </div>
 
                     {/* Mnemonic for Leech words */}
-                    {(item.mnemonic || ((item.consecutiveMistakes || 0) >= 3 && (word as any).mnemonic)) && (
+                    {(item.mnemonic || ((item.consecutiveMistakes || 0) >= 3 && word.mnemonic)) && (
                         <div className="mt-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg text-xs italic text-amber-200/80 w-full max-w-sm text-center">
                             <span className="font-bold uppercase text-[9px] block mb-1 opacity-70 text-amber-400">💡 Мнемоника (ассоциация):</span>
-                            &ldquo;{item.mnemonic || (word as any).mnemonic}&rdquo;
+                            &ldquo;{item.mnemonic || word.mnemonic}&rdquo;
                         </div>
                     )}
                 </CardContent>
@@ -308,7 +308,7 @@ export function RecognitionView({ item, onResult, onMarkAsKnown, direction: forc
                         return (
                             <Button
                                 key={idx}
-                                variant={variant as any}
+                                variant={variant}
                                 className={cn(
                                     "h-20 text-lg font-bold rounded-2xl border-2 transition-all duration-300 relative overflow-hidden",
                                     !selectedOption && "hover:border-primary/50 hover:bg-primary/5 hover:scale-[1.02]",

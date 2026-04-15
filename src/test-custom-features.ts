@@ -10,7 +10,7 @@ async function testCustomFeatures() {
             topic: 'Im Büro'
         });
         console.log("Story Title:", story.title);
-        console.log("Russian Title:", story.japaneseTitle); // Using the field mapped to Russian title
+        console.log("Russian Title:", story.russianTitle); // Using the field mapped to Russian title
         console.log("Used Words:", story.usedWords);
         console.log("Story Length:", story.story.length);
     } catch (e) {

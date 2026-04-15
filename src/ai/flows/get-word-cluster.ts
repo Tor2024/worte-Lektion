@@ -50,7 +50,7 @@ const getWordClusterFlow = ai.defineFlow(
         inputSchema: WordClusterInputSchema,
         outputSchema: WordClusterOutputSchema,
     },
-    async (input) => {
+    async (input: z.infer<typeof WordClusterInputSchema>) => {
         return executeWithRetry(async (aiInstance) => {
             const { output } = await aiInstance.generate({
                 prompt: renderPrompt(input),

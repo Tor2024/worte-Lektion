@@ -71,7 +71,7 @@ const expandVocabularyFlow = ai.defineFlow(
         inputSchema: ExpandVocabularyInputSchema,
         outputSchema: ExpandVocabularyOutputSchema,
     },
-    async (input) => {
+    async (input: z.infer<typeof ExpandVocabularyInputSchema>) => {
         return executeWithRetry(async (aiInstance) => {
             const { output } = await aiInstance.generate({
                 prompt: renderPrompt(input),

@@ -11,6 +11,7 @@ const EvaluateProductionInputSchema = z.object({
     targetWordRussian: z.string().describe('Russian translation of the target word.'),
 });
 
+export type EvaluateProductionInput = z.infer<typeof EvaluateProductionInputSchema>;
 const EvaluateProductionOutputSchema = z.object({
     isCorrect: z.boolean(),
     isNearlyCorrect: z.boolean().describe('True if it is just a small typo or capitalization issue.'),
@@ -21,7 +22,7 @@ const EvaluateProductionOutputSchema = z.object({
 
 export type EvaluateProductionOutput = z.infer<typeof EvaluateProductionOutputSchema>;
 
-export async function evaluateProductionWithAI(input: z.infer<typeof EvaluateProductionInputSchema>): Promise<EvaluateProductionOutput> {
+export async function evaluateProductionWithAI(input: EvaluateProductionInput): Promise<EvaluateProductionOutput> {
     return evaluateProductionFlow(input);
 }
 
@@ -31,7 +32,7 @@ const evaluateProductionFlow = ai.defineFlow(
         inputSchema: EvaluateProductionInputSchema,
         outputSchema: EvaluateProductionOutputSchema,
     },
-    async (input) => {
+    async (input: EvaluateProductionInput) => {
         return executeWithRetry(async (aiInstance) => {
             const { output } = await aiInstance.generate({
                 prompt: `

@@ -52,7 +52,7 @@ export function PrimingView({ item, onNext, onMarkAsKnown, isRefresh }: PrimingV
 
     const confusionPartner = useMemo(() => {
         if (!confusionPartnerId) return null;
-        return commonWords.find((w: any) => w.german === confusionPartnerId);
+        return commonWords.find((w) => w.german === confusionPartnerId);
     }, [confusionPartnerId]);
 
     // Decomposition Effect
@@ -70,13 +70,13 @@ export function PrimingView({ item, onNext, onMarkAsKnown, isRefresh }: PrimingV
         }
 
         // Auto-fetch Rektion Logic if word has governance
-        if ((word as any).governance && (word as any).governance.length > 0) {
+        if (word.governance && word.governance.length > 0) {
             fetchRektionLogic();
         }
     }, [word.german]);
 
     const fetchRektionLogic = async () => {
-        const gov = (word as any).governance?.[0];
+        const gov = word.governance?.[0];
         if (!gov || isFetchingRektion) return;
 
         setIsFetchingRektion(true);
@@ -133,16 +133,16 @@ export function PrimingView({ item, onNext, onMarkAsKnown, isRefresh }: PrimingV
                 { text: word.russian, lang: 'ru-RU' }
             ];
 
-            if ((word as any).collocations?.[0]) {
-                const anchor = (word as any).collocations[0];
+            if (word.collocations?.[0]) {
+                const anchor = word.collocations[0];
                 sequence.push({ text: anchor.phrase, lang: 'de-DE' });
                 sequence.push({ text: anchor.translation, lang: 'ru-RU' });
             } else {
-                if ('example' in word && word.example) {
+                if (word.example) {
                     sequence.push({ text: word.example, lang: 'de-DE' });
                 }
-                if ('exampleMeaning' in word && (word as any).exampleMeaning) {
-                    sequence.push({ text: (word as any).exampleMeaning, lang: 'ru-RU' });
+                if (word.exampleMeaning) {
+                    sequence.push({ text: word.exampleMeaning, lang: 'ru-RU' });
                 }
             }
 
@@ -212,7 +212,7 @@ export function PrimingView({ item, onNext, onMarkAsKnown, isRefresh }: PrimingV
                             {/* Confusion Partner */}
                             <div className="flex flex-col items-center p-4 bg-white/80 dark:bg-slate-950/80 rounded-2xl border-2 border-red-500/20 shadow-md">
                                 <div className="text-lg sm:text-2xl font-black text-red-600 mb-1">
-                                    <FormattedGermanWord word={confusionPartner as any} />
+                                    <FormattedGermanWord word={confusionPartner} />
                                 </div>
                                 <div className="text-[10px] text-muted-foreground italic font-medium">{confusionPartner.russian}</div>
                             </div>
@@ -231,8 +231,8 @@ export function PrimingView({ item, onNext, onMarkAsKnown, isRefresh }: PrimingV
                 {(() => {
                     const prepositions = Array.from(new Set(
                         [
-                            ...((word as any).governance || []).map((g: any) => g.preposition),
-                            (word as any).preposition
+                            ...(word.governance || []).map((g) => g.preposition),
+                            word.preposition
                         ].filter(Boolean)
                             .map(p => String(p).trim())
                             .filter(p => p !== '' && p !== '-' && p.toLowerCase() !== 'без предлога')
@@ -264,9 +264,9 @@ export function PrimingView({ item, onNext, onMarkAsKnown, isRefresh }: PrimingV
                             </div>
                             {/* Specific Governance Display for Verbs and Adjectives */}
                             {/* Governance Section (Rektion) */}
-                            {(word.type === 'verb' || word.type === 'adjective') && (word as any).governance && (word as any).governance.length > 0 && (
+                            {(word.type === 'verb' || word.type === 'adjective') && word.governance && word.governance.length > 0 && (
                                 <div className="flex flex-col items-center gap-2 mt-2 w-full">
-                                    {(word as any).governance.map((gov: any, idx: number) => (
+                                    {word.governance.map((gov, idx: number) => (
                                         <div key={idx} className="flex flex-col items-center bg-primary/10 p-4 rounded-2xl border-2 border-primary/20 w-full max-w-sm shadow-xl">
                                             <div className="flex items-center gap-3 text-2xl font-black">
                                                 {gov.case === 'Akkusativ' && <ArrowRight className="h-5 w-5 text-red-500 animate-pulse" />}
@@ -338,19 +338,19 @@ export function PrimingView({ item, onNext, onMarkAsKnown, isRefresh }: PrimingV
 
                             {/* Legacy case fallback for verbs */}
                             <div className="text-3xl font-black text-primary tracking-tight mt-6 flex items-center gap-4 bg-primary/5 p-4 rounded-2xl border-2 border-primary/10 shadow-lg">
-                                <span>+ {(word as any).preposition || ""}</span>
+                                <span>+ {word.preposition || ""}</span>
                                 <span className={cn(
                                     "px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-tight flex items-center gap-1 shadow-md",
-                                    (word as any).case === 'Akkusativ' ? "bg-red-600 text-white" :
-                                        (word as any).case === 'Dativ' ? "bg-emerald-600 text-white" :
-                                            (word as any).case === 'Nominativ' ? "bg-blue-600 text-white" :
-                                                (word as any).case === 'Genitiv' ? "bg-amber-600 text-white" :
+                                    word.case === 'Akkusativ' ? "bg-red-600 text-white" :
+                                        word.case === 'Dativ' ? "bg-emerald-600 text-white" :
+                                            word.case === 'Nominativ' ? "bg-blue-600 text-white" :
+                                                word.case === 'Genitiv' ? "bg-amber-600 text-white" :
                                                     "bg-slate-700 text-white"
                                 )}>
-                                    {(word as any).case}
-                                    {((word as any).case === 'Akkusativ' || (word as any).case === 'Dativ') && (word as any).preposition && (
+                                    {word.case}
+                                    {(word.case === 'Akkusativ' || word.case === 'Dativ') && word.preposition && (
                                         <span className="ml-1 opacity-80 border-l border-white/30 pl-2 lowercase font-bold">
-                                            {(word as any).case === 'Akkusativ' ? 'wohin?' : 'wo?'}
+                                            {word.case === 'Akkusativ' ? 'wohin?' : 'wo?'}
                                         </span>
                                     )}
                                 </span>
@@ -365,9 +365,9 @@ export function PrimingView({ item, onNext, onMarkAsKnown, isRefresh }: PrimingV
                         </div>
 
                         {/* Synonyms (Unobtrusive & Non-Italic) */}
-                        {(word as any).synonyms && (word as any).synonyms.length > 0 && (
+                        {word.synonyms && word.synonyms.length > 0 && (
                             <div className="mt-2 flex flex-wrap justify-center gap-1.5 opacity-60 hover:opacity-100 transition-opacity">
-                                {(word as any).synonyms.map((s: any, idx: number) => (
+                                {word.synonyms.map((s: any, idx: number) => (
                                     <span key={idx} className="text-xs font-medium text-muted-foreground px-2 py-0.5 rounded-full bg-muted/50 border border-border/50">
                                         ≈ {s.word} ({s.translation})
                                     </span>
@@ -445,7 +445,7 @@ export function PrimingView({ item, onNext, onMarkAsKnown, isRefresh }: PrimingV
                     )}
 
                     {/* Anchor Phrase (Collocation) as primary memorization aid */}
-                    {(word as any).collocations?.[0] ? (
+                    {word.collocations?.[0] ? (
                         <div className="w-full max-w-xl mt-6">
                             <div className="bg-gradient-to-br from-amber-500/10 to-amber-500/5 p-6 rounded-3xl border-2 border-amber-500/20 shadow-xl relative group">
                                 <div className="absolute -top-3 left-6 px-3 py-1 bg-amber-500 text-white text-[10px] font-black uppercase tracking-[0.1em] rounded-full shadow-lg">
@@ -453,10 +453,10 @@ export function PrimingView({ item, onNext, onMarkAsKnown, isRefresh }: PrimingV
                                 </div>
                                 <div className="space-y-3 relative z-10">
                                     <p className="text-2xl md:text-3xl font-bold text-foreground leading-tight tracking-tight text-left pl-4 border-l-4 border-amber-500/30">
-                                        {(word as any).collocations[0].phrase}
+                                        {word.collocations[0].phrase}
                                     </p>
                                     <p className="text-md md:text-lg text-muted-foreground/80 italic text-left pl-4">
-                                        — {(word as any).collocations[0].translation}
+                                        — {word.collocations[0].translation}
                                     </p>
                                 </div>
                             </div>
@@ -473,9 +473,9 @@ export function PrimingView({ item, onNext, onMarkAsKnown, isRefresh }: PrimingV
                                         className="text-xl md:text-2xl font-bold text-foreground leading-tight tracking-tight text-left pl-4 border-l-4 border-primary/30"
                                         dangerouslySetInnerHTML={{ __html: word.example }}
                                     />
-                                    {'exampleMeaning' in word && (word as any).exampleMeaning && (
+                                    {word.exampleMeaning && (
                                         <p className="text-md md:text-lg text-muted-foreground/80 italic text-left pl-4">
-                                            — {(word as any).exampleMeaning}
+                                            — {word.exampleMeaning}
                                         </p>
                                     )}
                                 </div>
@@ -487,33 +487,33 @@ export function PrimingView({ item, onNext, onMarkAsKnown, isRefresh }: PrimingV
                     ))}
 
                     {/* Verb Conjugations (Compact) */}
-                    {word.type === 'verb' && (word as any).conjugations && (
+                    {word.type === 'verb' && word.conjugations && (
                         <div className="w-full max-w-sm mt-2 p-3 bg-primary/5 rounded-xl border border-primary/10">
                             <h4 className="text-[9px] font-bold uppercase tracking-widest text-primary/40 mb-2">Спряжение (Präsens)</h4>
                             <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
                                 <div className="flex justify-between border-b border-primary/10 pb-1">
                                     <span className="text-muted-foreground">ich</span>
-                                    <span className="font-bold">{(word as any).conjugations.ich}</span>
+                                    <span className="font-bold">{word.conjugations.ich}</span>
                                 </div>
                                 <div className="flex justify-between border-b border-primary/10 pb-1">
                                     <span className="text-muted-foreground">wir</span>
-                                    <span className="font-bold">{(word as any).conjugations.wir}</span>
+                                    <span className="font-bold">{word.conjugations.wir}</span>
                                 </div>
                                 <div className="flex justify-between border-b border-primary/10 pb-1">
                                     <span className="text-muted-foreground">du</span>
-                                    <span className="font-bold">{(word as any).conjugations.du}</span>
+                                    <span className="font-bold">{word.conjugations.du}</span>
                                 </div>
                                 <div className="flex justify-between border-b border-primary/10 pb-1">
                                     <span className="text-muted-foreground">ihr</span>
-                                    <span className="font-bold">{(word as any).conjugations.ihr}</span>
+                                    <span className="font-bold">{word.conjugations.ihr}</span>
                                 </div>
                                 <div className="flex justify-between border-b border-primary/10 pb-1">
                                     <span className="text-muted-foreground">er/sie/es</span>
-                                    <span className="font-bold">{(word as any).conjugations.er_sie_es}</span>
+                                    <span className="font-bold">{word.conjugations.er_sie_es}</span>
                                 </div>
                                 <div className="flex justify-between border-b border-primary/10 pb-1">
                                     <span className="text-muted-foreground">sie/Sie</span>
-                                    <span className="font-bold">{(word as any).conjugations.sie_Sie}</span>
+                                    <span className="font-bold">{word.conjugations.sie_Sie}</span>
                                 </div>
                             </div>
                         </div>
@@ -521,11 +521,11 @@ export function PrimingView({ item, onNext, onMarkAsKnown, isRefresh }: PrimingV
 
                     {/* Semantic Bridge: Synonyms & Collocations (Compact) */}
                     <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
-                        {(word as any).synonyms && (word as any).synonyms.length > 0 && (
+                        {word.synonyms && word.synonyms.length > 0 && (
                             <div className="p-4 bg-blue-50/50 rounded-xl border border-blue-100 text-left">
                                 <h4 className="text-[10px] font-bold uppercase tracking-widest text-blue-400 mb-2">Синонимы</h4>
                                 <div className="space-y-1">
-                                    {(word as any).synonyms.map((s: any, i: number) => (
+                                    {word.synonyms.map((s: any, i: number) => (
                                         <div key={i} className="text-sm">
                                             <span className="font-bold text-blue-600">{s.word}</span>
                                             <span className="text-muted-foreground ml-2">— {s.translation}</span>
@@ -534,11 +534,11 @@ export function PrimingView({ item, onNext, onMarkAsKnown, isRefresh }: PrimingV
                                 </div>
                             </div>
                         )}
-                        {(word as any).collocations && (word as any).collocations.length > 0 && (
+                        {word.collocations && word.collocations.length > 0 && (
                             <div className="p-4 bg-purple-50/50 rounded-xl border border-purple-100 text-left">
                                 <h4 className="text-[10px] font-bold uppercase tracking-widest text-purple-400 mb-2">Коллокации</h4>
                                 <div className="space-y-1">
-                                    {(word as any).collocations.map((c: any, i: number) => (
+                                    {word.collocations.map((c: any, i: number) => (
                                         <div key={i} className="text-sm">
                                             <span className="font-bold text-purple-600">{c.phrase}</span>
                                             <span className="text-muted-foreground ml-2">— {c.translation}</span>
@@ -550,7 +550,7 @@ export function PrimingView({ item, onNext, onMarkAsKnown, isRefresh }: PrimingV
                     </div>
 
                     {/* Mnemonic */}
-                    {(item.mnemonic || ((item.consecutiveMistakes || 0) >= 3 && (word as any).mnemonic)) && (
+                    {(item.mnemonic || ((item.consecutiveMistakes || 0) >= 3 && word.mnemonic)) && (
                         <div className={cn(
                             "mt-4 p-3 border rounded-lg text-sm italic w-full max-w-md text-left",
                             (item.consecutiveMistakes || 0) >= 3
@@ -558,7 +558,7 @@ export function PrimingView({ item, onNext, onMarkAsKnown, isRefresh }: PrimingV
                                 : "bg-amber-50 border-amber-200 text-amber-900"
                         )}>
                             <span className="font-bold uppercase text-[10px] block mb-1 opacity-70">💡 Мнемоника (ассоциация):</span>
-                            &ldquo;{item.mnemonic || (word as any).mnemonic}&rdquo;
+                            &ldquo;{item.mnemonic || word.mnemonic}&rdquo;
                         </div>
                     )}
                 </CardContent>

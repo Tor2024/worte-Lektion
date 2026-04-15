@@ -56,7 +56,7 @@ const generateStoryFlow = ai.defineFlow(
         inputSchema: GenerateStoryInputSchema,
         outputSchema: GenerateStoryOutputSchema,
     },
-    async (input) => {
+    async (input: GenerateStoryInput) => {
         return executeWithRetry(async (aiInstance) => {
             const { output } = await aiInstance.generate({
                 prompt: renderPrompt(input),

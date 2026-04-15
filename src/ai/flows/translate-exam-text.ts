@@ -17,7 +17,7 @@ const translateExamTextFlow = ai.defineFlow(
         inputSchema: TranslateExamTextInputSchema,
         outputSchema: TranslateExamTextOutputSchema,
     },
-    async (input) => {
+    async (input: z.infer<typeof TranslateExamTextInputSchema>) => {
         return executeWithRetry(async (aiInstance) => {
             const { text } = await aiInstance.generate({
                 prompt: `Переведи следующий текст с немецкого на русский язык. Это текст для подготовки к экзамену B2/B2 Beruf. Перевод должен быть точным, но при этом литературным и понятным.

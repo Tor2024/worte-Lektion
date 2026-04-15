@@ -22,7 +22,7 @@ const translateSentenceWordsFlow = ai.defineFlow(
         inputSchema: TranslateSentenceWordsInputSchema,
         outputSchema: TranslateSentenceWordsOutputSchema,
     },
-    async (input) => {
+    async (input: z.infer<typeof TranslateSentenceWordsInputSchema>) => {
         return executeWithRetry(async (aiInstance) => {
             const { output } = await aiInstance.generate({
                 prompt: `Analyze the following German sentence and break it down into words or short logical phrases. For each part, provide the Russian translation accurately fitting the context of the sentence.

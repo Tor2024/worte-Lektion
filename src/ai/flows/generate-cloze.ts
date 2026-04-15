@@ -91,7 +91,7 @@ const generateClozeFlow = ai.defineFlow(
         inputSchema: GenerateClozeInputSchema,
         outputSchema: GenerateClozeOutputSchema,
     },
-    async (input) => {
+    async (input: z.infer<typeof GenerateClozeInputSchema>) => {
         return executeWithRetry(async (aiInstance) => {
             const { output } = await aiInstance.generate({
                 prompt: renderPrompt(input),

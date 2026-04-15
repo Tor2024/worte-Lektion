@@ -54,7 +54,7 @@ const generateCollocationsFlow = ai.defineFlow(
         inputSchema: GenerateCollocationsInputSchema,
         outputSchema: GenerateCollocationsOutputSchema,
     },
-    async (input) => {
+    async (input: z.infer<typeof GenerateCollocationsInputSchema>) => {
         return executeWithRetry(async (aiInstance) => {
             const { output } = await aiInstance.generate({
                 prompt: renderPrompt(input),

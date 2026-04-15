@@ -34,7 +34,7 @@ const generateLessonSummaryFlow = ai.defineFlow(
         inputSchema: GenerateLessonSummaryInputSchema,
         outputSchema: GenerateLessonSummaryOutputSchema,
     },
-    async (input) => {
+    async (input: z.infer<typeof GenerateLessonSummaryInputSchema>) => {
         const historyText = input.exerciseHistory
             .map(h => `- Q: ${h.exercise} | User: ${h.userAnswer} | Result: ${h.isCorrect ? 'Correct' : 'Incorrect'}`)
             .join('\n');

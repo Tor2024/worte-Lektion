@@ -34,22 +34,41 @@ export function SpeakButton({
     const handleClick = async (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
+
+        // If currently speaking, stop it
         if (isSpeaking) {
             sequenceIdRef.current++;
             stop();
-        } else {
-            const currentId = ++sequenceIdRef.current;
-            const cleanedText = cleanTextForSpeech(text);
+            return;
+        }
 
-            await speak(cleanedText, lang, gender);
+        // Use a local sequence ID to handle concurrent click attempts
+        const currentId = ++sequenceIdRef.current;
+        const cleanedText = cleanTextForSpeech(text);
+        if (!cleanedText) return;
 
-            if (secondaryText && currentId === sequenceIdRef.current) {
-                await new Promise(r => setTimeout(r, 400));
+        try {
+            if (secondaryText) {
+                // For sequences (e.g. German then Russian), use a simplified await pattern
+                await speak(cleanedText, lang, gender);
+                
+                // Only proceed if no other click has happened in the meantime
                 if (currentId === sequenceIdRef.current) {
-                    const cleanedSecondary = cleanTextForSpeech(secondaryText);
-                    await speak(cleanedSecondary, secondaryLang, gender);
+                    await new Promise(r => setTimeout(r, 400));
+                    if (currentId === sequenceIdRef.current) {
+                        const cleanedSecondary = cleanTextForSpeech(secondaryText);
+                        if (cleanedSecondary) {
+                            await speak(cleanedSecondary, secondaryLang, gender);
+                        }
+                    }
                 }
+            } else {
+                // Simple single text speak
+                await speak(cleanedText, lang, gender);
             }
+        } catch (error) {
+            console.error("SpeakButton error:", error);
+            stop(); // Reset everything on error
         }
     };
 

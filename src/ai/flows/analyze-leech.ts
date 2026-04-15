@@ -53,7 +53,7 @@ const analyzeLeechFlow = ai.defineFlow(
         inputSchema: AnalyzeLeechInputSchema,
         outputSchema: AnalyzeLeechOutputSchema,
     },
-    async (input) => {
+    async (input: AnalyzeLeechInput) => {
         return executeWithRetry(async (aiInstance) => {
             const { output } = await aiInstance.generate({
                 prompt: renderPrompt(input),

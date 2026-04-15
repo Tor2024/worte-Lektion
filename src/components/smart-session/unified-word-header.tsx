@@ -87,17 +87,17 @@ export function UnifiedWordHeader({ word, className, showRussian = false, russia
                             <span>{word.superlative}</span>
                         </div>
                     )}
-                    {word.type === 'preposition' && (word as any).case && (
+                    {word.type === 'preposition' && word.case && (
                         <div className="text-[12px] font-bold text-rose-600 dark:text-rose-400 flex gap-1 italic">
                             <span className="opacity-40 uppercase text-[9px] mt-0.5">Kasus:</span>
-                            <span>{(word as any).case}</span>
+                            <span>{word.case}</span>
                         </div>
                     )}
                     {/* Verb/Adjective Governance (Rektion) */}
-                    {(word.type === 'verb' || word.type === 'adjective') && (word as any).governance && (word as any).governance.length > 0 && (
+                    {(word.type === 'verb' || word.type === 'adjective') && word.governance && word.governance.length > 0 && (
                         <div className="flex gap-2 text-[12px] font-black items-center">
                             <span className="opacity-30 text-[9px] uppercase">Rektion:</span>
-                            {(word as any).governance.map((gov: any, idx: number) => (
+                            {word.governance.map((gov, idx: number) => (
                                 <div key={idx} className="flex gap-1 items-center">
                                     <span className="text-primary">+ {gov.preposition}</span>
                                     <span className={cn(

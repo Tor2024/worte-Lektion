@@ -12,12 +12,21 @@ export interface Exercise {
 
 export type WordType = 'noun' | 'verb' | 'adjective' | 'conjunction' | 'preposition' | 'adverb' | 'other';
 
-interface BaseVocabularyWord {
+export interface BaseVocabularyWord {
   german: string;
   russian: string;
   root?: string; // The core morpheme (e.g. "richt" for "ausrichten")
   allTranslations?: string;
   level?: 'A0' | 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'Beruf';
+  synonyms?: Synonym[];
+  antonyms?: Synonym[];
+  collocations?: { phrase: string, translation: string }[];
+  mnemonic?: string;
+  governance?: Governance[];
+  case?: string;
+  preposition?: string;
+  example?: string;
+  exampleMeaning?: string;
 }
 
 interface Noun extends BaseVocabularyWord {
@@ -28,6 +37,8 @@ interface Noun extends BaseVocabularyWord {
   exampleSingular: string;
   examplePlural: string;
   isIrregular?: boolean;
+  case?: string;
+  preposition?: string;
 }
 
 export interface Governance {
@@ -63,30 +74,39 @@ interface Adjective extends BaseVocabularyWord {
   superlative: string;
   example: string;
   governance?: Governance[];
+  case?: string;
+  preposition?: string;
 }
 
 interface Conjunction extends BaseVocabularyWord {
   type: 'conjunction';
   structure: string;
   example: string;
+  case?: string;
+  preposition?: string;
 }
 
 interface Preposition extends BaseVocabularyWord {
   type: 'preposition';
   case: 'Akkusativ' | 'Dativ' | 'Wechselpräposition' | 'Genitiv';
   example: string;
+  preposition?: string;
 }
 
 interface Adverb extends BaseVocabularyWord {
   type: 'adverb';
   structure?: string;
   example: string;
+  case?: string;
+  preposition?: string;
 }
 
 interface OtherWord extends BaseVocabularyWord {
   type: 'other';
   structure?: string;
   example: string;
+  case?: string;
+  preposition?: string;
 }
 
 export interface Synonym {
@@ -94,7 +114,7 @@ export interface Synonym {
   translation: string;
 }
 
-export type VocabularyWord = Noun | Verb | Adjective | Conjunction | Preposition | Adverb | OtherWord;
+export type VocabularyWord = (Noun | Verb | Adjective | Conjunction | Preposition | Adverb | OtherWord) & BaseVocabularyWord;
 
 export interface SM2State {
   interval: number;

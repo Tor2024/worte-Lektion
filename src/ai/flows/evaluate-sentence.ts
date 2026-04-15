@@ -47,7 +47,7 @@ const evaluateSentenceFlow = ai.defineFlow(
         inputSchema: EvaluateSentenceInputSchema,
         outputSchema: EvaluateSentenceOutputSchema,
     },
-    async (input) => {
+    async (input: z.infer<typeof EvaluateSentenceInputSchema>) => {
         return executeWithRetry(async (aiInstance) => {
             const { output } = await aiInstance.generate({
                 prompt: renderPrompt(input),

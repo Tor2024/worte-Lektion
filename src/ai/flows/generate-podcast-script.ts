@@ -57,7 +57,7 @@ const generatePodcastScriptFlow = ai.defineFlow(
         inputSchema: GeneratePodcastScriptInputSchema,
         outputSchema: GeneratePodcastScriptOutputSchema,
     },
-    async (input) => {
+    async (input: z.infer<typeof GeneratePodcastScriptInputSchema>) => {
         return executeWithRetry(async (aiInstance) => {
             const { output } = await aiInstance.generate({
                 prompt: renderPrompt(input),

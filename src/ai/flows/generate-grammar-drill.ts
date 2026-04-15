@@ -54,7 +54,7 @@ const generateGrammarDrillFlow = ai.defineFlow(
         inputSchema: GenerateGrammarDrillInputSchema,
         outputSchema: GenerateGrammarDrillOutputSchema,
     },
-    async (input) => {
+    async (input: z.infer<typeof GenerateGrammarDrillInputSchema>) => {
         return executeWithRetry(async (aiInstance) => {
             const { output } = await aiInstance.generate({
                 prompt: renderPrompt(input),

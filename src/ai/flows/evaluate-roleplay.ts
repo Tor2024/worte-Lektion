@@ -77,7 +77,7 @@ const evaluateRoleplayFlow = ai.defineFlow(
         inputSchema: EvaluateRoleplayInputSchema,
         outputSchema: EvaluateRoleplayOutputSchema,
     },
-    async (input) => {
+    async (input: EvaluateRoleplayInput) => {
         return executeWithRetry(async (aiInstance) => {
             const { output } = await aiInstance.generate({
                 prompt: renderPrompt(input),

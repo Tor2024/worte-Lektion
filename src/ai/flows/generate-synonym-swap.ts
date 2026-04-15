@@ -53,7 +53,7 @@ const generateSynonymSwapFlow = ai.defineFlow(
         inputSchema: GenerateSynonymSwapInputSchema,
         outputSchema: GenerateSynonymSwapOutputSchema,
     },
-    async (input) => {
+    async (input: z.infer<typeof GenerateSynonymSwapInputSchema>) => {
         return executeWithRetry(async (aiInstance) => {
             const { output } = await aiInstance.generate({
                 prompt: renderPrompt(input),

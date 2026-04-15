@@ -67,7 +67,7 @@ const startRoleplayFlow = ai.defineFlow(
         inputSchema: StartRoleplayInputSchema,
         outputSchema: StartRoleplayOutputSchema,
     },
-    async (input) => {
+    async (input: z.infer<typeof StartRoleplayInputSchema>) => {
         return executeWithRetry(async (aiInstance) => {
             const { output } = await aiInstance.generate({
                 prompt: renderPrompt(input),

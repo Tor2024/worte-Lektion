@@ -142,7 +142,7 @@ const adaptiveExerciseGenerationFlow = ai.defineFlow(
     inputSchema: AdaptiveExerciseInputSchema,
     outputSchema: AdaptiveExerciseOutputSchema,
   },
-  async input => {
+  async (input: AdaptiveExerciseInput) => {
     return executeWithRetry(async (aiInstance) => {
       const { output } = await aiInstance.generate({
         prompt: renderPrompt(input),

@@ -81,7 +81,7 @@ const verifyAnswerFlow = ai.defineFlow(
     inputSchema: VerifyAnswerInputSchema,
     outputSchema: VerifyAnswerOutputSchema,
   },
-  async input => {
+  async (input: VerifyAnswerInput) => {
     return executeWithRetry(async (aiInstance) => {
       const { output } = await aiInstance.generate({
         prompt: renderPrompt(input),

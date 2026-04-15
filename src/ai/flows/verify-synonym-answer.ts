@@ -51,7 +51,7 @@ const verifySynonymAnswerFlow = ai.defineFlow(
         inputSchema: VerifySynonymAnswerInputSchema,
         outputSchema: VerifySynonymAnswerOutputSchema,
     },
-    async (input) => {
+    async (input: z.infer<typeof VerifySynonymAnswerInputSchema>) => {
         return executeWithRetry(async (aiInstance) => {
             const { output } = await aiInstance.generate({
                 prompt: renderPrompt(input),

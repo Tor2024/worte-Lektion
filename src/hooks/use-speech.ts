@@ -39,9 +39,11 @@ export function useSpeech() {
 
     const stop = useCallback(() => {
         if (typeof window !== 'undefined' && window.speechSynthesis) {
-            // Aggressive reset: resume before cancel to un-jam the engine
+            // Aggressive reset: resume before cancel to un-jam the engine for Chromium
+            // If the state was paused, cancel() does nothing until resume() is called
             window.speechSynthesis.resume();
             window.speechSynthesis.cancel();
+            
             sequenceIdRef.current++; // Cancel any running sequence loop
             setIsSpeaking(false);
             activeUtteranceRef.current = null;
@@ -66,14 +68,18 @@ export function useSpeech() {
         if (!cleanedText) return;
 
         // CHUNKING LOGIC: If text is long, split by sentences and speak them sequentially
-        // This prevents the 'synthesis-failed' limit in Chrome/Windows
         if (cleanedText.length > 200) {
             const chunks = cleanedText.match(/[^.!?]+[.!?]*/g) || [cleanedText];
             if (chunks.length > 1) {
                 if (cancelFirst) stop();
+                const currentId = sequenceIdRef.current;
+                
                 for (const chunk of chunks) {
+                    // Stop if a new speak or stop operation started
+                    if (sequenceIdRef.current !== currentId) break;
+                    
                     await speak(chunk.trim(), lang, gender, false);
-                    await new Promise(r => setTimeout(r, 100)); // Gap between chunks
+                    await new Promise(r => setTimeout(r, 150));
                 }
                 return;
             }
@@ -81,7 +87,8 @@ export function useSpeech() {
 
         return new Promise<void>((resolve) => {
             if (cancelFirst) {
-                // Aggressive reset: resume before cancel to un-jam the engine if it was paused
+                // Aggressive reset sequence to clear any stuck state
+                window.speechSynthesis.pause();
                 window.speechSynthesis.resume();
                 window.speechSynthesis.cancel();
             }
@@ -143,11 +150,22 @@ export function useSpeech() {
             }
 
             let backupTimeout: NodeJS.Timeout;
+            let resumeInterval: NodeJS.Timeout;
 
-            utterance.onstart = () => setIsSpeaking(true);
+            utterance.onstart = () => {
+                setIsSpeaking(true);
+                // Windows Chromium Fix: Periodically call resume() to prevent the engine from pausing on long text
+                resumeInterval = setInterval(() => {
+                    if (window.speechSynthesis.speaking) {
+                        window.speechSynthesis.pause();
+                        window.speechSynthesis.resume();
+                    }
+                }, 10000);
+            };
             
             utterance.onend = () => {
                 clearTimeout(backupTimeout);
+                clearInterval(resumeInterval);
                 if (activeUtteranceRef.current === utterance) activeUtteranceRef.current = null;
                 setIsSpeaking(false);
                 resolve();
@@ -155,38 +173,44 @@ export function useSpeech() {
             
             utterance.onerror = (e: SpeechSynthesisErrorEvent) => {
                 clearTimeout(backupTimeout);
+                clearInterval(resumeInterval);
                 if (e.error !== 'canceled' && e.error !== 'interrupted') {
                     console.error("Speech error", e.error, e);
-                    // If synthesis failed, try to resume the engine for next calls
-                    if (typeof window !== 'undefined' && window.speechSynthesis) {
-                        window.speechSynthesis.resume();
-                    }
+                    // Critical reset on error
+                    window.speechSynthesis.resume();
+                    window.speechSynthesis.cancel();
                 }
                 if (activeUtteranceRef.current === utterance) activeUtteranceRef.current = null;
                 setIsSpeaking(false);
                 resolve();
             };
 
-            const timeoutDuration = Math.max(5000, text.length * 100);
+            const timeoutDuration = Math.max(7000, text.length * 150); // Slightly more generous timeout
             backupTimeout = setTimeout(() => {
                 if (activeUtteranceRef.current === utterance) {
-                    console.warn("Speech onend timed out, forcing resolve");
+                    console.warn("Speech onend timed out, forcing reset");
+                    clearInterval(resumeInterval);
                     activeUtteranceRef.current = null;
                     setIsSpeaking(false);
-                    resolve();
                     if (typeof window !== 'undefined' && window.speechSynthesis) {
+                        window.speechSynthesis.resume(); // Ensure we are not paused
                         window.speechSynthesis.cancel();
                     }
+                    resolve();
                 }
             }, timeoutDuration);
 
-            // Safety delay: 100ms gap before actual speak call 
-            // This helps browser stabilize after cancel() or sequence transitions
+            // Safety delay: 150ms gap before actual speak call 
+            // This is increased to ensure the browser has actually finished the cancel() async operation
             setTimeout(() => {
                 if (typeof window !== 'undefined' && window.speechSynthesis) {
+                    // One last check: if we are still 'speaking' but no audio, then we were stuck
+                    if (window.speechSynthesis.speaking && cancelFirst) {
+                        window.speechSynthesis.cancel();
+                    }
                     window.speechSynthesis.speak(utterance);
                 }
-            }, 100);
+            }, 150);
         });
     }, [stop]);
 

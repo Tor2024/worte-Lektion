@@ -52,7 +52,7 @@ const startInterviewFlow = ai.defineFlow(
         inputSchema: StartInterviewInputSchema,
         outputSchema: StartInterviewOutputSchema,
     },
-    async (input) => {
+    async (input: z.infer<typeof StartInterviewInputSchema>) => {
         return executeWithRetry(async (aiInstance) => {
             const { output } = await aiInstance.generate({
                 prompt: renderPrompt(input),

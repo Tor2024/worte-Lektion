@@ -70,7 +70,7 @@ const generateFeedbackFlow = ai.defineFlow(
     inputSchema: GenerateFeedbackInputSchema,
     outputSchema: GenerateFeedbackOutputSchema,
   },
-  async (input) => {
+  async (input: z.infer<typeof GenerateFeedbackInputSchema>) => {
     return executeWithRetry(async (aiInstance) => {
       const { output } = await aiInstance.generate({
         prompt: renderPrompt(input),

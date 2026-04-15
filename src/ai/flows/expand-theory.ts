@@ -58,7 +58,7 @@ const expandTheoryFlow = ai.defineFlow(
         inputSchema: ExpandTheoryInputSchema,
         outputSchema: ExpandTheoryOutputSchema,
     },
-    async (input) => {
+    async (input: z.infer<typeof ExpandTheoryInputSchema>) => {
         return executeWithRetry(async (aiInstance) => {
             const { output } = await aiInstance.generate({
                 prompt: renderPrompt(input),

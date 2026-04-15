@@ -22,9 +22,9 @@ export function useUnifiedSRS() {
         const words: UserVocabularyWord[] = [];
         const seenCurriculum = new Set<string>();
 
-        allTopics.forEach((topic: any) => {
+        allTopics.forEach((topic) => {
             if (progress[topic.id] > 0) {
-                (topic.vocabulary as any[]).forEach((theme: any) => {
+                (topic.vocabulary as any[]).forEach((theme) => {
                     theme.words.forEach((vocabWord: any) => {
                         if (vocabWord && vocabWord.german && !seenCurriculum.has(vocabWord.german)) {
                             const state = srsMap[vocabWord.german] || INITIAL_SM2_STATE;
