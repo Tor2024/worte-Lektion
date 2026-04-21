@@ -76,13 +76,14 @@ export const executeWithRetry = async <T>(
     throw new Error("No Genkit instances available. Please check your environment variables.");
   }
 
-  // We try all keys, plus some extra attempts just in case
-  const MAX_ATTEMPTS = Math.max(aiInstances.length * 2, 5);
+  // Optimize attempts. We don't want to spam 30 requests if the model is failing.
+  // We'll try at most the number of keys we have, capped at 5 total attempts to prevent 90s hangs.
+  const MAX_ATTEMPTS = Math.min(aiInstances.length, 5); 
   let lastError: any;
 
   // Start at a random key to distribute load
   const startOffset = Math.floor(Math.random() * aiInstances.length);
-  console.log(`[AI] Starting operation using pool of ${aiInstances.length} keys (start index: ${startOffset})`);
+  console.log(`[AI] Starting operation using pool of ${aiInstances.length} keys (start index: ${startOffset}), max attempts: ${MAX_ATTEMPTS}`);
 
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
     const index = (startOffset + attempt) % aiInstances.length;
@@ -96,24 +97,31 @@ export const executeWithRetry = async <T>(
       const msg = error.message || '';
       const status = error.status || (error.response ? error.response.status : null);
 
-      // If it's a quota/rate limit error, immediately rotate to next key
+      console.error(`[AI] Key #${index} failed with error (status: ${status}):`, msg.substring(0, 200));
+
+      // 400 Bad Request, Validation Errors. No point in retrying across keys.
+      if (status === 400 || msg.includes('parse') || msg.includes('validation')) {
+         throw error;
+      }
+
+      // If it's a quota/rate limit error, rotate instantly
       if (status === 429 || msg.includes('429') || msg.toLowerCase().includes('quota')) {
         console.warn(`[AI] Key #${index} hit quota limit (429). Rotating to next available key...`);
         continue;
       }
 
-      console.error(`[AI] Key #${index} failed with unexpected error:`, msg);
-
-      // For other errors, wait slightly then rotate
+      // For 503 or transient errors, short wait. If it's the last attempt, don't wait.
       if (attempt < MAX_ATTEMPTS - 1) {
-        const waitTime = 200 * (attempt + 1);
+        // Short exponential backoff, max 2 seconds per wait (so we don't hang for 1.5 minutes)
+        const waitTime = Math.min(500 * Math.pow(2, attempt), 2000);
+        console.log(`[AI] Waiting ${waitTime}ms before next attempt...`);
         await new Promise(r => setTimeout(r, waitTime));
         continue;
       }
     }
   }
 
-  console.error(`[AI] All ${aiInstances.length} keys failed after ${MAX_ATTEMPTS} attempts.`);
+  console.error(`[AI] Operation failed after ${MAX_ATTEMPTS} attempts.`);
   throw lastError || new Error("All available AI keys failed.");
 };
 
