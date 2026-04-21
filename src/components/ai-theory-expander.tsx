@@ -18,18 +18,20 @@ export function AiTheoryExpander({ title, initialHtml }: AiTheoryExpanderProps) 
     const [isExpanded, setIsExpanded] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [content, setContent] = useState(initialHtml);
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
     const handleExpand = async () => {
         if (isExpanded) return; // Already done
 
         setIsLoading(true);
+        setErrorMsg(null);
         try {
             const newContent = await expandTheoryWithAI(title, initialHtml);
             setContent(newContent);
             setIsExpanded(true);
         } catch (error) {
             console.error("Failed to expand theory:", error);
-            // Ideally show toast
+            setErrorMsg("Серверы AI перегружены или лимит запросов исчерпан. Пожалуйста, попробуйте позже.");
         } finally {
             setIsLoading(false);
         }
@@ -91,9 +93,15 @@ export function AiTheoryExpander({ title, initialHtml }: AiTheoryExpanderProps) 
                 </motion.div>
             </AnimatePresence>
 
-            {isExpanded && (
+            {isExpanded && !errorMsg && (
                 <div className="bg-muted/30 p-4 rounded-lg text-xs text-muted-foreground text-center border border-border/50">
                     Контент сгенерирован ИИ-помощником на основе базовой теории.
+                </div>
+            )}
+            
+            {errorMsg && (
+                <div className="bg-red-500/10 p-4 rounded-lg text-sm text-red-600 text-center border border-red-500/20">
+                    {errorMsg}
                 </div>
             )}
         </div>
