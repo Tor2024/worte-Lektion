@@ -89,6 +89,11 @@ export function cleanTextForSpeech(text: string): string {
     cleaned = cleaned.replace(/[-]{2,}/g, ' ');
     cleaned = cleaned.replace(/\s{2,}/g, ' ').trim();
 
+    // 6. Safe limit: browser TTS often crashes on strings > 200 chars (e.g. error dumps)
+    if (cleaned.length > 150) {
+        cleaned = cleaned.substring(0, 150) + "...";
+    }
+
     return cleaned;
 }
 /**

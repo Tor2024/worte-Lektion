@@ -55,7 +55,12 @@ export default function FolderDetailsPage({ params }: { params: Promise<{ folder
         setError(null);
 
         try {
-            const enriched = await enrichWord({ word: newWordInput, context: folder?.name });
+            const enriched: any = await enrichWord({ word: newWordInput.trim(), context: folder?.name });
+            
+            // Защита от сохранения поломанной карточки при исчерпании лимитов или 503-х ошибках
+            if (enriched?.russian?.includes('Ошибка обогащения AI')) {
+                throw new Error("AI_LIMIT");
+            }
 
             const newWord: UserVocabularyWord = {
                 id: uuidv4(),
